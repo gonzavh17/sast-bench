@@ -1,0 +1,20 @@
+id: ng-xss-008
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/changelog.component.ts, line: 15}
+    rationale: >
+      insertAdjacentHTML parsea el string como markup y lo inserta en el DOM
+      sin pasar por el sanitizador de Angular, igual que .innerHTML. El valor
+      sale del query param `entry`.
+  safe:
+    label: safe
+    rationale: >
+      insertAdjacentText en la misma posicion del mismo nodo. Unica diferencia
+      entre gemelos: inserta el valor como texto, nunca lo parsea como HTML.
+

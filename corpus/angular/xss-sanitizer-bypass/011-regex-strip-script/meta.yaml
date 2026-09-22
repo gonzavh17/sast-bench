@@ -1,0 +1,23 @@
+id: ng-xss-011
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/trusted-html.ts, line: 8}
+    rationale: >
+      Hay limpieza a la vista, pero borrar <script> no borra lo que ejecuta JS
+      por atributo: `<img src=x onerror=alert(1)>` no tiene ninguna etiqueta
+      script y corre igual. El regex tampoco cubre `javascript:` en href ni las
+      etiquetas anidadas que se reconstruyen al sacar la de adentro.
+  safe:
+    label: safe
+    rationale: >
+      Mismo helper, misma firma, mismo bypass sobre el resultado. Cambia una
+      linea: sanitize(SecurityContext.HTML, html) en vez del regex. El
+      sanitizador de Angular saca los handlers on* y los esquemas peligrosos,
+      no solo las etiquetas.
+

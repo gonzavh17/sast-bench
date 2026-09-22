@@ -1,23 +1,23 @@
-# semgrep — 7 pares
+# semgrep — 12 pares
 
 - herramienta: `semgrep 1.177.0`
 - reglas: semgrep/semgrep-rules@40b8c63f75dc (javascript, typescript)
-- corrida: 2026-09-22T02:22:47+00:00
+- corrida: 2026-09-22T02:37:48+00:00
 
 ## Titular
 
-**pair score = 0.43** (3/7 pares)
+**pair score = 0.42** (5/12 pares)
 
 | metrica | valor |
 |---|---|
-| recall | 0.43 |
+| recall | 0.42 |
 | FPR | 0.00 |
 | precision | 1.00 |
-| F1 | 0.60 |
+| F1 | 0.59 |
 | localizacion | 1.00 |
 | ruido (hallazgos sin mapear por variante) | 0.00 |
 
-TP 3 · FN 4 · FP 0 · TN 7
+TP 5 · FN 7 · FP 0 · TN 12
 
 ## Por par
 
@@ -30,6 +30,11 @@ TP 3 · FN 4 · FP 0 · TN 7
 | `ng-xss-005` | TP | TN | si | `angular-bypasssecuritytrust` |
 | `ng-xss-006` | TP | TN | si | `angular-bypasssecuritytrust` |
 | `ng-xss-007` | FN | TN | no | — |
+| `ng-xss-008` | FN | TN | no | — |
+| `ng-xss-009` | FN | TN | no | — |
+| `ng-xss-010` | TP | TN | si | `angular-bypasssecuritytrust` |
+| `ng-xss-011` | TP | TN | si | `angular-bypasssecuritytrust` |
+| `ng-xss-012` | FN | TN | no | — |
 
 ## rule_id sin mapear
 

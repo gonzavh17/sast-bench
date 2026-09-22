@@ -1,0 +1,24 @@
+id: ng-xss-009
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/preview.component.ts, line: 24}
+    rationale: >
+      Hay validacion a la vista y contra la constante correcta, pero
+      startsWith compara texto y un dominio se lee de derecha a izquierda:
+      `https://cdn.confiable.com.evil.com/x` pasa el chequeo y pertenece a
+      evil.com. El bypassSecurityTrustResourceUrl deja ese origen dentro de un
+      iframe, asi que el atacante controla el contenido del frame.
+  safe:
+    label: safe
+    rationale: >
+      Misma constante, mismo bypass, mismo iframe. La diferencia es que compara
+      `new URL(raw).origin`: el parser del navegador es el que decide donde
+      termina el host, y `cdn.confiable.com.evil.com` no da igual al origen
+      permitido.
+

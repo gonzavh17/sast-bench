@@ -1,0 +1,22 @@
+id: ng-xss-010
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/trusted-html.ts, line: 6}
+    rationale: >
+      El helper llama al sanitizador, pero lo llama tarde. Envolver con
+      bypassSecurityTrustHtml marca el valor como ya revisado, y sanitize()
+      sobre un valor marcado lo devuelve intacto: `cleaned` termina siendo el
+      markup original. La llamada a sanitize() esta a la vista y no hace nada.
+  safe:
+    label: safe
+    rationale: >
+      Mismas tres lineas, invertidas: primero sanitize() sobre el string crudo,
+      despues el bypass sobre el resultado limpio. Es la unica diferencia entre
+      gemelos y es la que decide si el sanitizador mira el valor o no.
+

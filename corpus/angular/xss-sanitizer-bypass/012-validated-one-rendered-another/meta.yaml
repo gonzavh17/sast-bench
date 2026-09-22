@@ -1,0 +1,22 @@
+id: ng-xss-012
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/summary.component.ts, line: 23}
+    rationale: >
+      El sanitizador se llama de verdad y sobre el valor correcto, pero el
+      resultado queda en `clean` y solo se usa para el if. Lo que se envuelve y
+      termina en el DOM es `raw`, el original sin tocar: la limpieza se calcula
+      y se descarta.
+  safe:
+    label: safe
+    rationale: >
+      Identico salvo el identificador que recibe el bypass: `clean` en vez de
+      `raw`. Un caracter de diferencia entre un componente sano y uno
+      explotable.
+
