@@ -1,0 +1,22 @@
+id: ng-xss-004
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/profile.component.ts, line: 19}
+    rationale: >
+      El query param `bio` lo lee ProfileBioService, no el componente. El
+      componente recibe el servicio inyectado y le pasa currentBio() directo a
+      bypassSecurityTrustHtml. Ningun archivo contiene la cadena completa: el
+      source esta en el servicio y el sink en el componente.
+  safe:
+    label: safe
+    rationale: >
+      Mismo servicio y misma inyeccion, pero el componente guarda el string y
+      lo interpola con {{ bio }}. Se saca el DomSanitizer del medio: la
+      indireccion queda igual, cambia solo que nunca se marca como confiable.
+

@@ -13,9 +13,10 @@ rules:
   # Disparan sobre el corpus actual.
   insecure-innerhtml: xss-sanitizer-bypass
   insecure-document-method: xss-sanitizer-bypass
-  # No dispara sobre el corpus actual (su pattern-sources solo acepta un
-  # parametro de funcion tipado string, no ActivatedRoute), pero es *la* regla
-  # Angular del set y se mapea para cuando el corpus la alcance.
+  # Su pattern-sources solo acepta un parametro de funcion tipado string, nunca
+  # ActivatedRoute ni una propiedad de clase. Dispara en ng-xss-005 (funcion
+  # suelta) y ng-xss-006 (metodo transform de un pipe: Semgrep normaliza los
+  # metodos de clase a definicion de funcion, asi que tambien matchean).
   angular-bypasssecuritytrust: xss-sanitizer-bypass
 
 ignore: []

@@ -1,0 +1,21 @@
+id: ng-xss-007
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/snippet.component.ts, line: 16}
+    rationale: >
+      El padre lee el query param `snippet` y lo pasa por [html] al hijo. El
+      hijo bypasea su @Input() en ngOnChanges. El cruce ocurre en el template
+      del padre, asi que ningun .ts contiene el camino completo.
+  safe:
+    label: safe
+    rationale: >
+      Mismo padre, mismo @Input(), mismo binding [innerHTML] en el hijo. El hijo
+      deja de inyectar DomSanitizer y bindea el string crudo: al no ser SafeHtml,
+      Angular lo sanea antes de insertarlo.
+

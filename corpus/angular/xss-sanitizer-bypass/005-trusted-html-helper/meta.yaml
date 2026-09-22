@@ -1,0 +1,23 @@
+id: ng-xss-005
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/trusted-html.ts, line: 5}
+    rationale: >
+      toTrustedHtml() aplica bypassSecurityTrustHtml a cualquier string que le
+      pasen. El componente lee el query param `body` y se lo entrega. El helper
+      no sabe de donde viene el dato y el componente no sabe que el helper
+      bypasea: la falla solo existe al juntar los dos archivos.
+  safe:
+    label: safe
+    rationale: >
+      Helper con la misma firma y el mismo llamador, pero devuelve
+      sanitize(SecurityContext.HTML, html) en vez de marcar el valor como
+      confiable. Al bindear un string (y no un SafeHtml) con [innerHTML],
+      Angular vuelve a sanear por su cuenta.
+

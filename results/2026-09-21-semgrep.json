@@ -1,7 +1,7 @@
 {
   "tool": "semgrep",
   "tool_version": "1.177.0",
-  "run_at": "2026-09-21T23:34:17+00:00",
+  "run_at": "2026-09-22T02:22:47+00:00",
   "rules": {
     "kind": "official",
     "repo": "semgrep/semgrep-rules",
@@ -59,6 +59,68 @@
     {
       "case_id": "ng-xss-003",
       "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 5,
+          "rule_id": "angular-bypasssecuritytrust",
+          "severity": "WARNING"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "safe-html.pipe.ts",
+          "line": 9,
+          "rule_id": "angular-bypasssecuritytrust",
+          "severity": "WARNING"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
       "variant": "safe",
       "findings": []
     }
