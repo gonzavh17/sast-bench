@@ -1,0 +1,9 @@
+# Reglas de Semgrep: la Semgrep Rules License v1.0 permite usarlas localmente
+# pero prohibe redistribuirlas. Se bajan con scripts/fetch_rules.py.
+runners/rules/
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env

@@ -1,0 +1,21 @@
+# rule_id -> familia, para Semgrep. Mantenido a mano y versionado.
+#
+# Los ids son los cortos (sin el prefijo de ruta que Semgrep antepone al
+# check_id). Cualquier rule_id que aparezca en una corrida y no este ni en
+# `rules` ni en `ignore` se reporta como unmapped: cuenta como ruido, no entra
+# en TP/FP, y el reporte lo lista para que no se ignore por omision.
+meta:
+  tool: semgrep
+  rules_source: "semgrep/semgrep-rules@40b8c63f75dc7c22c8a77482d73bfb864b146f7e"
+  mapped_at: "2026-09-21"
+
+rules:
+  # Disparan sobre el corpus actual.
+  insecure-innerhtml: xss-sanitizer-bypass
+  insecure-document-method: xss-sanitizer-bypass
+  # No dispara sobre el corpus actual (su pattern-sources solo acepta un
+  # parametro de funcion tipado string, no ActivatedRoute), pero es *la* regla
+  # Angular del set y se mapea para cuando el corpus la alcance.
+  angular-bypasssecuritytrust: xss-sanitizer-bypass
+
+ignore: []

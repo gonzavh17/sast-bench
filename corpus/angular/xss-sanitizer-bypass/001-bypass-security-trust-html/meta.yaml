@@ -1,0 +1,19 @@
+id: ng-xss-001
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/profile.component.ts, line: 19}
+    rationale: >
+      bypassSecurityTrustHtml aplicado al query param `bio` sin sanitizar.
+      El SafeHtml resultante se bindea con [innerHTML], asi que Angular
+      inyecta el markup tal cual y no escapa nada.
+  safe:
+    label: safe
+    rationale: >
+      Mismo render sin DomSanitizer: el query param se guarda como string
+      y se interpola con {{ bio }}, que Angular escapa por defecto.

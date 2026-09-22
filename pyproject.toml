@@ -1,0 +1,19 @@
+[project]
+name = "sast-bench"
+version = "0.1.0"
+description = "Benchmark de escaneres de seguridad sobre vulnerabilidades de Angular"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9",
+    "pyyaml>=6.0",
+    "semgrep>=1.177",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools]
+packages = ["runners", "scoring"]

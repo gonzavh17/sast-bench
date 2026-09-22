@@ -1,0 +1,66 @@
+{
+  "tool": "semgrep",
+  "tool_version": "1.177.0",
+  "run_at": "2026-09-21T23:34:17+00:00",
+  "rules": {
+    "kind": "official",
+    "repo": "semgrep/semgrep-rules",
+    "commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+    "paths": [
+      "javascript",
+      "typescript"
+    ],
+    "fetched_at": "2026-09-21T23:30:41+00:00"
+  },
+  "variants": [
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "note.component.ts",
+          "line": 15,
+          "rule_id": "insecure-document-method",
+          "severity": "ERROR"
+        },
+        {
+          "path": "note.component.ts",
+          "line": 15,
+          "rule_id": "insecure-innerhtml",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

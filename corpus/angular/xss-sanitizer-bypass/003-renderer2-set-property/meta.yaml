@@ -1,0 +1,20 @@
+id: ng-xss-003
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/banner.component.ts, line: 18}
+    rationale: >
+      Renderer2.setProperty con la propiedad 'innerHTML' escribe markup
+      crudo sin pasar por el sanitizador. Que venga del API del framework
+      no agrega ninguna proteccion: equivale a tocar el DOM a mano.
+  safe:
+    label: safe
+    rationale: >
+      El mismo Renderer2.setProperty apuntando a 'textContent'. Unica
+      diferencia entre gemelos, y alcanza para que el valor nunca se
+      interprete como HTML.
