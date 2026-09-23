@@ -1,0 +1,274 @@
+[
+  {
+    "case_id": "ng-xss-001",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.component.ts",
+      "line": 19,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor proviene directamente del query param 'bio' de la URL (linea 18), totalmente controlable por un atacante, y se pasa a bypassSecurityTrustHtml (linea 19), que desactiva explicitamente la sanitizacion de Angular. El resultado se enlaza a [innerHTML] en la plantilla (linea 3 del HTML), por lo que cualquier markup malicioso (p. ej. <img src=x onerror=...>) se inserta en el DOM sin filtrado. No existe ninguna validacion, escape ni allowlist sobre 'bio' en el codigo mostrado. Es un XSS reflejado explotable con solo enviar un enlace a la victima.",
+    "control": "No hay control: linea 18 toma el valor crudo de queryParamMap y linea 19 lo marca como confiable sin sanitizar (deberia usarse sanitizer.sanitize(SecurityContext.HTML, bio) o interpolacion textual)",
+    "model": "claude-opus-5",
+    "input_tokens": 1182,
+    "output_tokens": 347,
+    "decided_at": "2026-09-23T02:26:20+00:00"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "note.component.ts",
+      "line": 15,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor proviene directamente del query string (`this.route.snapshot.queryParamMap.get('note')`), totalmente controlable por un atacante mediante una URL manipulada, y se asigna sin ningun tipo de sanitizacion ni escapado a `innerHTML` del div referenciado. Al usar la API nativa del DOM se evita por completo el sanitizado automatico de Angular (que solo actua en bindings del template como [innerHTML]), por lo que se puede inyectar HTML arbitrario, por ejemplo `<img src=x onerror=alert(1)>`, logrando ejecucion de script en el contexto de la aplicacion. El unico 'control' presente es el `?? ''`, que solo cubre el caso de parametro ausente y no filtra nada del contenido. XSS reflejado real.",
+    "control": "",
+    "model": "claude-opus-5",
+    "input_tokens": 1128,
+    "output_tokens": 331,
+    "decided_at": "2026-09-23T02:26:26+00:00"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "banner.component.ts",
+      "line": 18,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor proviene directamente del query param 'message' de la URL (this.route.snapshot.queryParamMap.get('message')) y se escribe sin sanitizacion ni escape en la propiedad innerHTML del div via Renderer2.setProperty. Renderer2.setProperty no aplica el sanitizador de Angular (a diferencia del binding [innerHTML] en plantilla), por lo que un atacante puede construir una URL como ?message=<img src=x onerror=alert(1)> y lograr ejecucion de script en el contexto de la aplicacion. El unico 'control' presente es el ?? '' que solo cubre el caso de parametro ausente y no filtra contenido alguno.",
+    "control": "",
+    "model": "claude-opus-5",
+    "input_tokens": 1161,
+    "output_tokens": 284,
+    "decided_at": "2026-09-23T02:26:30+00:00"
+  },
+  {
+    "case_id": "ng-xss-004",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.component.ts",
+      "line": 19,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor proviene directamente del query param 'bio' (profile-bio.service.ts linea 9: this.route.snapshot.queryParamMap.get('bio')), completamente controlable por un atacante via URL. Se pasa sin ninguna validacion, escape ni lista blanca a bypassSecurityTrustHtml (linea 19), que desactiva explicitamente el sanitizador de Angular, y el resultado se enlaza a [innerHTML] en la plantilla. No existe ningun control en el codigo mostrado; el unico 'control' es el operador ?? '' que solo cubre el caso ausente. XSS reflejado explotable con una URL del tipo ?bio=<img src=x onerror=alert(1)>.",
+    "control": "",
+    "model": "claude-opus-5",
+    "input_tokens": 1352,
+    "output_tokens": 270,
+    "decided_at": "2026-09-23T02:26:36+00:00"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 5,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor llega sin sanitizar desde la URL: en article.component.ts:20 se lee `queryParamMap.get('body')` (controlado por el atacante) y se pasa a `toTrustedHtml`, que en trusted-html.ts:5 invoca `sanitizer.bypassSecurityTrustHtml(html)`. Esa llamada desactiva explicitamente la sanitizacion de Angular, y el SafeHtml resultante se bindea a `[innerHTML]` en article.component.html:2, por lo que un payload como `<img src=x onerror=alert(1)>` en el query string se ejecuta. No existe ninguna validacion, escape ni allowlist sobre `body` en ningun punto del flujo; el unico 'control' es el `?? ''` que solo cubre el caso de parametro ausente.",
+    "control": "No hay control suficiente. El unico chequeo presente es `this.route.snapshot.queryParamMap.get('body') ?? ''` (article.component.ts:20), que solo aporta un default vacio y no valida ni escapa el contenido que llega al sink.",
+    "model": "claude-opus-5",
+    "input_tokens": 1340,
+    "output_tokens": 429,
+    "decided_at": "2026-09-23T02:26:44+00:00"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "safe-html.pipe.ts",
+      "line": 9,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor llega sin ningun saneamiento desde una fuente controlada por el atacante: en comment.component.ts linea 14 `this.body = this.route.snapshot.queryParamMap.get('body') ?? ''` toma el query param 'body' de la URL, se pasa por el pipe safeHtml en el template (`[innerHTML]=\"body | safeHtml\"`) y termina en `bypassSecurityTrustHtml(value)` (safe-html.pipe.ts:9), que desactiva explicitamente el sanitizador de Angular. No existe ninguna validacion, escape ni allow-list en todo el recorrido; el unico control presente es el `?? ''`, que solo cubre el caso nulo y no filtra contenido. Un atacante puede enviar un enlace con ?body=<img src=x onerror=...> y ejecutar JS en el contexto de la victima (XSS reflejado).",
+    "control": "No existe control suficiente. Lo unico presente es `this.route.snapshot.queryParamMap.get('body') ?? ''` (comment.component.ts:14), que solo sustituye null por cadena vacia y no sanitiza el HTML.",
+    "model": "claude-opus-5",
+    "input_tokens": 1276,
+    "output_tokens": 448,
+    "decided_at": "2026-09-23T02:26:51+00:00"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "snippet.component.ts",
+      "line": 16,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor llega desde el query param 'snippet' (feed.component.ts linea 14), se pasa sin validacion ni escape al @Input html del SnippetComponent y en la linea 16 se envuelve con bypassSecurityTrustHtml, que desactiva explicitamente la sanitizacion de Angular. Luego se enlaza a [innerHTML] en snippet.component.html linea 1. No existe ninguna validacion, allowlist ni llamada a sanitizer.sanitize() en el camino: un atacante puede inyectar HTML/JS arbitrario mediante la URL (p.ej. ?snippet=<img src=x onerror=alert(1)>). XSS reflejado real.",
+    "control": "No hay control: linea 16 'this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(this.html);' anula la sanitizacion sobre un dato de origen externo (queryParamMap.get('snippet')).",
+    "model": "claude-opus-5",
+    "input_tokens": 1389,
+    "output_tokens": 342,
+    "decided_at": "2026-09-23T02:26:57+00:00"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "changelog.component.ts",
+      "line": 15,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor de `entry` proviene directamente del query param de la URL (`this.route.snapshot.queryParamMap.get('entry')`, linea 14), totalmente controlable por un atacante, y se inserta sin sanitizar ni escapar en el DOM mediante `insertAdjacentHTML('beforeend', entry)` (linea 15). `insertAdjacentHTML` parsea HTML crudo y elude por completo la sanitizacion de Angular (no pasa por interpolacion ni por DomSanitizer). Un enlace tipo `?entry=<img src=x onerror=alert(1)>` ejecuta script en el contexto de la aplicacion (XSS reflejado). El unico control presente es `?? ''`, que solo cubre el caso de parametro ausente y no filtra ningun contenido malicioso.",
+    "control": "No existe control suficiente. El unico presente es `?? ''` en la linea 14, que solo aporta un valor por defecto ante parametro ausente y no sanitiza ni valida el contenido que llega al sink.",
+    "model": "claude-opus-5",
+    "input_tokens": 1148,
+    "output_tokens": 405,
+    "decided_at": "2026-09-23T02:27:04+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "preview.component.ts",
+      "line": 21,
+      "rule_id": "js/incomplete-url-substring-sanitization",
+      "severity": "WARNING"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El unico control es `src.startsWith('https://cdn.example.com')` sobre un valor que viene directo del query param `src` (fuente controlada por el atacante) y luego se pasa a `bypassSecurityTrustResourceUrl`, que desactiva toda sanitizacion de Angular para el `[src]` del iframe. La comparacion de prefijo no delimita el final del host: URLs como `https://cdn.example.com.attacker.com/payload` o `https://cdn.example.com@attacker.com/payload` (o `...example.commalicioso.net`) pasan la condicion y terminan cargadas en el iframe. Para ser suficiente habria que parsear la URL (`new URL(src)`) y comparar `origin` exacto, o exigir que el caracter siguiente al prefijo sea `/`. El control existe pero es parcial, asi que el hallazgo es real.",
+    "control": "",
+    "model": "claude-opus-5",
+    "input_tokens": 1276,
+    "output_tokens": 463,
+    "decided_at": "2026-09-23T02:27:12+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "preview.component.ts",
+      "line": 24,
+      "rule_id": "js/client-side-unvalidated-url-redirection",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor llega desde `queryParamMap.get('src')` (controlado por el atacante via URL) y termina en `bypassSecurityTrustResourceUrl`, que desactiva explicitamente el saneamiento de Angular antes de inyectarlo en el [src] del iframe. El unico control es un `startsWith(ALLOWED_ORIGIN)` sin delimitador de origen: un atacante puede usar `https://cdn.example.com.evil.com/x` o `https://cdn.example.com@evil.com/x`, que pasan la comparacion de prefijo pero resuelven a un host bajo su control. Tampoco se normaliza la URL ni se compara el origen parseado, asi que la validacion es parcial e insuficiente para hacer inexplotable el sink.",
+    "control": "linea 21: if (!src.startsWith(ALLOWED_ORIGIN)) { return; }  -- control presente pero insuficiente (prefijo sin delimitador, permite cdn.example.com.evil.com y cdn.example.com@evil.com)",
+    "model": "claude-opus-5",
+    "input_tokens": 1277,
+    "output_tokens": 522,
+    "decided_at": "2026-09-23T02:27:20+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "safe",
+    "finding": {
+      "path": "preview.component.ts",
+      "line": 24,
+      "rule_id": "js/client-side-unvalidated-url-redirection",
+      "severity": "ERROR"
+    },
+    "veredicto": "descartado",
+    "motivo": "El valor que llega al sink es exactamente el mismo `src` validado: es un `const` obtenido en la linea 20 y no se reasigna ni se transforma entre la validacion (linea 21) y el `bypassSecurityTrustResourceUrl` (linea 24). La comprobacion usa el parser nativo `new URL()` y compara el `origin` completo (esquema + host + puerto) contra una constante literal, con `return false` en el `catch`, por lo que URLs relativas, malformadas o con esquemas peligrosos (`javascript:`, `data:` producen origin `null`) no pasan. No hay bypass por trucos de userinfo (`https://cdn.example.com@evil.com` da origin `https://evil.com`), subdominios ni path traversal, porque no se compara prefijo sino igualdad de origin. El early return corta la ejecucion antes del sink.",
+    "control": "return new URL(raw).origin === ALLOWED_ORIGIN;  // linea 29, junto al early return de lineas 21-23",
+    "model": "claude-opus-5",
+    "input_tokens": 1376,
+    "output_tokens": 573,
+    "decided_at": "2026-09-23T02:27:30+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 6,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El flujo es explotable de punta a punta: `raw` viene de `this.route.snapshot.queryParamMap.get('notes')` (parametro de URL controlado por el atacante) y termina en `[innerHTML]=\"notes\"`. El supuesto control de la linea 7 (`sanitizer.sanitize(SecurityContext.HTML, trusted)`) es inefectivo: recibe un valor que YA fue marcado como confiable en la linea 6 con `bypassSecurityTrustHtml(html)`, y DomSanitizer.sanitize, ante un SafeValue del contexto correcto, simplemente lo desenvuelve y devuelve el string original sin filtrar nada. Ademas, la linea 8 vuelve a envolver el resultado con `bypassSecurityTrustHtml(cleaned)`, por lo que Angular tampoco aplica su sanitizacion automatica al bindear a innerHTML. Un payload como ?notes=<img src=x onerror=alert(1)> se ejecuta.",
+    "control": "Ninguno suficiente. El unico candidato, 'const cleaned = sanitizer.sanitize(SecurityContext.HTML, trusted) ?? '';' (trusted-html.ts:7), es un no-op porque opera sobre el valor ya bypasseado en la linea 6, y su resultado se re-envuelve en bypassSecurityTrustHtml en la linea 8.",
+    "model": "claude-opus-5",
+    "input_tokens": 1462,
+    "output_tokens": 663,
+    "decided_at": "2026-09-23T02:27:39+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 3,
+      "rule_id": "js/bad-tag-filter",
+      "severity": "WARNING"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor llega desde fuera del codigo: `this.route.snapshot.queryParamMap.get('digest')` (digest.component.ts:20) es un parametro de URL totalmente controlable por el atacante. Ese string pasa por toSafeHtml, donde el unico 'control' es el regex SCRIPT_TAG que elimina pares <script>...</script>, y luego se marca como confiable con `sanitizer.bypassSecurityTrustHtml(stripped)` (linea 8), desactivando por completo el sanitizador de Angular antes de llegar al sink [innerHTML] del template. El filtro por regex es insuficiente por varios motivos: (1) no cubre otros vectores de ejecucion que no usan <script>, como <img src=x onerror=alert(1)>, <svg onload=...>, <iframe src=javascript:...> o atributos on* en cualquier etiqueta; (2) es evadible incluso para scripts, por ejemplo con un <script sin cierre, con `<scr<script>ipt>` (el reemplazo no es recursivo) o con variantes tipo `<script/src=...>` sin etiqueta de cierre coincidente. El resultado es XSS reflejado explotable con una URL como ?digest=<img src=x onerror=alert(document.cookie)>.",
+    "control": "No existe control suficiente. El unico filtro es `const stripped = html.replace(SCRIPT_TAG, '');` (trusted-html.ts:7), que solo borra pares <script>...</script> y es anulado por `return sanitizer.bypassSecurityTrustHtml(stripped);` (trusted-html.ts:8).",
+    "model": "claude-opus-5",
+    "input_tokens": 1417,
+    "output_tokens": 623,
+    "decided_at": "2026-09-23T02:27:49+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 7,
+      "rule_id": "js/incomplete-multi-character-sanitization",
+      "severity": "WARNING"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor llega desde fuera del codigo: `this.route.snapshot.queryParamMap.get('digest')` (digest.component.ts:20), es decir un query param controlado por el atacante. El unico 'control' es el regex SCRIPT_TAG que elimina pares <script>...</script>, pero eso es una sanitizacion incompleta: no cubre manejadores de eventos (<img src=x onerror=alert(1)>), <svg onload>, <iframe src=javascript:>, atributos, ni scripts anidados/malformados. Peor aun, el resultado se pasa por sanitizer.bypassSecurityTrustHtml (trusted-html.ts:8), que desactiva explicitamente el sanitizador de Angular, y luego se enlaza a [innerHTML] en digest.component.html:2. El camino query param -> replace parcial -> bypassSecurityTrustHtml -> innerHTML es un XSS reflejado directamente explotable.",
+    "control": "No existe control suficiente. El unico intento es `const stripped = html.replace(SCRIPT_TAG, '');` (trusted-html.ts:7) con `const SCRIPT_TAG = /<script[\\s\\S]*?<\\/script>/gi;`, que solo filtra etiquetas script y queda anulado por `return sanitizer.bypassSecurityTrustHtml(stripped);` (trusted-html.ts:8).",
+    "model": "claude-opus-5",
+    "input_tokens": 1423,
+    "output_tokens": 566,
+    "decided_at": "2026-09-23T02:27:57+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 8,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor llega desde el query param 'digest' (route.snapshot.queryParamMap.get('digest')), es decir, entrada totalmente controlada por el atacante, y termina en bypassSecurityTrustHtml -> [innerHTML], desactivando el sanitizador de Angular. El unico control es la regex SCRIPT_TAG que elimina pares <script>...</script>, lo cual es una lista negra trivialmente evadible: <img src=x onerror=alert(1)>, <svg onload=...>, <iframe srcdoc=...>, <script src=x> sin cierre, o anidamientos como <scr<script></script>ipt> sobreviven al replace. Es XSS explotable real.",
+    "control": "",
+    "model": "claude-opus-5",
+    "input_tokens": 1411,
+    "output_tokens": 261,
+    "decided_at": "2026-09-23T02:28:02+00:00"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "summary.component.ts",
+      "line": 23,
+      "rule_id": "js/xss",
+      "severity": "ERROR"
+    },
+    "veredicto": "confirmado",
+    "motivo": "El valor sanitizado se calcula en la linea 19 pero solo se usa como chequeo de longitud (linea 20); lo que finalmente se marca como confiable y se inyecta en [innerHTML] es `raw`, tomado directamente del query param 'summary' (linea 18), completamente controlable por el atacante. bypassSecurityTrustHtml desactiva el sanitizado de Angular, por lo que un payload como ?summary=<img src=x onerror=alert(1)> se renderiza sin filtrar. El control existe pero se aplica sobre un valor distinto al que llega al sink: XSS reflejado real.",
+    "control": "ninguno suficiente; la linea 19 (`const clean = this.sanitizer.sanitize(...)`) solo alimenta el if de la linea 20 y su resultado nunca llega al sink",
+    "model": "claude-opus-5",
+    "input_tokens": 1236,
+    "output_tokens": 354,
+    "decided_at": "2026-09-23T02:28:08+00:00"
+  }
+]

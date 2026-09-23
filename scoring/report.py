@@ -9,7 +9,7 @@ from pathlib import Path
 from scoring.metrics import Score, tally
 from scoring.models import discover_cases, load_rule_map
 
-DEFAULT_RULE_MAP = Path(__file__).resolve().parent / "rule_map" / "semgrep.yaml"
+RULE_MAP_DIR = Path(__file__).resolve().parent / "rule_map"
 
 
 def _origin(rules: dict) -> str:
@@ -79,7 +79,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", type=Path, required=True)
     parser.add_argument("--results", type=Path, required=True)
-    parser.add_argument("--rule-map", type=Path, default=DEFAULT_RULE_MAP)
+    parser.add_argument(
+        "--rule-map",
+        type=Path,
+        help="por defecto, scoring/rule_map/<tool>.yaml segun lo que declare el results",
+    )
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
@@ -88,7 +92,12 @@ def main() -> None:
         parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
 
     results = json.loads(args.results.read_text(encoding="utf-8"))
-    score = tally(cases, results, load_rule_map(args.rule_map))
+    # Igual que compare.py: el results dice con que rule_map se lee. Un runner
+    # derivado (el filtro de la fase 3) reusa el del que lo alimento.
+    rule_map = args.rule_map or RULE_MAP_DIR / f"{results.get('rule_map', results['tool'])}.yaml"
+    if not rule_map.is_file():
+        parser.error(f"falta el rule_map {rule_map}")
+    score = tally(cases, results, load_rule_map(rule_map))
     markdown = render(score, results)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
