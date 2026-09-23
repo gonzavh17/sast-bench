@@ -224,8 +224,9 @@ sast-bench/
     metrics.py
     report.py
   results/
-    2026-09-20-semgrep.json
-    report.md
+    2026-09-22-semgrep.json   2026-09-22-codeql.json
+    report-semgrep.md        report-codeql.md
+    compare.md               # tabla lado a lado + solapamiento
   tests/                # valida el meta.yaml de cada caso
   pyproject.toml
   .env.example

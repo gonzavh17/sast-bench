@@ -18,6 +18,9 @@ rules:
   # Validacion insuficiente: son las que apuntan a los decoy.
   js/incomplete-url-substring-sanitization: xss-sanitizer-bypass
   js/incomplete-multi-character-sanitization: xss-sanitizer-bypass
+  # Aparecio como unmapped en la corrida del 2026-09-22 sobre ng-xss-011:
+  # marca el regex que intenta filtrar etiquetas HTML. Es la familia.
+  js/bad-tag-filter: xss-sanitizer-bypass
   js/incomplete-sanitization: xss-sanitizer-bypass
   js/incomplete-hostname-regexp: xss-sanitizer-bypass
   # La familia incluye "URLs sin validar esquema".
