@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
-const ALLOWED_ORIGIN = 'https://cdn.confiable.com';
+const ALLOWED_ORIGIN = 'https://cdn.example.com';
 
 @Component({
   selector: 'app-preview',

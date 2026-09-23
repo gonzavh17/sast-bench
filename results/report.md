@@ -2,7 +2,7 @@
 
 - herramienta: `semgrep 1.177.0`
 - reglas: semgrep/semgrep-rules@40b8c63f75dc (javascript, typescript)
-- corrida: 2026-09-22T02:37:48+00:00
+- corrida: 2026-09-23T00:52:20+00:00
 
 ## Titular
 
