@@ -1,0 +1,26 @@
+# rule_id -> familia, para CodeQL. Mantenido a mano y versionado.
+#
+# Los ids son los de SARIF (`js/xss`), que CodeQL publica tal cual. Cualquier
+# rule_id que aparezca en una corrida y no este ni en `rules` ni en `ignore` se
+# reporta como unmapped: cuenta como ruido, no entra en TP/FP, y el reporte lo
+# lista para que no se ignore por omision.
+meta:
+  tool: codeql
+  rules_source: "github/codeql-action@codeql-bundle-v2.27.1 (javascript-security-extended)"
+  mapped_at: "2026-09-22"
+
+rules:
+  # Taint de fuente remota a un sink de DOM/HTML.
+  js/xss: xss-sanitizer-bypass
+  js/xss-through-dom: xss-sanitizer-bypass
+  js/html-constructed-from-input: xss-sanitizer-bypass
+  js/unsafe-jquery-plugin: xss-sanitizer-bypass
+  # Validacion insuficiente: son las que apuntan a los decoy.
+  js/incomplete-url-substring-sanitization: xss-sanitizer-bypass
+  js/incomplete-multi-character-sanitization: xss-sanitizer-bypass
+  js/incomplete-sanitization: xss-sanitizer-bypass
+  js/incomplete-hostname-regexp: xss-sanitizer-bypass
+  # La familia incluye "URLs sin validar esquema".
+  js/client-side-unvalidated-url-redirection: xss-sanitizer-bypass
+
+ignore: []

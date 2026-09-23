@@ -12,13 +12,19 @@ from scoring.models import discover_cases, load_rule_map
 DEFAULT_RULE_MAP = Path(__file__).resolve().parent / "rule_map" / "semgrep.yaml"
 
 
+def _origin(rules: dict) -> str:
+    """De donde salieron las reglas, en una linea, segun el runner que las trajo."""
+    match rules["kind"]:
+        case "official":  # semgrep: repo de reglas + commit
+            return f"{rules['repo']}@{rules['commit'][:12]} ({', '.join(rules['paths'])})"
+        case "bundle":  # codeql: bundle + suite de queries
+            return f"{rules['bundle']} ({rules['suite']})"
+        case _:
+            return f"custom: {rules['path']}"
+
+
 def render(score: Score, results: dict) -> str:
-    rules = results["rules"]
-    origin = (
-        f"{rules['repo']}@{rules['commit'][:12]} ({', '.join(rules['paths'])})"
-        if rules["kind"] == "official"
-        else f"custom: {rules['path']}"
-    )
+    origin = _origin(results["rules"])
 
     lines = [
         f"# {results['tool']} — {len(score.pairs)} pares",

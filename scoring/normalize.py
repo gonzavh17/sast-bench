@@ -27,6 +27,53 @@ def from_semgrep(payload: dict[str, Any], variant_dir: Path) -> list[Finding]:
     return sorted(findings, key=lambda f: (f.path, f.line, f.rule_id))
 
 
+def from_codeql(payload: dict[str, Any]) -> list[Finding]:
+    """Normaliza el SARIF de `codeql database analyze` de una variante.
+
+    Las rutas del SARIF ya vienen relativas al --source-root, que es la carpeta
+    de la variante, asi que no hace falta recalcularlas.
+    """
+    findings: list[Finding] = []
+    for run in payload.get("runs", []):
+        levels = _sarif_default_levels(run)
+        for result in run.get("results", []):
+            rule_id = result.get("ruleId", "")
+            location = _sarif_location(result)
+            if location is None:
+                continue
+            path, line = location
+            findings.append(
+                Finding(
+                    path=path,
+                    line=line,
+                    rule_id=rule_id,
+                    # CodeQL solo emite `level` cuando difiere del default de la
+                    # regla, asi que el default del driver es el que manda.
+                    severity=str(result.get("level") or levels.get(rule_id, "warning")).upper(),
+                )
+            )
+    return sorted(findings, key=lambda f: (f.path, f.line, f.rule_id))
+
+
+def _sarif_default_levels(run: dict[str, Any]) -> dict[str, str]:
+    rules = run.get("tool", {}).get("driver", {}).get("rules", [])
+    return {
+        rule.get("id", ""): rule.get("defaultConfiguration", {}).get("level", "warning")
+        for rule in rules
+    }
+
+
+def _sarif_location(result: dict[str, Any]) -> tuple[str, int] | None:
+    locations = result.get("locations", [])
+    if not locations:
+        return None
+    physical = locations[0].get("physicalLocation", {})
+    uri = physical.get("artifactLocation", {}).get("uri")
+    if not uri:
+        return None
+    return Path(uri).as_posix(), max(1, int(physical.get("region", {}).get("startLine", 1)))
+
+
 def _relative(raw_path: str, variant_dir: Path) -> str:
     try:
         return Path(raw_path).resolve().relative_to(variant_dir.resolve()).as_posix()
