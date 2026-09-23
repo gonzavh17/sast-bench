@@ -27,7 +27,9 @@ CELL = {True: "si", False: "no"}
 def load(results_path: Path, cases: list[Case], rule_map_dir: Path) -> tuple[str, dict, Score]:
     results = json.loads(results_path.read_text(encoding="utf-8"))
     tool = results["tool"]
-    rule_map_path = rule_map_dir / f"{tool}.yaml"
+    # Un runner derivado (el filtro de la fase 3) reusa el rule_map del que
+    # lo alimento: filtrar no cambia los rule_id.
+    rule_map_path = rule_map_dir / f"{results.get('rule_map', tool)}.yaml"
     if not rule_map_path.is_file():
         raise SystemExit(f"falta el rule_map de {tool}: {rule_map_path}")
     return tool, results, tally(cases, results, load_rule_map(rule_map_path))
