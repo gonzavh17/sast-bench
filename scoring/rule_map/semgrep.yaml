@@ -7,7 +7,7 @@
 meta:
   tool: semgrep
   rules_source: "semgrep/semgrep-rules@40b8c63f75dc7c22c8a77482d73bfb864b146f7e"
-  mapped_at: "2026-09-21"
+  mapped_at: "2026-09-23"
 
 rules:
   # Disparan sobre el corpus actual.
@@ -18,5 +18,16 @@ rules:
   # suelta) y ng-xss-006 (metodo transform de un pipe: Semgrep normaliza los
   # metodos de clase a definicion de funcion, asi que tambien matchean).
   angular-bypasssecuritytrust: xss-sanitizer-bypass
+
+  # --- client-side-secrets ---
+  # Ninguna aplica a Angular idiomatico (son de Express, passport,
+  # jsonwebtoken, HMAC, o exigen import de jwt-decode), pero se mapean para
+  # que si alguna dispara cuente como deteccion y no como ruido.
+  express-jwt-hardcoded-secret: client-side-secrets
+  express-session-hardcoded-secret: client-side-secrets
+  hardcoded-jwt-secret: client-side-secrets
+  hardcoded-passport-secret: client-side-secrets
+  hardcoded-hmac-key: client-side-secrets
+  react-jwt-in-localstorage: client-side-secrets
 
 ignore: []

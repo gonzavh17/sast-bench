@@ -7,7 +7,7 @@
 meta:
   tool: codeql
   rules_source: "github/codeql-action@codeql-bundle-v2.27.1 (javascript-security-extended)"
-  mapped_at: "2026-09-22"
+  mapped_at: "2026-09-23"
 
 rules:
   # Taint de fuente remota a un sink de DOM/HTML.
@@ -25,5 +25,17 @@ rules:
   js/incomplete-hostname-regexp: xss-sanitizer-bypass
   # La familia incluye "URLs sin validar esquema".
   js/client-side-unvalidated-url-redirection: xss-sanitizer-bypass
+
+  # --- client-side-secrets ---
+  # Sembradas antes de la primera corrida sobre la familia, leyendo la suite
+  # javascript-security-extended. Las que no disparen quedan igual: el costo
+  # de mapear de mas es cero, el de no mapear es contar un TP como ruido.
+  js/clear-text-storage-of-sensitive-data: client-side-secrets
+  js/clear-text-logging: client-side-secrets
+  js/hardcoded-credentials: client-side-secrets
+  js/sensitive-get-query: client-side-secrets
+  js/build-artifact-leak: client-side-secrets
+  js/password-in-configuration-file: client-side-secrets
+  js/empty-password-in-configuration-file: client-side-secrets
 
 ignore: []

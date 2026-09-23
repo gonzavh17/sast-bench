@@ -1,0 +1,19 @@
+id: ng-sec-004
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-524
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/cache.interceptor.ts, line: 21}
+    rationale: >
+      El interceptor cachea toda respuesta GET sin mirar de que endpoint viene,
+      asi que /api/me y cualquier recurso autenticado quedan guardados en memoria
+      compartida por toda la aplicacion, incluso despues de cerrar sesion.
+  safe:
+    label: safe
+    rationale: >
+      Mismo interceptor y misma cache, con una lista explicita de endpoints
+      publicos comparada contra el pathname parseado. Lo autenticado nunca entra.

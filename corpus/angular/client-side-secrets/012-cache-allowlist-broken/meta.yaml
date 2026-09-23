@@ -1,0 +1,20 @@
+id: ng-sec-012
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-524
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/public-cache.interceptor.ts, line: 11}
+    rationale: >
+      Hay allowlist a la vista y con el nombre correcto, pero includes() busca el
+      texto en cualquier parte de la URL. /api/me?redirect=/public/home entra a la
+      cache, y tambien cualquier endpoint cuyo path contenga ese fragmento mas
+      adelante.
+  safe:
+    label: safe
+    rationale: >
+      Misma cache, mismo nombre de metodo, misma idea. Parsea la URL y pregunta si
+      el pathname empieza con /public/, que es lo que el chequeo queria decir.

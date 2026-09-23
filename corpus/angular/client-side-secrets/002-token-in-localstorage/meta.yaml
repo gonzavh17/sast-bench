@@ -1,0 +1,20 @@
+id: ng-sec-002
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-922
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/auth.service.ts, line: 12}
+    rationale: >
+      El access token se persiste en localStorage, que no expira, sobrevive a
+      cerrar el navegador y es legible por cualquier script que corra en el
+      origen. Un solo XSS en cualquier pagina del sitio se lleva la sesion.
+  safe:
+    label: safe
+    rationale: >
+      Mismo login, misma respuesta. El token queda en un campo privado del
+      servicio: vive en memoria, muere al recargar, y ningun script lo puede leer
+      desde otro lado.

@@ -1,0 +1,19 @@
+id: ng-sec-003
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-532
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/profile.component.ts, line: 17}
+    rationale: >
+      Se loguea el objeto de perfil entero, que incluye email, documento y
+      password. Queda en la consola del navegador de cada usuario y en cualquier
+      herramienta de monitoreo que capture la consola.
+  safe:
+    label: safe
+    rationale: >
+      Mismo log en la misma linea, con el id en vez del objeto. Un identificador
+      opaco alcanza para correlacionar y no expone nada.

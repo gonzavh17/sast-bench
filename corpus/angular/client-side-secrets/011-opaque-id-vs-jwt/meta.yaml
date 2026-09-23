@@ -1,0 +1,20 @@
+id: ng-sec-011
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-922
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/session-store.service.ts, line: 7}
+    rationale: >
+      Las dos variantes guardan algo llamado session_token en sessionStorage y se
+      ven casi identicas. Esta guarda el JWT completo: quien lo lea puede actuar
+      como el usuario hasta que expire.
+  safe:
+    label: safe
+    rationale: >
+      Mismo storage, misma clave, misma firma. Guarda solo los primeros ocho
+      caracteres, que el backend usa como referencia opaca para reanudar la UI.
+      No autentica nada: sin la cookie httpOnly no sirve para nada.

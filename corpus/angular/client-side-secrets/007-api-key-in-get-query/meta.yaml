@@ -1,0 +1,20 @@
+id: ng-sec-007
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-598
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/url-builder.ts, line: 3}
+    rationale: >
+      La clave sale de environment.ts, pasa por el servicio y termina en la query
+      string que arma un helper. Las URLs completas quedan en el historial del
+      navegador, en el header Referer y en los logs de cualquier proxy del camino.
+      El helper recibe un string llamado apiKey y no sabe de donde viene.
+  safe:
+    label: safe
+    rationale: >
+      Mismo helper con un parametro menos y misma llamada. La credencial no viaja
+      en la URL: la sesion va en una cookie httpOnly.

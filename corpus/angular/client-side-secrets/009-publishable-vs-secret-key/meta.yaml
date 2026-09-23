@@ -1,0 +1,22 @@
+id: ng-sec-009
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-798
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/environment.ts, line: 5}
+    rationale: >
+      Las dos variantes ponen una clave de Stripe en el environment y se la pasan
+      al SDK igual. La diferencia esta en el prefijo: sk_live_ es la clave de
+      servidor y da acceso total a la cuenta. Ninguna clave con ese prefijo debe
+      estar del lado del cliente.
+  safe:
+    label: safe
+    rationale: >
+      Misma forma, mismo nombre de campo, mismo uso. pk_live_ es la clave
+      publicable, disenada para vivir en el navegador: solo permite tokenizar una
+      tarjeta y no lee ni cobra nada por si sola. Una clave en el bundle no es
+      automaticamente una falla.

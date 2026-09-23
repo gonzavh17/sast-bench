@@ -1,0 +1,20 @@
+id: ng-sec-010
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-532
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/session-debug.service.ts, line: 13}
+    rationale: >
+      Parece un log de desarrollo inofensivo, pero console.debug no lo elimina
+      ningun build: el nivel lo filtra la consola del navegador en tiempo de
+      ejecucion, no el compilador. En produccion se imprime el token de acceso.
+  safe:
+    label: safe
+    rationale: >
+      Mismo console.debug, mismo mensaje, mismo servicio. Dos cambios minimos: un
+      early return con isDevMode(), que si se resuelve en build, y se loguea el
+      userId en vez de la sesion entera.

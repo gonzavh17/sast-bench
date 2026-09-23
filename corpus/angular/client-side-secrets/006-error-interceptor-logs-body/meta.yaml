@@ -1,0 +1,20 @@
+id: ng-sec-006
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-532
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/error.interceptor.ts, line: 11}
+    rationale: >
+      El interceptor loguea req.body de toda peticion que falle. El componente de
+      login no loguea nada, pero manda la contrasena en el body: si el login
+      falla, la contrasena termina en la consola. El componente y el interceptor
+      estan en archivos distintos y ninguno se ve raro por separado.
+  safe:
+    label: safe
+    rationale: >
+      Mismo interceptor, mismo catchError, mismo console.error. Se loguea la URL
+      y el status, que es lo que sirve para diagnosticar, y no el body.

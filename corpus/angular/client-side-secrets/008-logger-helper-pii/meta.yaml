@@ -1,0 +1,19 @@
+id: ng-sec-008
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-532
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/checkout.service.ts, line: 14}
+    rationale: >
+      logEvent serializa con JSON.stringify lo que le pasen, y el servicio le pasa
+      el objeto customer entero, que incluye el numero de tarjeta. El helper es
+      generico y el servicio no menciona la consola: el problema solo existe al
+      juntar los dos.
+  safe:
+    label: safe
+    rationale: >
+      Mismo helper y misma llamada, pasandole el id del cliente en vez del objeto.
