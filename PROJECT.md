@@ -220,6 +220,7 @@ sast-bench/
     llm.py
   scoring/
     normalize.py        # salida de cada herramienta -> Finding común
+    console.py          # presentación: tablas, log en vivo, export a SVG
     rule_map/           # semgrep.yaml, codeql.yaml, eslint.yaml
     metrics.py
     report.py
@@ -227,6 +228,7 @@ sast-bench/
     2026-09-22-semgrep.json   2026-09-22-codeql.json
     report-semgrep.md        report-codeql.md
     compare.md               # tabla lado a lado + solapamiento
+    compare.svg              # la misma tabla, para el README
   tests/                # valida el meta.yaml de cada caso
   pyproject.toml
   .env.example

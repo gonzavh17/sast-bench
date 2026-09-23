@@ -13,6 +13,9 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from rich.console import Console
+
+from scoring.console import log_event, make_console, progress_bar
 from scoring.models import VARIANT_LABELS, Case, discover_cases
 from scoring.normalize import from_semgrep
 from scripts.fetch_rules import (
@@ -69,13 +72,19 @@ def semgrep_version() -> str:
     return completed.stdout.strip() or "unknown"
 
 
-def scan(cases: list[Case], rules: Path) -> dict[str, Any]:
+def scan(cases: list[Case], rules: Path, console: Console) -> dict[str, Any]:
     variants: list[dict[str, Any]] = []
-    for case in cases:
-        for label in VARIANT_LABELS:
+    todo = [(case, label) for case in cases for label in VARIANT_LABELS]
+    with progress_bar(console) as bar:
+        task = bar.add_task("escaneando", total=len(todo))
+        for case, label in todo:
             variant_dir = case.variant_dir(label)
+            bar.update(task, description=f"{case.meta.id} {label}")
             findings = run_variant(variant_dir, rules)
-            print(f"  {case.meta.id} {label}: {len(findings)} hallazgos")
+            log_event(
+                console, "semgrep", f"{case.meta.id} {label:10} {len(findings)} hallazgos"
+            )
+            bar.advance(task)
             variants.append(
                 {
                     "case_id": case.meta.id,
@@ -111,12 +120,13 @@ def main() -> None:
     cases = discover_cases(args.corpus)
     if not cases:
         parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
-    print(f"{len(cases)} casos en {args.corpus}")
+    console = make_console()
+    log_event(console, "semgrep", f"{len(cases)} casos en {args.corpus}")
 
-    report = scan(cases, args.rules)
+    report = scan(cases, args.rules, console)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(f"escrito {args.out}")
+    log_event(console, "semgrep", f"escrito {args.out}")
 
 
 if __name__ == "__main__":

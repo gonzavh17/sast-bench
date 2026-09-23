@@ -28,7 +28,9 @@ from typing import Any, Literal
 import anthropic
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from rich.console import Console
 
+from scoring.console import log_event, make_console, progress_bar
 from scoring.models import Case, Finding, Strict, discover_cases
 
 DEFAULT_MODEL = "claude-opus-5"
@@ -132,20 +134,38 @@ def judge(
     return response.parsed_output, response.usage
 
 
+def _one_line(decision: Decision) -> str:
+    """El motivo en una linea. Si descarta, lo que importa es el control citado."""
+    if decision.veredicto == "descartado" and decision.control.strip():
+        return f"[yellow]descarta[/yellow] · protegido por: {decision.control.strip()}"
+    if decision.veredicto == "descartado":
+        return f"[yellow]descarta[/yellow] · {decision.motivo}"
+    return f"[green]confirma[/green] · {decision.motivo}"
+
+
 def review(
     results: dict[str, Any],
     cases: dict[str, Case],
     client: anthropic.Anthropic,
     model: str,
+    console: Console,
 ) -> list[DecisionRecord]:
     """Una consulta por hallazgo, en orden, sin lotes."""
+    pending = [
+        (entry, Finding.model_validate(raw))
+        for entry in results["variants"]
+        for raw in entry["findings"]
+    ]
     records: list[DecisionRecord] = []
-    for entry in results["variants"]:
-        case = cases[entry["case_id"]]
-        variant_dir = case.variant_dir(entry["variant"])
-        for raw in entry["findings"]:
-            finding = Finding.model_validate(raw)
-            decision, usage = judge(client, variant_dir, finding, model)
+
+    with progress_bar(console) as bar:
+        task = bar.add_task("revisando", total=len(pending))
+        for entry, finding in pending:
+            case = cases[entry["case_id"]]
+            bar.update(task, description=f"{entry['case_id']} {entry['variant']}")
+            decision, usage = judge(
+                client, case.variant_dir(entry["variant"]), finding, model
+            )
             records.append(
                 DecisionRecord(
                     case_id=entry["case_id"],
@@ -160,10 +180,15 @@ def review(
                     decided_at=dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
                 )
             )
-            print(
-                f"{entry['case_id']} {entry['variant']} {finding.rule_id}"
-                f"@{finding.path}:{finding.line} -> {decision.veredicto}: {decision.motivo}"
+            # El veredicto y el control van antes que el rule_id: si la linea se
+            # corta, lo que se pierde es lo menos importante.
+            log_event(
+                console,
+                "hibrido",
+                f"{entry['case_id']} {entry['variant']:10} {_one_line(decision)}"
+                f" [dim]({finding.rule_id}:{finding.line})[/dim]",
             )
+            bar.advance(task)
     return records
 
 
@@ -208,15 +233,24 @@ def main() -> None:
     if not cases:
         parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
 
+    console = make_console()
     results = json.loads(args.results.read_text(encoding="utf-8"))
     total = sum(len(v["findings"]) for v in results["variants"])
-    print(f"{total} hallazgos de {results['tool']} para revisar con {args.model}")
+    log_event(
+        console,
+        "hibrido",
+        f"{total} hallazgos de {results['tool']} para revisar con {args.model}",
+    )
 
     client = anthropic.Anthropic()
-    records = review(results, cases, client, args.model)
+    records = review(results, cases, client, args.model, console)
 
     confirmed = sum(r.veredicto == "confirmado" for r in records)
-    print(f"\n{confirmed} confirmados, {len(records) - confirmed} descartados")
+    log_event(
+        console,
+        "hibrido",
+        f"{confirmed} confirmados, {len(records) - confirmed} descartados",
+    )
 
     filtered = {
         "tool": f"{results['tool']}+llm",
@@ -235,8 +269,8 @@ def main() -> None:
         json.dumps([r.model_dump() for r in records], indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    print(f"escrito {args.out}")
-    print(f"escrito {args.decisions}")
+    log_event(console, "hibrido", f"escrito {args.out}")
+    log_event(console, "hibrido", f"escrito {args.decisions}")
 
 
 if __name__ == "__main__":

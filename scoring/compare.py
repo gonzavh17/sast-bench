@@ -16,6 +16,14 @@ import argparse
 import json
 from pathlib import Path
 
+from scoring.console import (
+    cases_table,
+    export_svg,
+    glossary,
+    header,
+    make_console,
+    metrics_table,
+)
 from scoring.metrics import Score, tally
 from scoring.models import Case, discover_cases, load_rule_map
 
@@ -102,6 +110,7 @@ def main() -> None:
     parser.add_argument("--results", type=Path, nargs="+", required=True)
     parser.add_argument("--rule-map-dir", type=Path, default=RULE_MAP_DIR)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--svg", type=Path, help="exporta la consola a SVG para el README")
     args = parser.parse_args()
 
     cases = discover_cases(args.corpus)
@@ -109,11 +118,26 @@ def main() -> None:
         parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
 
     runs = [load(path, cases, args.rule_map_dir) for path in args.results]
+
+    # El markdown y la consola salen del mismo Score: si difieren, es un bug de
+    # la presentacion, no de las metricas.
     markdown = render(runs, cases)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(markdown, encoding="utf-8")
-    print(markdown)
-    print(f"escrito {args.out}")
+
+    console = make_console(record=bool(args.svg))
+    header(console, corpus=str(args.corpus), runs=runs)
+    console.print()
+    glossary(console)
+    console.print()
+    console.print(cases_table(console, runs, cases))
+    console.print(metrics_table(console, runs))
+
+    if args.svg:
+        args.svg.parent.mkdir(parents=True, exist_ok=True)
+        export_svg(console, args.svg, title="sast-bench")
+        console.print(f"escrito {args.svg}", highlight=False)
+    console.print(f"escrito {args.out}", highlight=False)
 
 
 if __name__ == "__main__":
