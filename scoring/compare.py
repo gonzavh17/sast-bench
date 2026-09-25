@@ -1,13 +1,12 @@
-"""CLI: varios results + corpus -> tabla comparativa entre herramientas.
+"""CLI: several results + corpus -> side-by-side table across tools.
 
-`report.py` mira una herramienta a la vez. Este mira varias juntas, que es lo
-que hace falta para la pregunta del benchmark: no cual saca mas, sino si miden
-lo mismo. Por eso ademas del titular por herramienta saca el solapamiento: los
-pares que resuelven las dos, los que resuelve solo una, y los que no resuelve
-ninguna.
+`report.py` looks at one tool at a time. This one looks at several together,
+which is what the benchmark question needs: not which scores higher, but
+whether they measure the same thing. So besides each tool's headline it shows
+the overlap: pairs both solve, pairs only one solves, and pairs none solves.
 
-Cada results.json dice de que herramienta es (`tool`), y el rule_map se busca
-por convencion en scoring/rule_map/<tool>.yaml.
+Each results.json says which tool it is (`tool`), and the rule_map is looked
+up by convention in scoring/rule_map/<tool>.yaml.
 """
 
 from __future__ import annotations
@@ -29,17 +28,17 @@ from scoring.models import Case, discover_cases, load_rule_map
 
 RULE_MAP_DIR = Path(__file__).resolve().parent / "rule_map"
 
-CELL = {True: "si", False: "no"}
+CELL = {True: "yes", False: "no"}
 
 
 def load(results_path: Path, cases: list[Case], rule_map_dir: Path) -> tuple[str, dict, Score]:
     results = json.loads(results_path.read_text(encoding="utf-8"))
     tool = results["tool"]
-    # Un runner derivado (el filtro de la fase 3) reusa el rule_map del que
-    # lo alimento: filtrar no cambia los rule_id.
+    # A derived runner (the phase 3 filter) reuses the rule_map of its input:
+    # filtering does not change rule_ids.
     rule_map_path = rule_map_dir / f"{results.get('rule_map', tool)}.yaml"
     if not rule_map_path.is_file():
-        raise SystemExit(f"falta el rule_map de {tool}: {rule_map_path}")
+        raise SystemExit(f"missing rule_map for {tool}: {rule_map_path}")
     return tool, results, tally(cases, results, load_rule_map(rule_map_path))
 
 
@@ -48,11 +47,11 @@ def render(runs: list[tuple[str, dict, Score]], cases: list[Case]) -> str:
     difficulties = {case.meta.id: case.meta.difficulty.value for case in cases}
 
     lines = [
-        f"# Comparativa — {', '.join(tools)}",
+        f"# Comparison — {', '.join(tools)}",
         "",
-        "## Titular",
+        "## Headline",
         "",
-        "| herramienta | pair score | recall | FPR | precision | F1 | localizacion | ruido |",
+        "| tool | pair score | recall | FPR | precision | F1 | localization | noise |",
         "|---|---|---|---|---|---|---|---|",
     ]
     for tool, results, score in runs:
@@ -64,7 +63,7 @@ def render(runs: list[tuple[str, dict, Score]], cases: list[Case]) -> str:
             f"{score.f1:.2f} | {score.localization:.2f} | {score.noise:.2f} |"
         )
 
-    lines += ["", "## Por par", "", "| caso | dificultad | " + " | ".join(tools) + " |"]
+    lines += ["", "## Per pair", "", "| case | difficulty | " + " | ".join(tools) + " |"]
     lines.append("|---|---|" + "---|" * len(tools))
 
     solved_by: dict[str, set[str]] = {tool: set() for tool, _, _ in runs}
@@ -79,22 +78,22 @@ def render(runs: list[tuple[str, dict, Score]], cases: list[Case]) -> str:
             row.append(f"{pair.vulnerable.cell}/{pair.safe.cell} · {CELL[pair.solved]}")
         lines.append("| " + " | ".join(row) + " |")
 
-    lines += ["", "## Solapamiento", ""]
+    lines += ["", "## Overlap", ""]
     everyone = set.intersection(*solved_by.values()) if solved_by else set()
     union = set.union(*solved_by.values()) if solved_by else set()
     total = len(next(iter(by_case.values())))
 
-    lines.append(f"- resuelven **todas**: {_ids(everyone)}")
+    lines.append(f"- solved by **all**: {_ids(everyone)}")
     for tool in tools:
         only = solved_by[tool] - set.union(
             *[solved_by[other] for other in tools if other != tool]
         ) if len(tools) > 1 else solved_by[tool]
-        lines.append(f"- solo `{tool}`: {_ids(only)}")
-    lines.append(f"- **no resuelve ninguna**: {_ids(set(by_case[tools[0]]) - union)}")
+        lines.append(f"- only `{tool}`: {_ids(only)}")
+    lines.append(f"- **solved by none**: {_ids(set(by_case[tools[0]]) - union)}")
     lines.append("")
     lines.append(
-        f"Union = {len(union)}/{total} pares ({len(union) / total:.2f}). "
-        "Es el techo de correr todas juntas."
+        f"Union = {len(union)}/{total} pairs ({len(union) / total:.2f}). "
+        "That is the ceiling of running them all together."
     )
 
     return "\n".join(lines) + "\n"
@@ -110,17 +109,17 @@ def main() -> None:
     parser.add_argument("--results", type=Path, nargs="+", required=True)
     parser.add_argument("--rule-map-dir", type=Path, default=RULE_MAP_DIR)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--svg", type=Path, help="exporta la consola a SVG para el README")
+    parser.add_argument("--svg", type=Path, help="export the console to SVG for the README")
     args = parser.parse_args()
 
     cases = discover_cases(args.corpus)
     if not cases:
-        parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
+        parser.error(f"no meta.yaml found under {args.corpus}")
 
     runs = [load(path, cases, args.rule_map_dir) for path in args.results]
 
-    # El markdown y la consola salen del mismo Score: si difieren, es un bug de
-    # la presentacion, no de las metricas.
+    # The markdown and the console come from the same Score: if they differ,
+    # the bug is in the presentation, not in the metrics.
     markdown = render(runs, cases)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(markdown, encoding="utf-8")
@@ -136,8 +135,8 @@ def main() -> None:
     if args.svg:
         args.svg.parent.mkdir(parents=True, exist_ok=True)
         export_svg(console, args.svg, title="sast-bench")
-        console.print(f"escrito {args.svg}", highlight=False)
-    console.print(f"escrito {args.out}", highlight=False)
+        console.print(f"wrote {args.svg}", highlight=False)
+    console.print(f"wrote {args.out}", highlight=False)
 
 
 if __name__ == "__main__":

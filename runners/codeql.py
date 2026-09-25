@@ -1,13 +1,13 @@
-"""Corre CodeQL sobre el corpus, una base de datos por variante.
+"""Run CodeQL over the corpus, one database per variant.
 
-Misma logica que el runner de Semgrep: una corrida por variante, para que
-ningun gemelo contamine al otro y no haya que atribuir hallazgos por prefijo
-de ruta. La diferencia es que CodeQL necesita construir una base por cada una,
-lo que lo hace bastante mas lento.
+Same logic as the Semgrep runner: one scan per variant, so neither twin
+contaminates the other and findings need no attribution by path prefix. The
+difference is that CodeQL has to build a database for each one, which makes it
+much slower.
 
-Las bases se guardan en .cache/codeql-db/, con el hash del contenido de la
-variante y la version de CodeQL como clave. Si nada de eso cambio, se reusa la
-base y solo corre el analisis. `--no-cache` construye todo de nuevo.
+Databases are cached in .cache/codeql-db/, keyed by a hash of the variant's
+content and the CodeQL version. If none of that changed, the database is
+reused and only the analysis runs. `--no-cache` rebuilds everything.
 """
 
 from __future__ import annotations
@@ -41,10 +41,10 @@ CACHE_DIR = REPO_ROOT / ".cache" / "codeql-db"
 
 
 def variant_fingerprint(variant_dir: Path, version: str) -> str:
-    """Clave de la base en cache: lenguaje, version de CodeQL y cada archivo.
+    """Cache key for a database: language, CodeQL version and every file.
 
-    Entran la ruta relativa y el contenido de cada archivo, no la ruta absoluta
-    de la variante: mover el repo no invalida la cache, editar un archivo si.
+    It hashes each file's relative path and content, not the variant's absolute
+    path: moving the repo does not invalidate the cache, editing a file does.
     """
     digest = hashlib.sha256(f"{LANGUAGE}\0{version}\0".encode())
     for path in sorted(p for p in variant_dir.rglob("*") if p.is_file()):
@@ -65,19 +65,19 @@ def _create_database(database: Path, variant_dir: Path, binary: Path) -> None:
             "--overwrite",
             "--quiet",
         ],
-        f"crear la base de {variant_dir}",
+        f"create the database for {variant_dir}",
     )
 
 
 def cached_database(
     variant_dir: Path, binary: Path, cache_dir: Path, version: str
 ) -> tuple[Path, bool]:
-    """La base de la variante, construida o sacada de la cache. El bool dice si hubo hit."""
+    """The variant's database, built or taken from the cache. The bool says whether it was a hit."""
     database = cache_dir / variant_fingerprint(variant_dir, version)
     if (database / "codeql-database.yml").is_file():
         return database, True
-    # Se construye al costado y se renombra al final: una corrida cortada a la
-    # mitad no deja una base incompleta con cara de valida.
+    # Built to the side and renamed at the end: a run cut halfway does not
+    # leave an incomplete database that looks valid.
     staging = cache_dir / f"{database.name}.tmp"
     shutil.rmtree(staging, ignore_errors=True)
     shutil.rmtree(database, ignore_errors=True)
@@ -95,7 +95,7 @@ def run_variant(
     cache_dir: Path | None = None,
     version: str = "",
 ) -> tuple[list[dict[str, Any]], bool]:
-    """Analiza la variante y devuelve (Findings, si la base salio de la cache)."""
+    """Analyze the variant and return (Findings, whether the database came from the cache)."""
     with tempfile.TemporaryDirectory(prefix="codeql-") as tmp:
         sarif = Path(tmp) / "results.sarif"
         if cache_dir is None:
@@ -116,7 +116,7 @@ def run_variant(
                 "--threads=0",
                 "--quiet",
             ],
-            f"analizar {variant_dir}",
+            f"analyze {variant_dir}",
         )
 
         payload = json.loads(sarif.read_text(encoding="utf-8"))
@@ -126,11 +126,11 @@ def run_variant(
 def _run(command: list[str], what: str) -> None:
     completed = subprocess.run(command, capture_output=True, text=True, check=False)
     if completed.returncode != 0:
-        raise RuntimeError(f"codeql fallo al {what}:\n{completed.stderr.strip()}")
+        raise RuntimeError(f"codeql failed to {what}:\n{completed.stderr.strip()}")
 
 
 def bundle_provenance(bundle: Path, suite: str) -> dict[str, Any]:
-    """De donde salio el bundle, para que el resultado diga contra que se midio."""
+    """Where the bundle came from, so the result says what it was measured against."""
     if bundle.resolve() == DEFAULT_DEST.resolve():
         recorded = json.loads((bundle / PROVENANCE).read_text(encoding="utf-8"))
         return {
@@ -159,10 +159,10 @@ def scan(
     cache_dir: Path | None = None,
     stats: dict[str, int] | None = None,
 ) -> dict[str, Any]:
-    """Corre CodeQL sobre los casos. `stats`, si se pasa, junta hits y misses de cache.
+    """Run CodeQL over the cases. `stats`, if given, collects cache hits and misses.
 
-    Las estadisticas van por fuera del resultado a proposito: el JSON de
-    resultados no cambia de formato.
+    The stats live outside the result on purpose: the results JSON keeps its
+    format.
     """
     binary = bundle / "codeql"
     version = codeql_version(binary)
@@ -172,7 +172,7 @@ def scan(
     variants: list[dict[str, Any]] = []
     todo = [(case, label) for case in cases for label in VARIANT_LABELS]
     with progress_bar(console) as bar:
-        task = bar.add_task("construyendo bases", total=len(todo))
+        task = bar.add_task("building databases", total=len(todo))
         for case, label in todo:
             variant_dir = case.variant_dir(label)
             bar.update(task, description=f"{case.meta.id} {label}")
@@ -181,9 +181,9 @@ def scan(
             )
             if stats is not None:
                 stats["hits" if hit else "misses"] += 1
-            cached = " [dim](base en cache)[/dim]" if hit else ""
+            cached = " [dim](cached database)[/dim]" if hit else ""
             log_event(
-                console, "codeql", f"{case.meta.id} {label:10} {len(findings)} hallazgos{cached}"
+                console, "codeql", f"{case.meta.id} {label:10} {len(findings)} findings{cached}"
             )
             bar.advance(task)
             variants.append(
@@ -202,7 +202,7 @@ def scan(
         "variants": variants,
     }
     if tool != "codeql":
-        # Misma herramienta con otra suite: los rule_id siguen siendo de CodeQL.
+        # Same tool with another suite: the rule_ids are still CodeQL's.
         report["rule_map"] = "codeql"
     return report
 
@@ -214,28 +214,28 @@ def main() -> None:
         "--bundle",
         type=Path,
         default=DEFAULT_DEST,
-        help="carpeta del bundle; apuntala a otra para correr otra version",
+        help="bundle directory; point it elsewhere to run another version",
     )
-    parser.add_argument("--suite", default=SUITE, help="suite de queries a correr")
+    parser.add_argument("--suite", default=SUITE, help="query suite to run")
     parser.add_argument(
         "--tool",
         default="codeql",
-        help="nombre de la fila en los reportes; p. ej. codeql+ext con la suite extendida",
+        help="row name in the reports, e.g. codeql+ext with the extended suite",
     )
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument(
-        "--no-cache", action="store_true", help="construye todas las bases aunque esten en cache"
+        "--no-cache", action="store_true", help="build every database even if it is cached"
     )
     args = parser.parse_args()
 
     if not (args.bundle / "codeql").is_file():
-        parser.error(f"falta el bundle en {args.bundle}; corre primero scripts/fetch_codeql.py")
+        parser.error(f"missing bundle at {args.bundle}; run scripts/fetch_codeql.py first")
 
     cases = discover_cases(args.corpus)
     if not cases:
-        parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
+        parser.error(f"no meta.yaml found under {args.corpus}")
     console = make_console()
-    log_event(console, "codeql", f"{len(cases)} casos en {args.corpus}")
+    log_event(console, "codeql", f"{len(cases)} cases in {args.corpus}")
 
     report = scan(
         cases,
@@ -247,7 +247,7 @@ def main() -> None:
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    log_event(console, "codeql", f"escrito {args.out}")
+    log_event(console, "codeql", f"wrote {args.out}")
 
 
 if __name__ == "__main__":

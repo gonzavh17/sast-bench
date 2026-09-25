@@ -1,7 +1,7 @@
-"""La capa de presentacion. No mide nada: comprueba que muestre lo que se calculo.
+"""The presentation layer. It measures nothing: it checks that it shows what was computed.
 
-Lo que importa aca es que no se rompa en terminales ajenas: sin color, sin
-soporte de unicode, y a 80 columnas.
+What matters here is that it does not break on other people's terminals: no
+color, no unicode support, and 80 columns.
 """
 
 from __future__ import annotations
@@ -92,56 +92,56 @@ def cases():
     return [case("ng-xss-001"), case("ng-xss-002", "indirect"), case("ng-xss-003", "decoy")]
 
 
-# --- los tres estados ---------------------------------------------------
+# --- the three states --------------------------------------------------
 
 
-def test_un_par_resuelto_es_solved():
+def test_a_solved_pair_is_solved():
     assert outcome_of(pair("c", "TP", "TN")) == "solved"
 
 
-def test_una_falla_que_se_escapa_es_missed():
+def test_a_missed_flaw_is_missed():
     assert outcome_of(pair("c", "FN", "TN")) == "missed"
 
 
-def test_marcar_el_gemelo_sano_es_falsa_alarma():
+def test_flagging_the_safe_twin_is_a_false_alarm():
     assert outcome_of(pair("c", "TP", "FP")) == "false_alarm"
 
 
-def test_si_se_escapa_la_falla_eso_gana_sobre_la_falsa_alarma():
-    """Las dos cosas a la vez: se reporta la peor para la deteccion."""
+def test_a_missed_flaw_wins_over_a_false_alarm():
+    """Both at once: the one that is worse for detection is reported."""
     assert outcome_of(pair("c", "FN", "FP")) == "missed"
 
 
-# --- terminales ajenas --------------------------------------------------
+# --- other people's terminals ------------------------------------------
 
 
-def test_no_color_apaga_el_color(monkeypatch):
+def test_no_color_turns_color_off(monkeypatch):
     monkeypatch.setenv("NO_COLOR", "1")
     assert make_console().no_color is True
 
 
-def test_sin_no_color_el_color_queda_como_lo_decida_rich(monkeypatch):
+def test_without_no_color_rich_decides(monkeypatch):
     monkeypatch.delenv("NO_COLOR", raising=False)
     assert make_console().no_color is False
 
 
-def test_fallback_ascii_si_la_terminal_no_banca_los_simbolos():
+def test_ascii_fallback_when_the_terminal_cannot_render_symbols():
     ascii_only = Console(file=io.TextIOWrapper(io.BytesIO(), encoding="ascii"))
     assert symbols_for(ascii_only) == ASCII
 
 
-def test_utf8_usa_los_simbolos_lindos():
+def test_utf8_uses_the_nice_symbols():
     utf8 = Console(file=io.TextIOWrapper(io.BytesIO(), encoding="utf-8"))
     assert symbols_for(utf8) == UNICODE
 
 
-def test_se_puede_forzar_ascii_por_entorno(monkeypatch):
+def test_ascii_can_be_forced_from_the_environment(monkeypatch):
     monkeypatch.setenv("SAST_BENCH_ASCII", "1")
     utf8 = Console(file=io.TextIOWrapper(io.BytesIO(), encoding="utf-8"))
     assert symbols_for(utf8) == ASCII
 
 
-# --- 80 columnas --------------------------------------------------------
+# --- 80 columns ---------------------------------------------------------
 
 
 def render_at(width: int, runs, cases) -> list[str]:
@@ -154,87 +154,87 @@ def render_at(width: int, runs, cases) -> list[str]:
     return capture.get().splitlines()
 
 
-def test_nada_se_pasa_de_80_columnas(runs, cases):
+def test_nothing_goes_past_80_columns(runs, cases):
     for line in render_at(80, runs, cases):
-        assert len(line) <= 80, f"{len(line)} columnas: {line!r}"
+        assert len(line) <= 80, f"{len(line)} columns: {line!r}"
 
 
-def test_las_tablas_siguen_completas_a_80_columnas(runs, cases):
-    salida = "\n".join(render_at(80, runs, cases))
-    for expected in ("caso", "dificultad", "semgrep", "codeql", "pares", "encuentra", "ruido"):
-        assert expected in salida
+def test_tables_stay_complete_at_80_columns(runs, cases):
+    output = "\n".join(render_at(80, runs, cases))
+    for expected in ("case", "difficulty", "semgrep", "codeql", "pairs", "finds", "false alarms"):
+        assert expected in output
     for case_id in ("ng-xss-001", "ng-xss-002", "ng-xss-003"):
-        assert case_id in salida
+        assert case_id in output
 
 
-def test_el_encabezado_es_una_sola_linea(runs):
+def test_the_header_is_a_single_line(runs):
     console = make_console(width=200)
     with console.capture() as capture:
         header(console, corpus="corpus/angular", runs=runs)
     assert len(capture.get().strip().splitlines()) == 1
 
 
-def test_el_glosario_son_tres_lineas():
+def test_the_glossary_is_three_lines():
     console = make_console(width=80)
     with console.capture() as capture:
         glossary(console)
     assert len(capture.get().strip().splitlines()) == 3
 
 
-# --- numeros ------------------------------------------------------------
+# --- numbers ------------------------------------------------------------
 
 
-def test_la_tabla_de_metricas_usa_porcentajes_y_nombres_en_castellano(runs):
+def test_the_metrics_table_uses_percentages_and_plain_names(runs):
     console = make_console(width=80)
     with console.capture() as capture:
         console.print(metrics_table(console, runs))
-    salida = capture.get()
-    # Solo 001 esta resuelto: 002 se le escapo y 003 marco al gemelo sano.
-    assert "1/3" in salida  # pares resueltos sobre total
-    assert "67%" in salida  # encuentra: 2 TP de 3 vulnerables
-    assert "33%" in salida  # ruido: 1 FP de 3 sanas
+    output = capture.get()
+    # Only 001 is solved: 002 was missed and 003 flagged the safe twin.
+    assert "1/3" in output  # solved pairs over total
+    assert "67%" in output  # finds: 2 TP out of 3 vulnerable
+    assert "33%" in output  # false alarms: 1 FP out of 3 safe
 
 
 def test_export_svg(tmp_path: Path, runs, cases):
     console = make_console(record=True, width=80)
     console.print(cases_table(console, runs, cases))
-    destino = tmp_path / "tabla.svg"
-    export_svg(console, destino, title="sast-bench")
-    contenido = destino.read_text(encoding="utf-8")
-    assert contenido.startswith("<svg") or "<svg" in contenido
-    assert "ng-xss-001" in contenido
+    target = tmp_path / "table.svg"
+    export_svg(console, target, title="sast-bench")
+    content = target.read_text(encoding="utf-8")
+    assert content.startswith("<svg") or "<svg" in content
+    assert "ng-xss-001" in content
 
 
-def test_el_encabezado_nombra_cada_engine_con_su_version(runs):
+def test_the_header_names_each_engine_with_its_version(runs):
     console = make_console(width=200)
     with console.capture() as capture:
         header(console, corpus="corpus/angular", runs=runs)
-    salida = capture.get()
-    assert "semgrep 1.177.0" in salida
-    assert "codeql 2.27.1" in salida
-    assert "12 pares" not in salida  # el fixture tiene 3
+    output = capture.get()
+    assert "semgrep 1.177.0" in output
+    assert "codeql 2.27.1" in output
+    assert "3 pairs" in output  # the fixture has 3
 
 
-def test_el_runner_derivado_no_duplica_el_nombre_en_el_encabezado():
-    """`codeql+llm` ya trae nombre y modelo en su tool_version."""
+def test_a_derived_runner_does_not_repeat_its_name_in_the_header():
+    """`codeql+llm` already carries name and model in its tool_version."""
     assert engine_label("codeql+llm", "codeql 2.27.1 + claude-opus-5") == (
         "codeql 2.27.1 + claude-opus-5"
     )
     assert engine_label("semgrep", "1.177.0") == "semgrep 1.177.0"
 
 
-def test_un_evento_largo_sigue_siendo_una_sola_linea():
-    """El motivo completo queda en el JSON de decisiones; el log es de un vistazo."""
+def test_a_long_event_stays_on_one_line():
+    """The full reason lives in the decisions JSON; the log is for a quick glance."""
     console = make_console(width=80)
     with console.capture() as capture:
-        log_event(console, "hibrido", "ng-xss-009 safe " + "motivo muy largo " * 20)
-    lineas = capture.get().rstrip("\n").splitlines()
-    assert len(lineas) == 1
-    assert len(lineas[0]) <= 80
+        log_event(console, "hybrid", "ng-xss-009 safe " + "a very long reason " * 20)
+    lines = capture.get().rstrip("\n").splitlines()
+    assert len(lines) == 1
+    assert len(lines[0]) <= 80
 
 
-def test_el_engine_va_entre_corchetes_literales():
+def test_the_engine_goes_in_literal_brackets():
     console = make_console(width=200)
     with console.capture() as capture:
-        log_event(console, "hibrido", "algo paso")
-    assert "[hibrido]" in capture.get()
+        log_event(console, "hybrid", "something happened")
+    assert "[hybrid]" in capture.get()

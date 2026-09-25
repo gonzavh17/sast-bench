@@ -1,4 +1,4 @@
-"""Modelos compartidos por el corpus, los runners y el scoring."""
+"""Models shared by the corpus, the runners and the scoring."""
 
 from __future__ import annotations
 
@@ -30,13 +30,13 @@ class SourceKind(str, enum.Enum):
 
 
 class Strict(BaseModel):
-    """Base que rechaza campos desconocidos: un typo en meta.yaml rompe el test."""
+    """Base that rejects unknown fields: a typo in meta.yaml fails the test."""
 
     model_config = ConfigDict(extra="forbid")
 
 
 class Finding(Strict):
-    """Salida normalizada de cualquier herramienta (PROJECT.md: 'Finding comun')."""
+    """Normalized output of any tool (PROJECT.md: 'common Finding')."""
 
     path: str
     line: int = Field(ge=1)
@@ -66,7 +66,7 @@ class CaseMeta(Strict):
 
 
 class Case(Strict):
-    """Un meta.yaml ya leido, junto con la carpeta de la que salio."""
+    """A parsed meta.yaml, together with the directory it came from."""
 
     meta: CaseMeta
     directory: Path
@@ -76,13 +76,13 @@ class Case(Strict):
 
 
 def load_case(directory: Path) -> Case:
-    """Lee y valida el meta.yaml de una carpeta de caso."""
+    """Read and validate the meta.yaml of a case directory."""
     raw = yaml.safe_load((directory / META_FILENAME).read_text(encoding="utf-8"))
     return Case(meta=CaseMeta.model_validate(raw), directory=directory)
 
 
 def discover_cases(corpus: Path) -> list[Case]:
-    """Todos los casos bajo el corpus, ordenados por id para salida estable."""
+    """Every case under the corpus, sorted by id for stable output."""
     dirs = sorted(p.parent for p in corpus.rglob(META_FILENAME))
     return sorted((load_case(d) for d in dirs), key=lambda c: c.meta.id)
 
@@ -94,13 +94,13 @@ class RuleMapMeta(Strict):
 
 
 class RuleMap(Strict):
-    """Tabla rule_id -> familia, mantenida a mano y versionada.
+    """rule_id -> family table, maintained by hand and versioned.
 
-    Tres estados posibles para un rule_id:
-      - en `rules`  -> cuenta para la familia mapeada
-      - en `ignore` -> se vio, se decidio que no es security, no cuenta
-      - en ninguna  -> `unmapped`: cuenta como ruido y el reporte lo lista,
-                       para que no se ignore por omision.
+    A rule_id is in one of three states:
+      - in `rules`  -> counts for the mapped family
+      - in `ignore` -> seen, judged not security-relevant, does not count
+      - in neither  -> `unmapped`: counts as noise and the report lists it,
+                       so it is never ignored by omission.
     """
 
     meta: RuleMapMeta

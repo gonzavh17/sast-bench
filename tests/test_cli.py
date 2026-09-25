@@ -1,7 +1,7 @@
-"""La CLI y lo que tiene debajo: cache de CodeQL, corridas, diff, estimacion.
+"""The CLI and what sits under it: CodeQL cache, runs, diff, estimate.
 
-Nada de esto corre CodeQL, Semgrep ni el modelo. La cache se prueba con un
-binario falso que solo crea la carpeta de la base.
+None of this runs CodeQL, Semgrep or the model. The cache is tested with a fake
+binary that only creates the database directory.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ CORPUS = REPO / "corpus"
 SECRETS_002 = "corpus/angular/client-side-secrets/002-token-in-localstorage"
 
 
-# ---------------------------------------------------------------- cache de CodeQL
+# ---------------------------------------------------------------- CodeQL cache
 
 
 def _variant(root: Path, content: str) -> Path:
@@ -37,10 +37,10 @@ def _variant(root: Path, content: str) -> Path:
     return variant
 
 
-def test_fingerprint_depende_del_contenido_y_no_de_la_ruta(tmp_path):
-    one = _variant(tmp_path / "uno", "const x = 1;\n")
-    two = _variant(tmp_path / "dos", "const x = 1;\n")
-    other = _variant(tmp_path / "tres", "const x = 2;\n")
+def test_fingerprint_depends_on_content_not_on_path(tmp_path):
+    one = _variant(tmp_path / "one", "const x = 1;\n")
+    two = _variant(tmp_path / "two", "const x = 1;\n")
+    other = _variant(tmp_path / "three", "const x = 2;\n")
     assert variant_fingerprint(one, "2.27.1") == variant_fingerprint(two, "2.27.1")
     assert variant_fingerprint(one, "2.27.1") != variant_fingerprint(other, "2.27.1")
     assert variant_fingerprint(one, "2.27.1") != variant_fingerprint(one, "2.28.0")
@@ -48,7 +48,7 @@ def test_fingerprint_depende_del_contenido_y_no_de_la_ruta(tmp_path):
 
 @pytest.fixture
 def fake_codeql(tmp_path) -> Path:
-    """Un `codeql` que anota cada llamada y crea la base como la real."""
+    """A `codeql` that logs each call and creates the database like the real one."""
     calls = tmp_path / "calls.log"
     binary = tmp_path / "codeql"
     binary.write_text(
@@ -61,8 +61,8 @@ def fake_codeql(tmp_path) -> Path:
     return binary
 
 
-def test_la_segunda_vez_la_base_sale_de_la_cache(tmp_path, fake_codeql):
-    variant = _variant(tmp_path / "caso", "const x = 1;\n")
+def test_the_second_time_the_database_comes_from_the_cache(tmp_path, fake_codeql):
+    variant = _variant(tmp_path / "case", "const x = 1;\n")
     cache = tmp_path / "cache"
 
     first, hit_first = cached_database(variant, fake_codeql, cache, "2.27.1")
@@ -73,8 +73,8 @@ def test_la_segunda_vez_la_base_sale_de_la_cache(tmp_path, fake_codeql):
     assert len((tmp_path / "calls.log").read_text().splitlines()) == 1
 
 
-def test_editar_la_variante_invalida_la_cache(tmp_path, fake_codeql):
-    variant = _variant(tmp_path / "caso", "const x = 1;\n")
+def test_editing_the_variant_invalidates_the_cache(tmp_path, fake_codeql):
+    variant = _variant(tmp_path / "case", "const x = 1;\n")
     cache = tmp_path / "cache"
     cached_database(variant, fake_codeql, cache, "2.27.1")
     (variant / "a.ts").write_text("const x = 2;\n", encoding="utf-8")
@@ -82,15 +82,15 @@ def test_editar_la_variante_invalida_la_cache(tmp_path, fake_codeql):
     assert hit is False
 
 
-def test_una_base_a_medio_construir_no_cuenta_como_hit(tmp_path, fake_codeql):
-    variant = _variant(tmp_path / "caso", "const x = 1;\n")
+def test_a_half_built_database_is_not_a_hit(tmp_path, fake_codeql):
+    variant = _variant(tmp_path / "case", "const x = 1;\n")
     cache = tmp_path / "cache"
-    (cache / variant_fingerprint(variant, "2.27.1")).mkdir(parents=True)  # sin codeql-database.yml
+    (cache / variant_fingerprint(variant, "2.27.1")).mkdir(parents=True)  # no codeql-database.yml
     _, hit = cached_database(variant, fake_codeql, cache, "2.27.1")
     assert hit is False
 
 
-# ---------------------------------------------------------------- corridas
+# ---------------------------------------------------------------- runs
 
 
 def _results(tool: str, run_at: str, findings: list[dict] | None = None) -> dict:
@@ -135,7 +135,7 @@ def results_dir(tmp_path) -> Path:
     return tmp_path
 
 
-def test_list_runs_junta_legacy_y_nuevas_la_mas_nueva_primero(results_dir):
+def test_list_runs_merges_legacy_and_new_newest_first(results_dir):
     runs = list_runs(results_dir)
     assert [r.run_id for r in runs] == ["20260925-120000", "2026-09-22-codeql"]
     assert [r.legacy for r in runs] == [False, True]
@@ -143,15 +143,15 @@ def test_list_runs_junta_legacy_y_nuevas_la_mas_nueva_primero(results_dir):
     assert runs[1].corpus_label == "angular/client-side-secrets"
 
 
-def test_resolve_acepta_id_prefijo_y_latest(results_dir):
+def test_resolve_accepts_id_prefix_and_latest(results_dir):
     runs = list_runs(results_dir)
     assert resolve("latest", runs).run_id == "20260925-120000"
     assert resolve("2026-09-22", runs).run_id == "2026-09-22-codeql"
     assert resolve("20260925-120000", runs).run_id == "20260925-120000"
-    with pytest.raises(LookupError, match="ambiguo"):
+    with pytest.raises(LookupError, match="ambiguous"):
         resolve("2026", runs)
     with pytest.raises(LookupError):
-        resolve("nada", runs)
+        resolve("nothing", runs)
 
 
 def test_split_selector():
@@ -159,7 +159,7 @@ def test_split_selector():
     assert split_selector("latest") == ("latest", None)
 
 
-def test_el_score_de_una_corrida_usa_el_rule_map_declarado(results_dir):
+def test_a_run_score_uses_the_declared_rule_map(results_dir):
     run = resolve("latest", list_runs(results_dir))
     score = run.engine("codeql+ext").score()
     assert [p.solved for p in score.pairs] == [True]
@@ -180,7 +180,7 @@ def _score(*pairs: PairOutcome) -> Score:
     return Score(list(pairs), 0, 0, 0, 0, unmapped=None)
 
 
-def test_diff_separa_arreglados_rotos_y_corridos():
+def test_diff_separates_fixed_broken_and_shifted():
     before = _score(_pair("a", "FN", "TN"), _pair("b", "TP", "TN"), _pair("c", "FN", "TN"), _pair("d", "TP", "TN"), _pair("x", "FN", "TN"))
     after = _score(_pair("a", "TP", "TN"), _pair("b", "FN", "TN"), _pair("c", "TP", "FP"), _pair("d", "TP", "TN"), _pair("y", "FN", "TN"))
     diff = diff_scores(before, after)
@@ -191,10 +191,10 @@ def test_diff_separa_arreglados_rotos_y_corridos():
     assert (diff.only_before, diff.only_after) == (["x"], ["y"])
 
 
-# ---------------------------------------------------------------- estimacion
+# ---------------------------------------------------------------- estimate
 
 
-def test_estimate_promedia_solo_el_mismo_modelo():
+def test_estimate_averages_only_the_same_model():
     history = [
         {"model": "claude-opus-5", "input_tokens": 1000, "output_tokens": 300},
         {"model": "claude-opus-5", "input_tokens": 2000, "output_tokens": 500},
@@ -205,23 +205,23 @@ def test_estimate_promedia_solo_el_mismo_modelo():
     assert guess.cost_usd == pytest.approx((15000 * 5 + 4000 * 25) / 1_000_000)
 
 
-def test_estimate_sin_historia_usa_la_referencia_y_modelo_desconocido_no_inventa_precio():
-    guess = estimate(3, "otro-modelo", [])
+def test_estimate_without_history_uses_the_reference_and_does_not_invent_a_price():
+    guess = estimate(3, "another-model", [])
     assert (guess.input_per_call, guess.output_per_call) == FALLBACK_TOKENS
     assert guess.sample == 0
     assert guess.cost_usd is None
 
 
-def test_count_findings_filtra_por_caso():
+def test_count_findings_filters_by_case():
     results = _results("codeql", "", [{"path": "a", "line": 1, "rule_id": "r", "severity": "x"}])
     assert count_findings(results) == 1
-    assert count_findings(results, {"otro"}) == 0
+    assert count_findings(results, {"other"}) == 0
 
 
 # ---------------------------------------------------------------- corpus
 
 
-def test_distribucion_del_corpus_completo():
+def test_distribution_of_the_full_corpus():
     cases, problems = validate(CORPUS)
     assert not problems
     counts = distribution(cases)
@@ -229,37 +229,37 @@ def test_distribucion_del_corpus_completo():
     assert len(counts) == 9
 
 
-def test_validate_junta_problemas_sin_cortar(tmp_path):
+def test_validate_collects_problems_without_stopping(tmp_path):
     source = CORPUS / "angular" / "client-side-secrets" / "002-token-in-localstorage"
     broken = tmp_path / "002"
     shutil.copytree(source, broken)
     meta = broken / "meta.yaml"
     meta.write_text(meta.read_text().replace("line: 12", "line: 999"), encoding="utf-8")
-    shutil.copytree(source, tmp_path / "002-bis")  # mismo id
+    shutil.copytree(source, tmp_path / "002-bis")  # same id
     (tmp_path / "003").mkdir()
     (tmp_path / "003" / "meta.yaml").write_text("id: x\nfamily: nope\n", encoding="utf-8")
 
     cases, problems = validate(tmp_path)
     messages = " | ".join(p.message for p in problems)
     assert len(cases) == 2
-    assert "fuera de" in messages
-    assert "repetido" in messages
+    assert "out of" in messages
+    assert "duplicated" in messages
     assert any(p.where.endswith("003") for p in problems)
 
 
 # ---------------------------------------------------------------- parser
 
 
-def test_family_acepta_alias_y_id():
+def test_family_accepts_alias_and_id():
     assert cli.family_arg("secrets") is Family.CLIENT_SIDE_SECRETS
     assert cli.family_arg("broken-authorization") is Family.BROKEN_AUTHORIZATION
 
 
-def test_run_exige_engine():
+def test_run_requires_engine():
     with pytest.raises(SystemExit):
         cli.build_parser().parse_args(["run"])
 
 
-def test_corpus_stats_de_punta_a_punta(capsys):
+def test_corpus_stats_end_to_end(capsys):
     assert cli.main(["corpus", "stats"]) == 0
-    assert "36 pares" in capsys.readouterr().out
+    assert "36 pairs" in capsys.readouterr().out

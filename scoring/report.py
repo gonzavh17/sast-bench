@@ -13,11 +13,11 @@ RULE_MAP_DIR = Path(__file__).resolve().parent / "rule_map"
 
 
 def _origin(rules: dict) -> str:
-    """De donde salieron las reglas, en una linea, segun el runner que las trajo."""
+    """Where the rules came from, in one line, depending on the runner that fetched them."""
     match rules["kind"]:
-        case "official":  # semgrep: repo de reglas + commit
+        case "official":  # semgrep: rules repo + commit
             return f"{rules['repo']}@{rules['commit'][:12]} ({', '.join(rules['paths'])})"
-        case "bundle":  # codeql: bundle + suite de queries
+        case "bundle":  # codeql: bundle + query suite
             return f"{rules['bundle']} ({rules['suite']})"
         case _:
             return f"custom: {rules['path']}"
@@ -27,31 +27,31 @@ def render(score: Score, results: dict) -> str:
     origin = _origin(results["rules"])
 
     lines = [
-        f"# {results['tool']} — {len(score.pairs)} pares",
+        f"# {results['tool']} — {len(score.pairs)} pairs",
         "",
-        f"- herramienta: `{results['tool']} {results['tool_version']}`",
-        f"- reglas: {origin}",
-        f"- corrida: {results['run_at']}",
+        f"- tool: `{results['tool']} {results['tool_version']}`",
+        f"- rules: {origin}",
+        f"- run: {results['run_at']}",
         "",
-        "## Titular",
+        "## Headline",
         "",
         f"**pair score = {score.pair_score:.2f}** "
-        f"({sum(p.solved for p in score.pairs)}/{len(score.pairs)} pares)",
+        f"({sum(p.solved for p in score.pairs)}/{len(score.pairs)} pairs)",
         "",
-        "| metrica | valor |",
+        "| metric | value |",
         "|---|---|",
         f"| recall | {score.recall:.2f} |",
         f"| FPR | {score.fpr:.2f} |",
         f"| precision | {score.precision:.2f} |",
         f"| F1 | {score.f1:.2f} |",
-        f"| localizacion | {score.localization:.2f} |",
-        f"| ruido (hallazgos sin mapear por variante) | {score.noise:.2f} |",
+        f"| localization | {score.localization:.2f} |",
+        f"| noise (unmapped findings per variant) | {score.noise:.2f} |",
         "",
         f"TP {score.tp} · FN {score.fn} · FP {score.fp} · TN {score.tn}",
         "",
-        "## Por par",
+        "## Per pair",
         "",
-        "| caso | vulnerable | safe | par | reglas que dispararon |",
+        "| case | vulnerable | safe | pair | rules that fired |",
         "|---|---|---|---|---|",
     ]
 
@@ -59,18 +59,18 @@ def render(score: Score, results: dict) -> str:
         fired = sorted({f.rule_id for f in pair.vulnerable.matched + pair.safe.matched})
         lines.append(
             f"| `{pair.case_id}` | {pair.vulnerable.cell} | {pair.safe.cell} | "
-            f"{'si' if pair.solved else 'no'} | {', '.join(f'`{r}`' for r in fired) or '—'} |"
+            f"{'yes' if pair.solved else 'no'} | {', '.join(f'`{r}`' for r in fired) or '—'} |"
         )
 
-    lines += ["", "## rule_id sin mapear", ""]
+    lines += ["", "## Unmapped rule_ids", ""]
     if score.unmapped:
-        lines.append("| rule_id | veces |")
+        lines.append("| rule_id | count |")
         lines.append("|---|---|")
         lines += [f"| `{rid}` | {n} |" for rid, n in score.unmapped.most_common()]
         lines.append("")
-        lines.append("Decidir para cada uno si va a `rules` o a `ignore` del rule_map.")
+        lines.append("Decide for each one whether it goes to `rules` or `ignore` in the rule_map.")
     else:
-        lines.append("Ninguno: todo lo que disparo esta en el rule_map.")
+        lines.append("None: everything that fired is in the rule_map.")
 
     return "\n".join(lines) + "\n"
 
@@ -82,28 +82,28 @@ def main() -> None:
     parser.add_argument(
         "--rule-map",
         type=Path,
-        help="por defecto, scoring/rule_map/<tool>.yaml segun lo que declare el results",
+        help="default: scoring/rule_map/<tool>.yaml, per what the results declares",
     )
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
     cases = discover_cases(args.corpus)
     if not cases:
-        parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
+        parser.error(f"no meta.yaml found under {args.corpus}")
 
     results = json.loads(args.results.read_text(encoding="utf-8"))
-    # Igual que compare.py: el results dice con que rule_map se lee. Un runner
-    # derivado (el filtro de la fase 3) reusa el del que lo alimento.
+    # Same as compare.py: the results says which rule_map it is read with. A
+    # derived runner (the phase 3 filter) reuses the one of its input.
     rule_map = args.rule_map or RULE_MAP_DIR / f"{results.get('rule_map', results['tool'])}.yaml"
     if not rule_map.is_file():
-        parser.error(f"falta el rule_map {rule_map}")
+        parser.error(f"missing rule_map {rule_map}")
     score = tally(cases, results, load_rule_map(rule_map))
     markdown = render(score, results)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(markdown, encoding="utf-8")
     print(markdown)
-    print(f"escrito {args.out}")
+    print(f"wrote {args.out}")
 
 
 if __name__ == "__main__":

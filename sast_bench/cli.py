@@ -1,7 +1,7 @@
-"""sast-bench: correr, listar y comparar corridas del benchmark.
+"""sast-bench: run, list and compare benchmark runs.
 
-Todo por comandos con flags, sin menu interactivo: cada linea del README se
-copia y se reproduce tal cual.
+Everything is commands and flags, no interactive menu: every line in the
+README can be copied and reproduced as is.
 
     sast-bench run --engine codeql --family secrets
     sast-bench history
@@ -11,8 +11,8 @@ copia y se reproduce tal cual.
     sast-bench doctor
     sast-bench corpus validate | stats
 
-Es capa de interfaz: las metricas salen de scoring/metrics.py y los results
-tienen el mismo formato que escriben los runners sueltos.
+It is an interface layer: metrics come from scoring/metrics.py and results
+have the same format the standalone runners write.
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ from scoring.models import Case, Difficulty, Family, discover_cases
 from scripts import fetch_codeql, fetch_rules
 from scripts.fetch_codeql import REPO_ROOT
 
-DEFAULT_MODEL = "claude-opus-5"  # el mismo que runners/hybrid.py
+DEFAULT_MODEL = "claude-opus-5"  # same as runners/hybrid.py
 ENGINES = ("semgrep", "codeql", "hybrid")
 EXT_SUITE = "runners/codeql-ext/security-extended-ext.qls"
 FAMILY_ALIASES = {
@@ -85,7 +85,7 @@ FAMILY_ALIASES = {
 
 
 class CliError(Exception):
-    """Un error que se le muestra al usuario tal cual, sin traceback."""
+    """An error shown to the user as is, without a traceback."""
 
 
 # ---------------------------------------------------------------- helpers
@@ -98,14 +98,14 @@ def family_arg(value: str) -> Family:
         return Family(value)
     except ValueError:
         options = ", ".join([*FAMILY_ALIASES, *(f.value for f in Family)])
-        raise argparse.ArgumentTypeError(f"familia desconocida {value!r}; opciones: {options}")
+        raise argparse.ArgumentTypeError(f"unknown family {value!r}; options: {options}")
 
 
 def repo_relative(path: Path) -> Path:
-    """Resuelve contra el cwd del usuario y la deja relativa al repo si cae adentro.
+    """Resolve against the user's cwd and make it repo-relative if it falls inside.
 
-    La CLI trabaja parada en la raiz del repo (los case_dir de los results son
-    relativos a ella), asi que las rutas se resuelven antes del chdir.
+    The CLI works from the repo root (results' case_dirs are relative to it),
+    so paths are resolved before the chdir.
     """
     absolute = path.expanduser().resolve()
     try:
@@ -122,7 +122,7 @@ def local_time(iso: str) -> str:
 
 
 def triples(engines: list[EngineRun]) -> list[tuple[str, dict, Any]]:
-    """El formato que esperan compare.render y las tablas de scoring/console.py."""
+    """The shape compare.render and the scoring/console.py tables expect."""
     return [(e.tool, e.results, e.score()) for e in engines]
 
 
@@ -152,7 +152,7 @@ def rules_line(results: dict[str, Any]) -> str:
 def select_cases(corpus: Path, family: Family | None, difficulty: str | None, case_id: str | None) -> list[Case]:
     cases = discover_cases(corpus)
     if not cases:
-        raise CliError(f"no hay ningun meta.yaml bajo {corpus}")
+        raise CliError(f"no meta.yaml under {corpus}")
     if family:
         cases = [c for c in cases if c.meta.family == family]
     if difficulty:
@@ -160,54 +160,54 @@ def select_cases(corpus: Path, family: Family | None, difficulty: str | None, ca
     if case_id:
         cases = [c for c in cases if c.meta.id == case_id]
     if not cases:
-        raise CliError("ningun caso cumple los filtros; `sast-bench corpus stats` muestra que hay")
+        raise CliError("no case matches the filters; `sast-bench corpus stats` shows what there is")
     return cases
 
 
 def preflight(engines: list[str], args: argparse.Namespace) -> list[str]:
-    """Lo que falta para correr, con el comando que lo arregla."""
+    """What is missing to run, with the command that fixes it."""
     problems = []
     if "semgrep" in engines:
         if shutil.which("semgrep") is None:
-            problems.append("semgrep no esta instalado: uv sync")
+            problems.append("semgrep is not installed: uv sync")
         if not (fetch_rules.DEFAULT_DEST / fetch_rules.PROVENANCE).is_file():
-            problems.append("faltan las reglas de semgrep: uv run python -m scripts.fetch_rules")
+            problems.append("the semgrep rules are missing: uv run python -m scripts.fetch_rules")
     if "codeql" in engines and not (fetch_codeql.DEFAULT_DEST / "codeql").is_file():
-        problems.append("falta el bundle de CodeQL: uv run python -m scripts.fetch_codeql")
+        problems.append("the CodeQL bundle is missing: uv run python -m scripts.fetch_codeql")
     if args.codeql_ext and not Path(EXT_SUITE).is_file():
-        problems.append(f"falta la suite de la extension: {EXT_SUITE}")
+        problems.append(f"the extension suite is missing: {EXT_SUITE}")
     if "hybrid" in engines and not args.dry_run:
         from dotenv import load_dotenv
 
         load_dotenv(REPO_ROOT / ".env")
         key = os.environ.get("ANTHROPIC_API_KEY", "")
         if (not key or key.endswith("...")) and not os.environ.get("ANTHROPIC_AUTH_TOKEN"):
-            problems.append("el hibrido necesita ANTHROPIC_API_KEY en .env (ver .env.example)")
+            problems.append("the hybrid needs ANTHROPIC_API_KEY in .env (see .env.example)")
     return problems
 
 
 def hybrid_base(
     args: argparse.Namespace, codeql_tool: str, case_ids: set[str], runs: list[Run]
 ) -> tuple[Run, EngineRun]:
-    """La corrida de CodeQL que revisa el hibrido cuando no corre en la misma corrida."""
+    """The CodeQL run the hybrid reviews when CodeQL is not part of the same run."""
     if args.from_run:
         run = resolve(args.from_run, runs)
         engine = run.engine(codeql_tool)
         missing = case_ids - set(engine.case_ids)
         if missing:
-            raise CliError(f"{run.run_id} no cubre {len(missing)} de los casos pedidos: {sorted(missing)[:3]}")
+            raise CliError(f"{run.run_id} does not cover {len(missing)} of the requested cases: {sorted(missing)[:3]}")
         return run, engine
     found = latest_results_for(codeql_tool, case_ids, runs)
     if found is None:
         raise CliError(
-            f"no hay una corrida de {codeql_tool} que cubra estos casos; "
-            "corre `--engine all` o primero `--engine codeql`"
+            f"no {codeql_tool} run covers these cases; "
+            "run `--engine all`, or `--engine codeql` first"
         )
     return found
 
 
 def only_cases(results: dict[str, Any], case_ids: set[str]) -> dict[str, Any]:
-    """El mismo results, recortado a los casos pedidos."""
+    """The same results, trimmed to the requested cases."""
     return {**results, "variants": [v for v in results["variants"] if v["case_id"] in case_ids]}
 
 
@@ -215,7 +215,7 @@ def engine_tag(name: str) -> str:
     return f"  [cyan]{name:<11}[/cyan]"
 
 
-INDENT = " " * 14  # continuacion debajo de engine_tag
+INDENT = " " * 14  # continuation under engine_tag
 
 
 def dry_run(
@@ -229,19 +229,19 @@ def dry_run(
 ) -> int:
     variants = [case.variant_dir(label) for case in cases for label in ("vulnerable", "safe")]
     case_ids = {c.meta.id for c in cases}
-    console.print("[bold]dry-run[/bold]: no se ejecuta nada ni se escribe en results/", highlight=False)
-    console.print(f"  corpus {args.corpus} · {filters_text(args)} · {len(cases)} casos · {len(variants)} variantes", highlight=False)
+    console.print("[bold]dry-run[/bold]: nothing runs and nothing is written to results/", highlight=False)
+    console.print(f"  corpus {args.corpus} · {filters_text(args)} · {len(cases)} cases · {len(variants)} variants", highlight=False)
 
     for engine in engines:
         if engine == "semgrep":
             provenance = semgrep_runner.rules_provenance(fetch_rules.DEFAULT_DEST) if (
                 fetch_rules.DEFAULT_DEST / fetch_rules.PROVENANCE
             ).is_file() else None
-            rules = f"{provenance['repo']}@{provenance['commit'][:12]}" if provenance else "reglas faltantes"
-            console.print(f"{engine_tag('semgrep')} {len(variants)} variantes · {rules}", highlight=False)
+            rules = f"{provenance['repo']}@{provenance['commit'][:12]}" if provenance else "rules missing"
+            console.print(f"{engine_tag('semgrep')} {len(variants)} variants · {rules}", highlight=False)
         elif engine == "codeql":
             console.print(
-                f"{engine_tag(codeql_tool)} {len(variants)} variantes · {cache_forecast(variants, args.no_cache)}",
+                f"{engine_tag(codeql_tool)} {len(variants)} variants · {cache_forecast(variants, args.no_cache)}",
                 highlight=False,
             )
             console.print(f"{INDENT}suite {suite}", highlight=False)
@@ -250,22 +250,22 @@ def dry_run(
 
     problems = preflight(engines, args)
     for problem in problems:
-        console.print(f"  [red]falta[/red] {problem}", highlight=False)
+        console.print(f"  [red]missing[/red] {problem}", highlight=False)
     return 1 if problems else 0
 
 
 def cache_forecast(variants: list[Path], no_cache: bool) -> str:
     binary = fetch_codeql.DEFAULT_DEST / "codeql"
     if no_cache:
-        return "cache desactivada: se construyen todas las bases"
+        return "cache disabled: every database gets built"
     if not binary.is_file():
-        return "sin CLI de CodeQL"
+        return "no CodeQL CLI"
     version = codeql_runner.codeql_version(binary)
     hits = sum(
         (codeql_runner.CACHE_DIR / codeql_runner.variant_fingerprint(v, version) / "codeql-database.yml").is_file()
         for v in variants
     )
-    return f"{hits} bases en cache, {len(variants) - hits} a construir"
+    return f"{hits} databases cached, {len(variants) - hits} to build"
 
 
 def print_hybrid_estimate(
@@ -278,39 +278,39 @@ def print_hybrid_estimate(
 ) -> None:
     label = engine_tag(f"{codeql_tool}+llm")
     if "codeql" in engines:
-        # CodeQL todavia no corrio: se usa la ultima corrida como referencia.
+        # CodeQL has not run yet: the latest run is used as a reference.
         found = latest_results_for(codeql_tool, case_ids, runs)
-        basis = f"hallazgos de {found[0].run_id}; la corrida real puede dar otros" if found else None
+        basis = f"findings from {found[0].run_id}; the real run may differ" if found else None
     else:
         try:
             found = hybrid_base(args, codeql_tool, case_ids, runs)
-            basis = f"revisa los hallazgos de {found[0].run_id}"
+            basis = f"reviews the findings from {found[0].run_id}"
         except (CliError, LookupError) as error:
             console.print(f"{label} [red]{error}[/red]", highlight=False)
             return
     if found is None:
-        console.print(f"{label} llamadas desconocidas: no hay una corrida previa de {codeql_tool} sobre estos casos", highlight=False)
+        console.print(f"{label} unknown number of calls: no previous {codeql_tool} run over these cases", highlight=False)
         return
 
     calls = count_findings(found[1].results, case_ids)
     guess = estimate(calls, args.model, decision_records())
-    cost = f"~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else "precio desconocido para este modelo"
+    cost = f"~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else "unknown price for this model"
     console.print(
-        f"{label} {calls} llamadas a {args.model} · ~{guess.input_tokens:,} tokens de entrada"
-        f" + ~{guess.output_tokens:,} de salida · {cost}",
+        f"{label} {calls} calls to {args.model} · ~{guess.input_tokens:,} input tokens"
+        f" + ~{guess.output_tokens:,} output · {cost}",
         highlight=False,
     )
     tokens = (
-        f"promedio de {guess.sample} decisiones previas de {args.model}"
+        f"average of {guess.sample} previous {args.model} decisions"
         if guess.sample
-        else "tokens por llamada de referencia: no hay decisiones previas de este modelo"
+        else "reference tokens per call: no previous decisions for this model"
     )
     console.print(f"{INDENT}{basis} · {tokens}", highlight=False)
 
 
 def filters_text(args: argparse.Namespace) -> str:
     filters = run_filters(args)
-    return " ".join(f"{k}={v}" for k, v in filters.items() if v) or "sin filtros"
+    return " ".join(f"{k}={v}" for k, v in filters.items() if v) or "no filters"
 
 
 def run_filters(args: argparse.Namespace) -> dict[str, Any]:
@@ -333,7 +333,7 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
 
     problems = preflight(engines, args)
     if problems:
-        raise CliError("no se puede correr:\n  " + "\n  ".join(problems))
+        raise CliError("cannot run:\n  " + "\n  ".join(problems))
 
     case_ids = {c.meta.id for c in cases}
     base: tuple[dict[str, Any], str] | None = None
@@ -356,7 +356,7 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
         "engines": [],
     }
     write_json(directory / MANIFEST, manifest)
-    log_event(console, "run", f"{run_id} · {len(cases)} casos · {', '.join(engines)} · {filters_text(args)}")
+    log_event(console, "run", f"{run_id} · {len(cases)} cases · {', '.join(engines)} · {filters_text(args)}")
 
     def record(report: dict[str, Any], **extra: Any) -> Path:
         path = directory / results_filename(report["tool"])
@@ -407,7 +407,7 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
     console.print()
     run = resolve(run_id, list_runs())
     render_run(console, run)
-    console.print(f"\nescrito {directory.relative_to(REPO_ROOT)}/", highlight=False)
+    console.print(f"\nwrote {directory.relative_to(REPO_ROOT)}/", highlight=False)
     return 0
 
 
@@ -427,7 +427,7 @@ def run_hybrid(
     calls = count_findings(results)
     guess = estimate(calls, args.model, decision_records())
     cost = f" · ~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else ""
-    log_event(console, "hibrido", f"{calls} hallazgos de {base_path} para revisar con {args.model}{cost}")
+    log_event(console, "hybrid", f"{calls} findings from {base_path} to review with {args.model}{cost}")
 
     filtered, records = hybrid.filter_results(
         results, base_path, {c.meta.id: c for c in cases}, anthropic.Anthropic(), args.model, console
@@ -452,7 +452,7 @@ def run_hybrid(
 def render_run(console: Console, run: Run, engines: list[EngineRun] | None = None) -> None:
     engines = engines or run.engines
     if not engines:
-        console.print(f"{run.run_id}: la corrida no tiene resultados ({run.status})", highlight=False)
+        console.print(f"{run.run_id}: the run has no results ({run.status})", highlight=False)
         return
     rows = triples(engines)
     cases = union_cases(engines)
@@ -462,7 +462,7 @@ def render_run(console: Console, run: Run, engines: list[EngineRun] | None = Non
     console.print(f"[bold]{run.run_id}[/bold] · {local_time(run.started_at)}{kind}{status}", highlight=False)
     repo = run.manifest.get("repo") or {}
     if repo.get("commit"):
-        dirty = " (con cambios sin commitear)" if repo.get("dirty") else ""
+        dirty = " (with uncommitted changes)" if repo.get("dirty") else ""
         console.print(f"  repo {repo['commit'][:12]}{dirty}", highlight=False)
     for tool, results, _ in rows:
         console.print(f"  {engine_label(tool, results['tool_version'])} · {rules_line(results)}", highlight=False)
@@ -505,11 +505,11 @@ def cmd_history(args: argparse.Namespace, console: Console) -> int:
     if args.engine:
         runs = [r for r in runs if any(e.tool == args.engine for e in r.engines)]
     if not runs:
-        console.print("no hay corridas que coincidan", highlight=False)
+        console.print("no matching runs", highlight=False)
         return 0
 
     table = Table(box=table_box(console), pad_edge=False)
-    for column in ("run-id", "fecha", "corpus", "engines", "resultado"):
+    for column in ("run-id", "date", "corpus", "engines", "result"):
         table.add_column(column, no_wrap=column != "corpus")
     for run in runs[: args.limit]:
         style = "dim" if run.legacy else ""
@@ -525,8 +525,8 @@ def cmd_history(args: argparse.Namespace, console: Console) -> int:
         )
     console.print(table)
     shown = min(len(runs), args.limit)
-    note = "gris = results sueltos de antes de la CLI · resultado = pares resueltos"
-    console.print(f"[dim]{shown} de {len(runs)} corridas · {note}[/dim]", highlight=False)
+    note = "dim = loose results from before the CLI · result = solved pairs"
+    console.print(f"[dim]{shown} of {len(runs)} runs · {note}[/dim]", highlight=False)
     return 0
 
 
@@ -534,7 +534,7 @@ def cmd_history(args: argparse.Namespace, console: Console) -> int:
 
 
 def pick_pairs(a: Run, tool_a: str | None, b: Run, tool_b: str | None) -> list[tuple[EngineRun, EngineRun]]:
-    """Que engine de cada corrida se compara con cual."""
+    """Which engine of each run is compared with which."""
     if tool_a or tool_b:
         left = a.engine(tool_a) if tool_a else None
         right = b.engine(tool_b) if tool_b else None
@@ -549,8 +549,8 @@ def pick_pairs(a: Run, tool_a: str | None, b: Run, tool_b: str | None) -> list[t
     if len(a.engines) == 1 and len(b.engines) == 1:
         return [(a.engines[0], b.engines[0])]
     raise CliError(
-        "las corridas no tienen engines en comun; elegi cuales con <run-id>:<engine>, "
-        f"p. ej. {a.run_id}:{a.engines[0].tool}"
+        "the runs have no engine in common; pick them with <run-id>:<engine>, "
+        f"e.g. {a.run_id}:{a.engines[0].tool}"
     )
 
 
@@ -562,7 +562,7 @@ def outcome_text(console: Console, pair: PairOutcome) -> str:
 
 def changes_table(console: Console, changes: list[Change], difficulties: dict[str, str]) -> Table:
     table = Table(box=table_box(console), pad_edge=False)
-    for column in ("caso", "dificultad", "antes", "despues"):
+    for column in ("case", "difficulty", "before", "after"):
         table.add_column(column, no_wrap=True)
     for change in changes:
         table.add_row(
@@ -595,19 +595,19 @@ def cmd_compare(args: argparse.Namespace, console: Console) -> int:
         )
         diff = diff_scores(score_a, score_b)
         sections = (
-            ("pasaron de fallo a acierto", "green", diff.fixed),
-            ("pasaron de acierto a fallo", "red", diff.broken),
-            ("mismo par, otro resultado", "yellow", diff.shifted),
+            ("newly solved", "green", diff.fixed),
+            ("no longer solved", "red", diff.broken),
+            ("still unsolved, different cells", "yellow", diff.shifted),
         )
         for title, style, changes in sections:
             console.print(f"[{style}]{title}[/{style}]: {len(changes)}", highlight=False)
             if changes:
                 console.print(changes_table(console, changes, difficulties))
-        console.print(f"sin cambios: {diff.unchanged} casos", highlight=False)
+        console.print(f"unchanged: {diff.unchanged} cases", highlight=False)
         if diff.only_before:
-            console.print(f"solo en A: {', '.join(diff.only_before)}", highlight=False)
+            console.print(f"only in A: {', '.join(diff.only_before)}", highlight=False)
         if diff.only_after:
-            console.print(f"solo en B: {', '.join(diff.only_after)}", highlight=False)
+            console.print(f"only in B: {', '.join(diff.only_after)}", highlight=False)
         console.print()
     return 0
 
@@ -618,7 +618,7 @@ def cmd_compare(args: argparse.Namespace, console: Console) -> int:
 def cmd_report(args: argparse.Namespace, console: Console) -> int:
     run = resolve(args.run, list_runs())
     if not run.engines:
-        raise CliError(f"{run.run_id} no tiene resultados para reportar")
+        raise CliError(f"{run.run_id} has no results to report")
     out_dir = args.out_dir or run.directory or RESULTS_DIR / "reports" / run.run_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -636,7 +636,7 @@ def cmd_report(args: argparse.Namespace, console: Console) -> int:
     export_svg(recorder, svg, title=f"sast-bench {run.run_id}")
 
     for path in (out_dir / "report.md", svg):
-        console.print(f"escrito {repo_relative(path)}", highlight=False)
+        console.print(f"wrote {repo_relative(path)}", highlight=False)
     return 0
 
 
@@ -645,17 +645,17 @@ def cmd_report(args: argparse.Namespace, console: Console) -> int:
 
 def cmd_doctor(args: argparse.Namespace, console: Console) -> int:
     checks = run_checks(args.corpus)
-    marks = {OK: "[green]ok[/green]", WARN: "[yellow]aviso[/yellow]", MISSING: "[red]falta[/red]"}
+    marks = {OK: "[green]ok[/green]", WARN: "[yellow]warning[/yellow]", MISSING: "[red]missing[/red]"}
     table = Table(box=table_box(console), pad_edge=False)
-    for column in ("", "chequeo", "detalle"):
-        table.add_column(column, no_wrap=column != "detalle")
+    for column in ("", "check", "detail"):
+        table.add_column(column, no_wrap=column != "detail")
     for check in checks:
         table.add_row(marks[check.status], check.name, check.detail)
     console.print(table)
 
     fixes = [c for c in checks if c.status != OK and c.fix]
     if fixes:
-        console.print("\ncomo resolverlo:", highlight=False)
+        console.print("\nhow to fix it:", highlight=False)
         for check in fixes:
             console.print(f"  {check.name}: [bold]{check.fix}[/bold]", highlight=False)
     return 1 if any(c.status == MISSING for c in checks) else 0
@@ -664,15 +664,15 @@ def cmd_doctor(args: argparse.Namespace, console: Console) -> int:
 def cmd_corpus_validate(args: argparse.Namespace, console: Console) -> int:
     cases, problems = corpus_checks.validate(args.corpus)
     if not problems:
-        console.print(f"[green]ok[/green] {len(cases)} pares validos en {args.corpus}", highlight=False)
+        console.print(f"[green]ok[/green] {len(cases)} valid pairs in {args.corpus}", highlight=False)
         return 0
     table = Table(box=table_box(console), pad_edge=False)
-    table.add_column("caso", no_wrap=True)
-    table.add_column("problema")
+    table.add_column("case", no_wrap=True)
+    table.add_column("problem")
     for problem in problems:
         table.add_row(str(repo_relative(Path(problem.where))), problem.message)
     console.print(table)
-    console.print(f"[red]{len(problems)} problemas[/red] en {len(cases)} casos", highlight=False)
+    console.print(f"[red]{len(problems)} problems[/red] in {len(cases)} cases", highlight=False)
     return 1
 
 
@@ -682,7 +682,7 @@ def cmd_corpus_stats(args: argparse.Namespace, console: Console) -> int:
     target = corpus_checks.PAIRS_PER_CELL
 
     table = Table(box=table_box(console), pad_edge=False)
-    table.add_column("familia", no_wrap=True)
+    table.add_column("family", no_wrap=True)
     for difficulty in Difficulty:
         table.add_column(difficulty.value, justify="right")
     table.add_column("total", justify="right")
@@ -699,18 +699,18 @@ def cmd_corpus_stats(args: argparse.Namespace, console: Console) -> int:
         f"[bold]{len(cases)}[/bold]",
     )
     console.print(table)
-    console.print(f"{len(cases)} pares · {len(cases) * 2} variantes · objetivo {target} por celda", highlight=False)
+    console.print(f"{len(cases)} pairs · {len(cases) * 2} variants · target {target} per cell", highlight=False)
 
     short = corpus_checks.short_cells(cases)
     broken = sorted({p.where for p in problems})
     if not short and not broken:
-        console.print("incompletos: ninguno", highlight=False)
+        console.print("incomplete: none", highlight=False)
         return 0
-    console.print("incompletos:", highlight=False)
+    console.print("incomplete:", highlight=False)
     for family, difficulty, n in short:
-        console.print(f"  [yellow]{family.value} / {difficulty.value}[/yellow]: {n} de {target} pares", highlight=False)
+        console.print(f"  [yellow]{family.value} / {difficulty.value}[/yellow]: {n} of {target} pairs", highlight=False)
     for where in broken:
-        console.print(f"  [red]{repo_relative(Path(where))}[/red]: `sast-bench corpus validate` dice por que", highlight=False)
+        console.print(f"  [red]{repo_relative(Path(where))}[/red]: `sast-bench corpus validate` says why", highlight=False)
     return 0
 
 
@@ -720,53 +720,53 @@ def cmd_corpus_stats(args: argparse.Namespace, console: Console) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sast-bench",
-        description="Benchmark de escaneres de seguridad sobre vulnerabilidades de Angular.",
+        description="Benchmark of security scanners on Angular vulnerabilities.",
     )
-    sub = parser.add_subparsers(dest="command", required=True, metavar="comando")
+    sub = parser.add_subparsers(dest="command", required=True, metavar="command")
 
-    run = sub.add_parser("run", help="corre engines sobre el corpus")
+    run = sub.add_parser("run", help="run engines over the corpus")
     run.add_argument("--corpus", type=Path, default=Path("corpus/angular"), help="default: corpus/angular")
-    run.add_argument("--engine", required=True, choices=[*ENGINES, "all"], help="all = semgrep, codeql e hybrid")
-    run.add_argument("--family", type=family_arg, help="id de familia o alias: xss, secrets, authz")
+    run.add_argument("--engine", required=True, choices=[*ENGINES, "all"], help="all = semgrep, codeql and hybrid")
+    run.add_argument("--family", type=family_arg, help="family id or alias: xss, secrets, authz")
     run.add_argument("--difficulty", choices=[d.value for d in Difficulty])
-    run.add_argument("--case", dest="case_id", metavar="ID", help="un solo caso, p. ej. ng-sec-002")
-    run.add_argument("--codeql-ext", action="store_true", help="CodeQL con runners/codeql-ext (fila codeql+ext)")
-    run.add_argument("--model", default=DEFAULT_MODEL, help=f"modelo del hibrido (default {DEFAULT_MODEL})")
-    run.add_argument("--from-run", metavar="RUN", help="hibrido sin codeql: corrida de la que sale la base")
-    run.add_argument("--no-cache", action="store_true", help="reconstruye las bases de CodeQL")
-    run.add_argument("--dry-run", action="store_true", help="muestra el plan y el costo estimado, sin ejecutar")
+    run.add_argument("--case", dest="case_id", metavar="ID", help="a single case, e.g. ng-sec-002")
+    run.add_argument("--codeql-ext", action="store_true", help="CodeQL with runners/codeql-ext (row codeql+ext)")
+    run.add_argument("--model", default=DEFAULT_MODEL, help=f"hybrid model (default {DEFAULT_MODEL})")
+    run.add_argument("--from-run", metavar="RUN", help="hybrid without codeql: the run to take the base from")
+    run.add_argument("--no-cache", action="store_true", help="rebuild the CodeQL databases")
+    run.add_argument("--dry-run", action="store_true", help="show the plan and the estimated cost, without running")
     run.set_defaults(handler=cmd_run)
 
-    history = sub.add_parser("history", help="lista las corridas")
+    history = sub.add_parser("history", help="list the runs")
     history.add_argument("--family", type=family_arg)
-    history.add_argument("--engine", help="solo corridas con este engine, p. ej. codeql+ext")
+    history.add_argument("--engine", help="only runs with this engine, e.g. codeql+ext")
     history.add_argument("--limit", type=int, default=30)
     history.set_defaults(handler=cmd_history)
 
-    show = sub.add_parser("show", help="imprime la tabla de una corrida")
-    show.add_argument("run", nargs="?", default="latest", help="run-id, prefijo, latest, o <run-id>:<engine>")
+    show = sub.add_parser("show", help="print the table of a run")
+    show.add_argument("run", nargs="?", default="latest", help="run-id, prefix, latest, or <run-id>:<engine>")
     show.set_defaults(handler=cmd_show)
 
-    compare = sub.add_parser("compare", help="que casos cambiaron entre dos corridas")
-    compare.add_argument("run_a", metavar="RUN_A", help="run-id o <run-id>:<engine>")
-    compare.add_argument("run_b", metavar="RUN_B", help="run-id o <run-id>:<engine>")
+    compare = sub.add_parser("compare", help="which cases changed between two runs")
+    compare.add_argument("run_a", metavar="RUN_A", help="run-id or <run-id>:<engine>")
+    compare.add_argument("run_b", metavar="RUN_B", help="run-id or <run-id>:<engine>")
     compare.set_defaults(handler=cmd_compare)
 
-    report = sub.add_parser("report", help="genera report.md y el SVG de una corrida")
-    report.add_argument("run", help="run-id, prefijo o latest")
-    report.add_argument("--out-dir", type=Path, help="default: la carpeta de la corrida")
+    report = sub.add_parser("report", help="write report.md and the SVG of a run")
+    report.add_argument("run", help="run-id, prefix or latest")
+    report.add_argument("--out-dir", type=Path, help="default: the run directory")
     report.set_defaults(handler=cmd_report)
 
-    doctor = sub.add_parser("doctor", help="chequea el entorno y dice que falta")
+    doctor = sub.add_parser("doctor", help="check the environment and say what is missing")
     doctor.add_argument("--corpus", type=Path, default=Path("corpus"))
     doctor.set_defaults(handler=cmd_doctor)
 
-    corpus = sub.add_parser("corpus", help="validar y contar el corpus")
-    corpus_sub = corpus.add_subparsers(dest="corpus_command", required=True, metavar="accion")
-    validate = corpus_sub.add_parser("validate", help="los chequeos de meta.yaml de tests/test_meta.py")
+    corpus = sub.add_parser("corpus", help="validate and count the corpus")
+    corpus_sub = corpus.add_subparsers(dest="corpus_command", required=True, metavar="action")
+    validate = corpus_sub.add_parser("validate", help="the meta.yaml checks from tests/test_meta.py")
     validate.add_argument("--corpus", type=Path, default=Path("corpus"))
     validate.set_defaults(handler=cmd_corpus_validate)
-    stats = corpus_sub.add_parser("stats", help="pares por familia y dificultad, y cuales faltan")
+    stats = corpus_sub.add_parser("stats", help="pairs per family and difficulty, and which are missing")
     stats.add_argument("--corpus", type=Path, default=Path("corpus"))
     stats.set_defaults(handler=cmd_corpus_stats)
 
@@ -779,8 +779,8 @@ def main(argv: list[str] | None = None) -> int:
         if isinstance(getattr(args, name, None), Path):
             setattr(args, name, repo_relative(getattr(args, name)))
 
-    # Los case_dir de los results son relativos a la raiz del repo, y semgrep
-    # vive en el venv aunque nadie lo haya activado.
+    # Results' case_dirs are relative to the repo root, and semgrep lives in
+    # the venv even if nobody activated it.
     os.chdir(REPO_ROOT)
     os.environ["PATH"] = f"{Path(sys.executable).parent}{os.pathsep}{os.environ.get('PATH', '')}"
 

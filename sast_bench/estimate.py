@@ -1,9 +1,9 @@
-"""Cuanto costaria correr el filtro LLM, sin llamar al modelo.
+"""What running the LLM filter would cost, without calling the model.
 
-Llamadas = hallazgos a revisar (el filtro hace una por hallazgo, nunca en lote).
-Tokens por llamada = el promedio de las decisiones reales ya guardadas; si no
-hay ninguna, un valor de referencia. El output incluye el thinking, que se
-factura como salida.
+Calls = findings to review (the filter makes one per finding, never batched).
+Tokens per call = the average of the real decisions already saved; if there
+are none, a reference value. Output includes thinking, which is billed as
+output.
 """
 
 from __future__ import annotations
@@ -11,8 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-# US$ por millon de tokens (entrada, salida). Tabla del SDK de Anthropic,
-# cacheada el 2026-06-24. Actualizar aca si cambia.
+# USD per million tokens (input, output). Anthropic SDK pricing table, cached
+# 2026-06-24. Update here if it changes.
 PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-opus-5": (5.00, 25.00),
     "claude-opus-5-5": (4.00, 20.00),
@@ -21,7 +21,7 @@ PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-fable-5-1": (10.00, 50.00),
 }
 
-# Si no hay decisiones previas: del orden de la primera corrida sobre XSS.
+# When there are no previous decisions: the order of the first XSS run.
 FALLBACK_TOKENS = (1200, 400)
 
 
@@ -31,7 +31,7 @@ class Estimate:
     model: str
     input_per_call: int
     output_per_call: int
-    sample: int  # decisiones previas en las que se basa el promedio; 0 = referencia
+    sample: int  # previous decisions the average is based on; 0 = reference value
 
     @property
     def input_tokens(self) -> int:
@@ -58,7 +58,7 @@ def count_findings(results: dict[str, Any], case_ids: set[str] | None = None) ->
 
 
 def estimate(calls: int, model: str, history: list[dict[str, Any]]) -> Estimate:
-    """Promedia solo decisiones del mismo modelo: otro modelo piensa distinto."""
+    """Average only decisions from the same model: another model thinks differently."""
     same = [r for r in history if r.get("model") == model and "input_tokens" in r]
     if same:
         return Estimate(

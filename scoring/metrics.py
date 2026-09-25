@@ -1,4 +1,4 @@
-"""Tally del corpus y metricas (PROJECT.md, 'Matching' y 'Metricas')."""
+"""Corpus tally and metrics (PROJECT.md, 'Matching' and 'Metrics')."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ LOCALIZATION_TOLERANCE = 3
 
 @dataclass
 class VariantOutcome:
-    """Como le fue a una variante: la celda de la matriz que ocupa."""
+    """How a variant did: the confusion-matrix cell it lands in."""
 
     case_id: str
     label: str
@@ -32,7 +32,7 @@ class PairOutcome:
 
     @property
     def solved(self) -> bool:
-        """El par cuenta solo si acierta en la vulnerable Y queda limpio en la sana."""
+        """A pair counts only if the vulnerable variant is hit AND the safe one stays clean."""
         return self.vulnerable.cell == "TP" and self.safe.cell == "TN"
 
 
@@ -68,13 +68,13 @@ class Score:
 
     @property
     def localization(self) -> float:
-        """% de TPs cuyo hallazgo cae en sink.line +/- LOCALIZATION_TOLERANCE."""
+        """% of TPs whose finding lands on sink.line +/- LOCALIZATION_TOLERANCE."""
         located = [p.vulnerable for p in self.pairs if p.vulnerable.cell == "TP"]
         return _ratio(sum(bool(v.localized) for v in located), len(located))
 
     @property
     def noise(self) -> float:
-        """Hallazgos no mapeados por variante."""
+        """Unmapped findings per variant."""
         variants = [v for p in self.pairs for v in (p.vulnerable, p.safe)]
         return _ratio(sum(v.noise for v in variants), len(variants))
 
@@ -84,8 +84,8 @@ def _ratio(numerator: int, denominator: int) -> float:
 
 
 def _sink_path(sink_file: str, label: str) -> str:
-    """meta.yaml guarda el sink con la variante adelante (`vulnerable/x.ts`),
-    pero los Finding vienen relativos a la carpeta de la variante (`x.ts`)."""
+    """meta.yaml stores the sink with the variant prefix (`vulnerable/x.ts`),
+    but Findings are relative to the variant directory (`x.ts`)."""
     prefix = f"{label}/"
     return sink_file[len(prefix):] if sink_file.startswith(prefix) else sink_file
 
@@ -129,7 +129,7 @@ def _judge(
     )
 
     if label == "vulnerable":
-        # TP = >=1 hallazgo mapeado a la familia esperada; si no, FN.
+        # TP = >=1 finding mapped to the expected family; otherwise FN.
         outcome.cell = "TP" if matched else "FN"
         sink = case.meta.variants[label].sink
         if outcome.cell == "TP" and sink is not None:
@@ -139,7 +139,7 @@ def _judge(
                 for f in matched
             )
     else:
-        # FP = >=1 hallazgo de *cualquier* familia de seguridad; si no, TN.
+        # FP = >=1 finding of *any* security family; otherwise TN.
         outcome.cell = "FP" if security_hits else "TN"
 
     return outcome

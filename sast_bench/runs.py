@@ -1,16 +1,16 @@
-"""Corridas: donde se guardan, como se listan y como se leen.
+"""Runs: where they are stored, how they are listed and how they are read.
 
-Una corrida de la CLI es una carpeta `results/runs/<run-id>/` con:
+A CLI run is a directory `results/runs/<run-id>/` with:
 
-    manifest.json          quien corrio, cuando, sobre que, con que filtros
-    <tool>.json            el results de cada engine, en el formato de siempre
-    hybrid-decisions.json  el rastro del filtro LLM, si corrio
+    manifest.json          what ran, when, over what, with which filters
+    <tool>.json            each engine's results, in the usual format
+    hybrid-decisions.json  the LLM filter's audit trail, if it ran
 
-El manifest va aparte a proposito: el JSON de resultados no cambia de formato.
+The manifest is kept apart on purpose: the results JSON keeps its format.
 
-Los results sueltos de antes de la CLI (`results/2026-09-22-codeql.json` y
-compania) aparecen como corridas `legacy`, una por archivo, con el nombre del
-archivo como run-id. No se mueven ni se renombran.
+Loose results from before the CLI (`results/2026-09-22-codeql.json` and
+friends) show up as `legacy` runs, one per file, with the file name as run-id.
+They are not moved or renamed.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ DECISIONS = "hybrid-decisions.json"
 
 @dataclass
 class EngineRun:
-    """El results de un engine dentro de una corrida."""
+    """One engine's results inside a run."""
 
     tool: str
     path: Path
@@ -46,7 +46,7 @@ class EngineRun:
         return sorted({entry["case_id"] for entry in self.results["variants"]})
 
     def cases(self) -> list[Case]:
-        """Los casos que cubre este results, leidos del corpus tal como esta hoy."""
+        """The cases this results covers, read from the corpus as it is today."""
         return cases_of(self.results)
 
     def score(self) -> Score:
@@ -80,11 +80,11 @@ class Run:
         for engine in self.engines:
             if engine.tool == tool:
                 return engine
-        available = ", ".join(e.tool for e in self.engines) or "ninguno"
-        raise LookupError(f"la corrida {self.run_id} no tiene {tool} (tiene: {available})")
+        available = ", ".join(e.tool for e in self.engines) or "none"
+        raise LookupError(f"run {self.run_id} has no {tool} (it has: {available})")
 
 
-# ---------------------------------------------------------------- lectura
+# ---------------------------------------------------------------- reading
 
 
 def cases_of(results: dict[str, Any]) -> list[Case]:
@@ -97,19 +97,19 @@ def cases_of(results: dict[str, Any]) -> list[Case]:
 
 
 def rule_map_path(results: dict[str, Any]) -> Path:
-    # Un engine derivado (codeql+ext, codeql+llm) declara con que rule_map se lee.
+    # A derived engine (codeql+ext, codeql+llm) declares which rule_map to read it with.
     return RULE_MAP_DIR / f"{results.get('rule_map', results['tool'])}.yaml"
 
 
 def score_results(results: dict[str, Any]) -> Score:
     path = rule_map_path(results)
     if not path.is_file():
-        raise FileNotFoundError(f"falta el rule_map de {results['tool']}: {path}")
+        raise FileNotFoundError(f"missing rule_map for {results['tool']}: {path}")
     return tally(cases_of(results), results, load_rule_map(path))
 
 
 def corpus_label_of(engines: list[EngineRun]) -> str:
-    """`angular/xss-sanitizer-bypass` a partir de los case_dir del results."""
+    """`angular/xss-sanitizer-bypass` from the results' case_dirs."""
     families = set()
     for engine in engines:
         for entry in engine.results["variants"]:
@@ -154,7 +154,7 @@ def load_run(directory: Path) -> Run | None:
 def load_legacy(path: Path) -> Run | None:
     results = _load_json(path)
     if not _is_results(results):
-        return None  # p. ej. el rastro de decisiones, que es una lista
+        return None  # e.g. the decisions trail, which is a list
     return Run(
         run_id=path.stem,
         started_at=results.get("run_at", ""),
@@ -164,7 +164,7 @@ def load_legacy(path: Path) -> Run | None:
 
 
 def list_runs(results_dir: Path = RESULTS_DIR) -> list[Run]:
-    """Todas las corridas, la mas nueva primero."""
+    """Every run, newest first."""
     runs: list[Run] = []
     runs_dir = results_dir / "runs"
     if runs_dir.is_dir():
@@ -178,9 +178,9 @@ def list_runs(results_dir: Path = RESULTS_DIR) -> list[Run]:
 
 
 def resolve(selector: str, runs: list[Run]) -> Run:
-    """Un run-id completo, un prefijo que no sea ambiguo, o `latest`."""
+    """A full run-id, an unambiguous prefix, or `latest`."""
     if not runs:
-        raise LookupError("no hay corridas todavia: `sast-bench run --help`")
+        raise LookupError("no runs yet: `sast-bench run --help`")
     if selector == "latest":
         return runs[0]
     exact = [r for r in runs if r.run_id == selector]
@@ -190,13 +190,13 @@ def resolve(selector: str, runs: list[Run]) -> Run:
     if len(matches) == 1:
         return matches[0]
     if not matches:
-        raise LookupError(f"no hay ninguna corrida {selector!r}: `sast-bench history` las lista")
+        raise LookupError(f"no run {selector!r}: `sast-bench history` lists them")
     ids = ", ".join(r.run_id for r in matches[:5])
-    raise LookupError(f"{selector!r} es ambiguo: {ids}")
+    raise LookupError(f"{selector!r} is ambiguous: {ids}")
 
 
 def split_selector(selector: str) -> tuple[str, str | None]:
-    """`<run-id>:<engine>` -> (run-id, engine). El engine es opcional."""
+    """`<run-id>:<engine>` -> (run-id, engine). The engine is optional."""
     run_id, _, tool = selector.partition(":")
     return run_id, tool or None
 
@@ -204,7 +204,7 @@ def split_selector(selector: str) -> tuple[str, str | None]:
 def latest_results_for(
     tool: str, case_ids: set[str], runs: list[Run], *, exclude: str | None = None
 ) -> tuple[Run, EngineRun] | None:
-    """La corrida mas nueva de `tool` que cubre todos los casos pedidos."""
+    """The newest run of `tool` that covers every requested case."""
     for run in runs:
         if run.run_id == exclude:
             continue
@@ -215,7 +215,7 @@ def latest_results_for(
 
 
 def decision_records(results_dir: Path = RESULTS_DIR) -> list[dict[str, Any]]:
-    """Todas las decisiones del filtro LLM guardadas hasta hoy, legacy y nuevas."""
+    """Every LLM filter decision saved so far, legacy and new."""
     paths = list(results_dir.glob("*hybrid-decisions.json"))
     runs_dir = results_dir / "runs"
     if runs_dir.is_dir():
@@ -228,7 +228,7 @@ def decision_records(results_dir: Path = RESULTS_DIR) -> list[dict[str, Any]]:
     return records
 
 
-# ---------------------------------------------------------------- escritura
+# ---------------------------------------------------------------- writing
 
 
 def new_run_id(now: dt.datetime, runs_dir: Path = RUNS_DIR) -> str:
@@ -240,7 +240,7 @@ def new_run_id(now: dt.datetime, runs_dir: Path = RUNS_DIR) -> str:
 
 
 def repo_state() -> dict[str, Any]:
-    """Commit del repo y si habia cambios sin commitear: define que corpus se midio."""
+    """Repo commit and whether there were uncommitted changes: it defines which corpus was measured."""
 
     def git(*args: str) -> str:
         completed = subprocess.run(

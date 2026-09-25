@@ -1,4 +1,4 @@
-"""Salida cruda de cada herramienta -> Finding comun."""
+"""Raw output of each tool -> common Finding."""
 
 from __future__ import annotations
 
@@ -9,10 +9,10 @@ from scoring.models import Finding
 
 
 def from_semgrep(payload: dict[str, Any], variant_dir: Path) -> list[Finding]:
-    """Normaliza el JSON de `semgrep --json` de una corrida sobre una variante.
+    """Normalize the `semgrep --json` output of a run over one variant.
 
-    Las rutas quedan relativas a la carpeta de la variante, asi el resultado no
-    depende de donde este montado el corpus.
+    Paths end up relative to the variant directory, so the result does not
+    depend on where the corpus is mounted.
     """
     findings: list[Finding] = []
     for result in payload.get("results", []):
@@ -28,10 +28,10 @@ def from_semgrep(payload: dict[str, Any], variant_dir: Path) -> list[Finding]:
 
 
 def from_codeql(payload: dict[str, Any]) -> list[Finding]:
-    """Normaliza el SARIF de `codeql database analyze` de una variante.
+    """Normalize the SARIF from `codeql database analyze` for one variant.
 
-    Las rutas del SARIF ya vienen relativas al --source-root, que es la carpeta
-    de la variante, asi que no hace falta recalcularlas.
+    SARIF paths are already relative to --source-root, which is the variant
+    directory, so there is nothing to recompute.
     """
     findings: list[Finding] = []
     for run in payload.get("runs", []):
@@ -47,8 +47,8 @@ def from_codeql(payload: dict[str, Any]) -> list[Finding]:
                     path=path,
                     line=line,
                     rule_id=rule_id,
-                    # CodeQL solo emite `level` cuando difiere del default de la
-                    # regla, asi que el default del driver es el que manda.
+                    # CodeQL only emits `level` when it differs from the rule's
+                    # default, so the driver's default is the one that applies.
                     severity=str(result.get("level") or levels.get(rule_id, "warning")).upper(),
                 )
             )
@@ -82,9 +82,9 @@ def _relative(raw_path: str, variant_dir: Path) -> str:
 
 
 def _short_rule_id(check_id: str) -> str:
-    """Semgrep prefija el check_id con la ruta del archivo de reglas.
+    """Semgrep prefixes the check_id with the path of the rule file.
 
     `javascript.browser.security.insecure-innerhtml` -> `insecure-innerhtml`.
-    El rule_map usa el id corto, que es el que publica la regla.
+    The rule_map uses the short id, which is the one the rule publishes.
     """
     return check_id.rsplit(".", 1)[-1] if check_id else check_id

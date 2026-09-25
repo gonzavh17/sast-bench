@@ -1,7 +1,7 @@
-"""Corre Semgrep sobre el corpus, una corrida por variante.
+"""Run Semgrep over the corpus, one scan per variant.
 
-Una corrida por variante evita tener que atribuir hallazgos por prefijo de ruta
-y garantiza que ningun gemelo contamine al otro.
+One scan per variant avoids attributing findings by path prefix and guarantees
+that neither twin contaminates the other.
 """
 
 from __future__ import annotations
@@ -44,15 +44,15 @@ def run_variant(variant_dir: Path, rules: Path) -> list[dict[str, Any]]:
         check=False,
     )
     if not completed.stdout.strip():
-        raise RuntimeError(f"semgrep no devolvio JSON para {variant_dir}:\n{completed.stderr}")
+        raise RuntimeError(f"semgrep returned no JSON for {variant_dir}:\n{completed.stderr}")
     payload = json.loads(completed.stdout)
     if payload.get("errors"):
-        print(f"  aviso: semgrep reporto {len(payload['errors'])} errores en {variant_dir}")
+        print(f"  warning: semgrep reported {len(payload['errors'])} errors in {variant_dir}")
     return [f.model_dump() for f in from_semgrep(payload, variant_dir)]
 
 
 def rules_provenance(rules: Path) -> dict[str, Any]:
-    """De donde salieron las reglas, para que el resultado diga contra que se midio."""
+    """Where the rules came from, so the result says what it was measured against."""
     if rules.resolve() == DEFAULT_DEST.resolve():
         recorded = json.loads((rules / PROVENANCE).read_text(encoding="utf-8"))
         return {
@@ -76,13 +76,13 @@ def scan(cases: list[Case], rules: Path, console: Console) -> dict[str, Any]:
     variants: list[dict[str, Any]] = []
     todo = [(case, label) for case in cases for label in VARIANT_LABELS]
     with progress_bar(console) as bar:
-        task = bar.add_task("escaneando", total=len(todo))
+        task = bar.add_task("scanning", total=len(todo))
         for case, label in todo:
             variant_dir = case.variant_dir(label)
             bar.update(task, description=f"{case.meta.id} {label}")
             findings = run_variant(variant_dir, rules)
             log_event(
-                console, "semgrep", f"{case.meta.id} {label:10} {len(findings)} hallazgos"
+                console, "semgrep", f"{case.meta.id} {label:10} {len(findings)} findings"
             )
             bar.advance(task)
             variants.append(
@@ -109,24 +109,24 @@ def main() -> None:
         "--rules",
         type=Path,
         default=DEFAULT_DEST,
-        help="carpeta de reglas; apuntala a otra para correr reglas propias",
+        help="rules directory; point it elsewhere to run your own rules",
     )
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
     if not (args.rules / PROVENANCE).exists() and args.rules.resolve() == DEFAULT_DEST.resolve():
-        parser.error("faltan las reglas oficiales; corre primero scripts/fetch_rules.py")
+        parser.error("the official rules are missing; run scripts/fetch_rules.py first")
 
     cases = discover_cases(args.corpus)
     if not cases:
-        parser.error(f"no se encontro ningun meta.yaml bajo {args.corpus}")
+        parser.error(f"no meta.yaml found under {args.corpus}")
     console = make_console()
-    log_event(console, "semgrep", f"{len(cases)} casos en {args.corpus}")
+    log_event(console, "semgrep", f"{len(cases)} cases in {args.corpus}")
 
     report = scan(cases, args.rules, console)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    log_event(console, "semgrep", f"escrito {args.out}")
+    log_event(console, "semgrep", f"wrote {args.out}")
 
 
 if __name__ == "__main__":

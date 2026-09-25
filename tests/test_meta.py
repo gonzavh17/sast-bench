@@ -1,7 +1,7 @@
-"""Valida el meta.yaml de cada caso del corpus.
+"""Validate the meta.yaml of every corpus case.
 
-Los chequeos viven en sast_bench/corpus.py: `sast-bench corpus validate` corre
-los mismos.
+The checks live in sast_bench/corpus.py: `sast-bench corpus validate` runs the
+same ones.
 """
 
 from __future__ import annotations
@@ -24,18 +24,18 @@ CORPUS = Path(__file__).resolve().parent.parent / "corpus"
 CASES = discover_cases(CORPUS)
 
 
-def test_corpus_no_esta_vacio():
-    """Un glob roto no se debe leer como suite verde."""
-    assert CASES, f"no se encontro ningun meta.yaml bajo {CORPUS}"
+def test_corpus_is_not_empty():
+    """A broken glob must not read as a green suite."""
+    assert CASES, f"no meta.yaml found under {CORPUS}"
 
 
-def test_ids_unicos():
+def test_ids_are_unique():
     ids = [c.meta.id for c in CASES]
-    assert len(ids) == len(set(ids)), f"ids duplicados: {ids}"
+    assert len(ids) == len(set(ids)), f"duplicated ids: {ids}"
 
 
-def test_validate_no_encuentra_problemas():
-    """Lo mismo que corre `sast-bench corpus validate`, sobre el corpus entero."""
+def test_validate_finds_no_problems():
+    """What `sast-bench corpus validate` runs, over the whole corpus."""
     _, problems = validate(CORPUS)
     assert not problems, problems
 
@@ -45,22 +45,22 @@ def case(request) -> Case:
     return request.param
 
 
-def test_ambas_variantes_existen_y_tienen_archivos(case: Case):
+def test_both_variants_exist_and_have_files(case: Case):
     assert not check_variant_dirs(case)
 
 
-def test_variantes_declaradas_coinciden_con_el_disco(case: Case):
+def test_declared_variants_match_the_disk(case: Case):
     assert not check_declared_variants(case)
 
 
-def test_la_vulnerable_declara_sink_y_la_safe_no(case: Case):
+def test_the_vulnerable_variant_declares_a_sink_and_the_safe_one_does_not(case: Case):
     assert not check_sink_declared(case)
 
 
-def test_el_sink_apunta_a_un_archivo_y_linea_reales(case: Case):
+def test_the_sink_points_to_a_real_file_and_line(case: Case):
     assert not check_sink_target(case)
 
 
-def test_el_sink_vive_dentro_de_la_variante_vulnerable(case: Case):
-    """Restriccion del corpus: cada variante es autocontenida."""
+def test_the_sink_lives_inside_the_vulnerable_variant(case: Case):
+    """Corpus rule: each variant is self-contained."""
     assert not check_sink_inside_vulnerable(case)

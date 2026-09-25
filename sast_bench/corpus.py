@@ -1,8 +1,8 @@
-"""Validacion y conteo del corpus.
+"""Corpus validation and counts.
 
-Los chequeos son los de tests/test_meta.py, sacados a funciones para que el
-test y `sast-bench corpus validate` corran exactamente lo mismo. Cada chequeo
-devuelve la lista de problemas que encontro; vacia es que esta bien.
+The checks are the ones from tests/test_meta.py, pulled out into functions so
+the test and `sast-bench corpus validate` run exactly the same thing. Each
+check returns the list of problems it found; empty means fine.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from pydantic import ValidationError
 
 from scoring.models import META_FILENAME, VARIANT_LABELS, Case, Difficulty, Family, load_case
 
-# PROJECT.md, "Distribucion": 4 pares por familia y dificultad.
+# PROJECT.md, "Distribution": 4 pairs per family and difficulty.
 PAIRS_PER_CELL = 4
 
 
@@ -25,19 +25,19 @@ def check_variant_dirs(case: Case) -> list[str]:
     for label in VARIANT_LABELS:
         variant_dir = case.variant_dir(label)
         if not variant_dir.is_dir():
-            problems.append(f"falta {variant_dir}")
+            problems.append(f"missing {variant_dir}")
         elif not any(p.is_file() for p in variant_dir.iterdir()):
-            problems.append(f"{variant_dir} esta vacia")
+            problems.append(f"{variant_dir} is empty")
     return problems
 
 
 def check_declared_variants(case: Case) -> list[str]:
     problems = []
     if set(case.meta.variants) != set(VARIANT_LABELS):
-        problems.append(f"variantes declaradas {sorted(case.meta.variants)}, se esperan {list(VARIANT_LABELS)}")
+        problems.append(f"declared variants {sorted(case.meta.variants)}, expected {list(VARIANT_LABELS)}")
     for label, variant in case.meta.variants.items():
         if variant.label != label:
-            problems.append(f"la variante {label} dice label: {variant.label}")
+            problems.append(f"variant {label} says label: {variant.label}")
     return problems
 
 
@@ -46,33 +46,33 @@ def check_sink_declared(case: Case) -> list[str]:
     vulnerable = case.meta.variants.get("vulnerable")
     safe = case.meta.variants.get("safe")
     if vulnerable is not None and vulnerable.sink is None:
-        problems.append("la vulnerable necesita sink")
+        problems.append("the vulnerable variant needs a sink")
     if safe is not None and safe.sink is not None:
-        problems.append("la safe no lleva sink")
+        problems.append("the safe variant takes no sink")
     return problems
 
 
 def check_sink_target(case: Case) -> list[str]:
     vulnerable = case.meta.variants.get("vulnerable")
     if vulnerable is None or vulnerable.sink is None:
-        return []  # lo reporta check_sink_declared
+        return []  # reported by check_sink_declared
     sink = vulnerable.sink
     target = case.directory / sink.file
     if not target.is_file():
-        return [f"el sink apunta a {target}, que no existe"]
+        return [f"the sink points to {target}, which does not exist"]
     total = len(target.read_text(encoding="utf-8").splitlines())
     if sink.line > total:
-        return [f"sink.line {sink.line} fuera de {target} ({total} lineas)"]
+        return [f"sink.line {sink.line} is out of {target} ({total} lines)"]
     return []
 
 
 def check_sink_inside_vulnerable(case: Case) -> list[str]:
-    """Restriccion del corpus: cada variante es autocontenida."""
+    """Corpus rule: each variant is self-contained."""
     vulnerable = case.meta.variants.get("vulnerable")
     if vulnerable is None or vulnerable.sink is None:
         return []
     if not vulnerable.sink.file.startswith("vulnerable/"):
-        return [f"el sink {vulnerable.sink.file} no esta dentro de vulnerable/"]
+        return [f"the sink {vulnerable.sink.file} is not inside vulnerable/"]
     return []
 
 
@@ -96,10 +96,10 @@ class Problem:
 
 
 def validate(corpus: Path) -> tuple[list[Case], list[Problem]]:
-    """Carga todos los casos y junta los problemas, sin cortar en el primero.
+    """Load every case and collect problems, without stopping at the first one.
 
-    Un meta.yaml que no carga (YAML roto, campo desconocido, familia fuera del
-    enum) es un problema mas: se reporta y se sigue con el resto.
+    A meta.yaml that does not load (broken YAML, unknown field, family outside
+    the enum) is one more problem: it gets reported and the rest carries on.
     """
     cases: list[Case] = []
     problems: list[Problem] = []
@@ -111,13 +111,13 @@ def validate(corpus: Path) -> tuple[list[Case], list[Problem]]:
             problems.append(Problem(str(meta.parent), " · ".join(first[:3])))
 
     if not cases and not problems:
-        problems.append(Problem(str(corpus), f"no hay ningun {META_FILENAME}"))
+        problems.append(Problem(str(corpus), f"no {META_FILENAME} found"))
 
     seen: dict[str, Case] = {}
     for case in cases:
         if case.meta.id in seen:
             problems.append(
-                Problem(str(case.directory), f"id {case.meta.id} repetido con {seen[case.meta.id].directory}")
+                Problem(str(case.directory), f"id {case.meta.id} duplicated with {seen[case.meta.id].directory}")
             )
         seen[case.meta.id] = case
         problems += [Problem(str(case.directory), message) for message in check_case(case)]
@@ -126,12 +126,12 @@ def validate(corpus: Path) -> tuple[list[Case], list[Problem]]:
 
 
 def distribution(cases: list[Case]) -> Counter:
-    """Pares por (familia, dificultad)."""
+    """Pairs per (family, difficulty)."""
     return Counter((case.meta.family, case.meta.difficulty) for case in cases)
 
 
 def short_cells(cases: list[Case]) -> list[tuple[Family, Difficulty, int]]:
-    """Celdas familia x dificultad con menos pares que los que pide PROJECT.md."""
+    """Family x difficulty cells with fewer pairs than PROJECT.md asks for."""
     counts = distribution(cases)
     return [
         (family, difficulty, counts[(family, difficulty)])

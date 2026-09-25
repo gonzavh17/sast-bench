@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Baja las reglas oficiales de Semgrep a una carpeta local.
+"""Download the official Semgrep rules into a local directory.
 
-Las reglas estan bajo la Semgrep Rules License v1.0, que permite usarlas para
-fines internos propios pero *prohibe redistribuirlas*. Por eso no se commitean:
-lo que se versiona es el commit exacto (RULES_COMMIT), asi cualquiera reproduce
-el mismo conjunto corriendo este script.
+The rules are under the Semgrep Rules License v1.0, which allows using them for
+your own internal purposes but *forbids redistributing them*. So they are not
+committed: what is versioned is the exact commit (RULES_COMMIT), so anyone can
+reproduce the same set by running this script.
 
     https://semgrep.dev/legal/rules-license
 """
@@ -30,10 +30,10 @@ PROVENANCE = ".provenance.json"
 
 
 def fetch(dest: Path, commit: str = RULES_COMMIT) -> int:
-    """Extrae los .yaml de RULES_PATHS en `dest`. Idempotente: reemplaza."""
+    """Extract the .yaml files under RULES_PATHS into `dest`. Idempotent: replaces."""
     url = f"https://github.com/{RULES_REPO}/archive/{commit}.tar.gz"
-    print(f"bajando {url}")
-    with urllib.request.urlopen(url) as response:  # noqa: S310 - URL fija
+    print(f"downloading {url}")
+    with urllib.request.urlopen(url) as response:  # noqa: S310 - fixed URL
         blob = response.read()
 
     if dest.exists():
@@ -62,14 +62,14 @@ def fetch(dest: Path, commit: str = RULES_COMMIT) -> int:
                 "paths": list(RULES_PATHS),
                 "rule_files": count,
                 "fetched_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-                "license": "Semgrep Rules License v1.0 - uso local, sin redistribuir",
+                "license": "Semgrep Rules License v1.0 - local use, no redistribution",
             },
             indent=2,
         )
         + "\n",
         encoding="utf-8",
     )
-    print(f"{count} archivos de reglas en {dest}")
+    print(f"{count} rule files in {dest}")
     return count
 
 

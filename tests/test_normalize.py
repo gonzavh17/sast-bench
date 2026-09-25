@@ -1,7 +1,7 @@
-"""Normalizacion de la salida cruda de cada herramienta al Finding comun.
+"""Normalization of each tool's raw output into the common Finding.
 
-Los payloads son sinteticos y minimos: cubren la forma del SARIF y del JSON de
-Semgrep sin invocar ninguna de las dos herramientas.
+Payloads are synthetic and minimal: they cover the shape of SARIF and of
+Semgrep's JSON without invoking either tool.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ def result(rule_id: str, uri: str, line: int, level: str | None = None) -> dict:
     return payload
 
 
-def test_codeql_extrae_ruta_linea_y_regla():
+def test_codeql_extracts_path_line_and_rule():
     findings = from_codeql(sarif([result("js/xss", "trusted-html.ts", 8, "error")]))
     assert len(findings) == 1
     assert findings[0].path == "trusted-html.ts"
@@ -48,8 +48,8 @@ def test_codeql_extrae_ruta_linea_y_regla():
     assert findings[0].severity == "ERROR"
 
 
-def test_codeql_usa_el_default_de_la_regla_cuando_el_result_no_trae_level():
-    """CodeQL solo emite `level` si difiere del default del driver."""
+def test_codeql_uses_the_rule_default_when_the_result_has_no_level():
+    """CodeQL only emits `level` when it differs from the driver default."""
     payload = sarif(
         [result("js/incomplete-sanitization", "a.ts", 3)],
         rules=[
@@ -62,18 +62,18 @@ def test_codeql_usa_el_default_de_la_regla_cuando_el_result_no_trae_level():
     assert from_codeql(payload)[0].severity == "WARNING"
 
 
-def test_codeql_no_acorta_el_rule_id():
-    """`js/xss` no lleva prefijo de ruta: cortar por el punto lo rompería."""
+def test_codeql_does_not_shorten_the_rule_id():
+    """`js/xss` has no path prefix: splitting on the dot would break it."""
     findings = from_codeql(sarif([result("js/incomplete-url-substring-sanitization", "a.ts", 1)]))
     assert findings[0].rule_id == "js/incomplete-url-substring-sanitization"
 
 
-def test_codeql_descarta_results_sin_ubicacion():
-    """Una query sin location no se puede atribuir a ninguna variante."""
+def test_codeql_drops_results_without_location():
+    """A result without a location cannot be attributed to any variant."""
     assert from_codeql(sarif([{"ruleId": "js/xss", "locations": []}])) == []
 
 
-def test_codeql_ordena_estable():
+def test_codeql_sorts_stably():
     findings = from_codeql(
         sarif(
             [
@@ -86,8 +86,8 @@ def test_codeql_ordena_estable():
     assert [(f.path, f.line) for f in findings] == [("a.ts", 2), ("a.ts", 9), ("b.ts", 1)]
 
 
-def test_semgrep_acorta_el_rule_id_y_relativiza_la_ruta():
-    """El de Semgrep sigue funcionando igual: los dos alimentan el mismo scoring."""
+def test_semgrep_shortens_the_rule_id_and_relativizes_the_path():
+    """Semgrep's path still works the same: both feed the same scoring."""
     variant_dir = Path("/corpus/ng-xss-001/vulnerable")
     payload = {
         "results": [

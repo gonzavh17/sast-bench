@@ -1,1 +1,1 @@
-"""Interfaz de linea de comandos de sast-bench. Ver `sast-bench --help`."""
+"""sast-bench command-line interface. See `sast-bench --help`."""

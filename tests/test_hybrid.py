@@ -1,8 +1,8 @@
-"""Las partes puras del filtro de la fase 3, sin tocar la API.
+"""The pure parts of the phase 3 filter, without touching the API.
 
-Lo que se mide aca es que filtrar no rompa el scoring: que una variante que
-queda sin hallazgos siga existiendo, y que descartar un hallazgo de varios no
-vacie la variante entera.
+What is checked here is that filtering does not break the scoring: a variant
+left without findings still exists, and dismissing one finding out of several
+does not empty the whole variant.
 """
 
 from __future__ import annotations
@@ -43,8 +43,8 @@ def results(variants: list[dict]) -> dict:
     return {"tool": "codeql", "variants": variants}
 
 
-def test_descartar_el_unico_hallazgo_deja_la_variante_vacia_pero_presente():
-    """Si la variante se cayera, tally la leeria como ausente en vez de limpia."""
+def test_dismissing_the_only_finding_leaves_the_variant_empty_but_present():
+    """If the variant were dropped, tally would read it as absent instead of clean."""
     f = finding()
     payload = results(
         [{"case_id": "ng-xss-009", "variant": "safe", "findings": [f.model_dump()]}]
@@ -55,7 +55,7 @@ def test_descartar_el_unico_hallazgo_deja_la_variante_vacia_pero_presente():
     assert out[0]["findings"] == []
 
 
-def test_descartar_uno_de_tres_conserva_los_otros_dos():
+def test_dismissing_one_of_three_keeps_the_other_two():
     keep_a, drop, keep_b = (
         finding("js/xss", line=8),
         finding("js/bad-tag-filter", line=3),
@@ -74,15 +74,15 @@ def test_descartar_uno_de_tres_conserva_los_otros_dos():
     assert [f["rule_id"] for f in out[0]["findings"]] == [keep_a.rule_id, keep_b.rule_id]
 
 
-def test_confirmado_no_descarta_nada():
+def test_confirmed_dismisses_nothing():
     f = finding()
     payload = results([{"case_id": "c", "variant": "vulnerable", "findings": [f.model_dump()]}])
     out = apply_decisions(payload, [record("c", "vulnerable", f, veredicto="confirmado")])
     assert len(out[0]["findings"]) == 1
 
 
-def test_el_descarte_no_cruza_de_variante():
-    """Mismo rule_id, misma linea, distinto gemelo: no se deben confundir."""
+def test_a_dismissal_does_not_cross_variants():
+    """Same rule_id, same line, different twin: they must not be confused."""
     f = finding()
     payload = results(
         [
@@ -98,29 +98,29 @@ def test_el_descarte_no_cruza_de_variante():
 
 @pytest.fixture
 def variant_dir(tmp_path: Path) -> Path:
-    (tmp_path / "svc.ts").write_text("uno\ndos\ntres\n", encoding="utf-8")
-    (tmp_path / "cmp.ts").write_text("alfa\nbeta\n", encoding="utf-8")
+    (tmp_path / "svc.ts").write_text("one\ntwo\nthree\n", encoding="utf-8")
+    (tmp_path / "cmp.ts").write_text("alpha\nbeta\n", encoding="utf-8")
     return tmp_path
 
 
-def test_el_contexto_incluye_todos_los_archivos_de_la_variante(variant_dir: Path):
-    """Sin esto los casos indirectos se juzgarian sin ver el origen del dato."""
+def test_the_context_includes_every_file_of_the_variant(variant_dir: Path):
+    """Without this, indirect cases would be judged without seeing where the data comes from."""
     context = build_context(variant_dir, finding(path="cmp.ts", line=2))
     assert "--- svc.ts ---" in context
     assert "--- cmp.ts ---" in context
-    assert "uno" in context and "beta" in context
+    assert "one" in context and "beta" in context
 
 
-def test_el_contexto_marca_la_linea_del_hallazgo_y_solo_esa(variant_dir: Path):
+def test_the_context_marks_the_finding_line_and_only_that_one(variant_dir: Path):
     context = build_context(variant_dir, finding(path="cmp.ts", line=2))
     marked = [line for line in context.splitlines() if line.startswith(">>>")]
     assert len(marked) == 1
     assert "beta" in marked[0]
 
 
-def test_la_marca_no_se_pone_en_la_misma_linea_de_otro_archivo(variant_dir: Path):
-    """La linea 2 existe en los dos archivos; solo se marca la del hallazgo."""
+def test_the_mark_does_not_land_on_the_same_line_of_another_file(variant_dir: Path):
+    """Line 2 exists in both files; only the finding's one is marked."""
     context = build_context(variant_dir, finding(path="svc.ts", line=2))
     marked = [line for line in context.splitlines() if line.startswith(">>>")]
     assert len(marked) == 1
-    assert "dos" in marked[0]
+    assert "two" in marked[0]

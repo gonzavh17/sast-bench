@@ -1,13 +1,13 @@
-"""Capa de presentacion. No calcula nada: formatea lo que ya calculo `metrics`.
+"""Presentation layer. It computes nothing: it formats what `metrics` computed.
 
-Todo lo que sale por aca es derivado del mismo `Score` que alimenta al JSON y al
-report.md. Si un numero de la terminal no coincide con el del JSON, es un bug de
-este archivo, no de las metricas.
+Everything shown here derives from the same `Score` that feeds the JSON and
+report.md. If a number in the terminal does not match the JSON, the bug is in
+this file, not in the metrics.
 
-Una sola idea de diseno: en la tabla de casos va **un simbolo por celda**, no
-siglas. TP/FN/FP/TN dicen que celda de la matriz ocupa la variante; lo que
-alguien quiere saber de un vistazo es otra cosa —si la herramienta sirvio o no—
-y eso son tres estados, no cuatro.
+One design idea: the case table shows **one symbol per cell**, not acronyms.
+TP/FN/FP/TN say which matrix cell a variant lands in; what someone wants at a
+glance is different (did the tool help or not) and that is three states, not
+four.
 """
 
 from __future__ import annotations
@@ -45,16 +45,16 @@ UNICODE = Symbols(solved="✓", missed="✗", false_alarm="!")
 ASCII = Symbols(solved="+", missed="x", false_alarm="!")
 
 GLOSSARY = (
-    ("solved", "detecto la falla y dejo pasar el codigo sano"),
-    ("missed", "se le escapo la falla"),
-    ("false_alarm", "falsa alarma: marco el codigo sano"),
+    ("solved", "caught the flaw and let the safe code through"),
+    ("missed", "missed the flaw"),
+    ("false_alarm", "false alarm: flagged the safe code"),
 )
 
 STYLES = {"solved": "green", "missed": "red", "false_alarm": "yellow"}
 
 
 def symbols_for(console: Console) -> Symbols:
-    """ASCII si la terminal no puede con los simbolos, o si lo piden a mano."""
+    """ASCII if the terminal cannot render the symbols, or if asked explicitly."""
     if os.environ.get("SAST_BENCH_ASCII"):
         return ASCII
     encoding = getattr(console.file, "encoding", None) or sys.getdefaultencoding()
@@ -66,10 +66,10 @@ def symbols_for(console: Console) -> Symbols:
 
 
 def make_console(*, record: bool = False, width: int | None = None) -> Console:
-    """rich ya respeta NO_COLOR y apaga el color fuera de una terminal.
+    """rich already honors NO_COLOR and turns color off outside a terminal.
 
-    Se pasa explicito igual: que el comportamiento este escrito en el codigo y
-    no dependa de una version de la libreria.
+    It is passed explicitly anyway, so the behavior is written in the code and
+    does not depend on a library version.
     """
     return Console(
         record=record,
@@ -80,10 +80,10 @@ def make_console(*, record: bool = False, width: int | None = None) -> Console:
 
 
 def outcome_of(pair: PairOutcome) -> str:
-    """Un pair a uno de los tres estados del glosario.
+    """A pair to one of the three glossary states.
 
-    El orden importa: si se le escapo la falla, eso es lo que se reporta aunque
-    ademas haya marcado al gemelo sano.
+    Order matters: if the flaw was missed, that is what gets reported even if
+    the safe twin was also flagged.
     """
     if pair.vulnerable.cell == "FN":
         return "missed"
@@ -95,8 +95,8 @@ def outcome_of(pair: PairOutcome) -> str:
 def engine_label(tool: str, version: str) -> str:
     """`semgrep` + `1.177.0` -> `semgrep 1.177.0`.
 
-    Un runner derivado ya trae el nombre y el modelo en su version
-    (`codeql 2.27.1 + claude-opus-5`); ese se deja como esta.
+    A derived runner already carries its name and model in the version
+    (`codeql 2.27.1 + claude-opus-5`); that one is left as is.
     """
     return version if version.startswith(tool.split("+")[0]) else f"{tool} {version}"
 
@@ -107,7 +107,7 @@ def header(console: Console, *, corpus: str, runs: list[tuple[str, dict, Score]]
         engine_label(tool, results["tool_version"]) for tool, results, _ in runs
     )
     console.print(
-        f"[bold]{corpus}[/bold] · {pairs} pares · {pairs * 2} variantes · {engines}",
+        f"[bold]{corpus}[/bold] · {pairs} pairs · {pairs * 2} variants · {engines}",
         highlight=False,
     )
 
@@ -120,11 +120,11 @@ def glossary(console: Console) -> None:
 
 
 def log_event(console: Console, engine: str, message: str) -> None:
-    """Una linea por evento: hora, engine entre corchetes, y que paso.
+    """One line per event: time, engine in brackets, and what happened.
 
-    Se corta con puntos suspensivos en vez de envolver: un motivo largo
-    partido en tres lineas arruina el log en vivo, y el texto completo queda
-    igual en el JSON de decisiones, que es el rastro auditable.
+    It is cut with an ellipsis instead of wrapping: a long reason split over
+    three lines ruins the live log, and the full text is kept in the decisions
+    JSON anyway, which is the auditable trail.
     """
     stamp = dt.datetime.now().strftime("%H:%M:%S")
     console.print(
@@ -148,7 +148,7 @@ def progress_bar(console: Console) -> Progress:
 
 
 def table_box(console: Console) -> box.Box:
-    """Si la terminal no banca los simbolos, tampoco banca el box-drawing."""
+    """If the terminal cannot render the symbols, it cannot render box drawing either."""
     return box.SIMPLE if symbols_for(console) is UNICODE else box.ASCII
 
 
@@ -160,8 +160,8 @@ def cases_table(
     by_case = {tool: {p.case_id: p for p in score.pairs} for tool, _, score in runs}
 
     table = Table(box=table_box(console), pad_edge=False)
-    table.add_column("caso", no_wrap=True)
-    table.add_column("dificultad", no_wrap=True)
+    table.add_column("case", no_wrap=True)
+    table.add_column("difficulty", no_wrap=True)
     for tool in tools:
         table.add_column(tool, justify="center", no_wrap=True)
 
@@ -175,12 +175,12 @@ def cases_table(
 
 
 def metrics_table(console: Console, runs: list[tuple[str, dict, Score]]) -> Table:
-    """Nombres en castellano. Las siglas y el resto viven en el JSON y report.md."""
+    """Plain names instead of acronyms. The acronyms and the rest live in the JSON and report.md."""
     table = Table(box=table_box(console), pad_edge=False)
     table.add_column("engine", no_wrap=True)
-    table.add_column("pares", justify="right", no_wrap=True)
-    table.add_column("encuentra", justify="right", no_wrap=True)
-    table.add_column("ruido", justify="right", no_wrap=True)
+    table.add_column("pairs", justify="right", no_wrap=True)
+    table.add_column("finds", justify="right", no_wrap=True)
+    table.add_column("false alarms", justify="right", no_wrap=True)
 
     for tool, _, score in runs:
         solved = sum(p.solved for p in score.pairs)
@@ -194,5 +194,5 @@ def metrics_table(console: Console, runs: list[tuple[str, dict, Score]]) -> Tabl
 
 
 def export_svg(console: Console, path: Any, title: str) -> None:
-    """Para meter la tabla en el README sin sacar una captura."""
+    """To put the table in the README without taking a screenshot."""
     console.save_svg(str(path), title=title)

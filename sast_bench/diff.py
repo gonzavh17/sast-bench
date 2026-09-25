@@ -1,7 +1,7 @@
-"""Que casos cambiaron de resultado entre dos corridas.
+"""Which cases changed outcome between two runs.
 
-El delta de las metricas dice poco: 5/12 -> 5/12 puede esconder dos casos que
-se arreglaron y dos que se rompieron. Lo que importa es la lista.
+The metric delta says little: 5/12 -> 5/12 can hide two cases that got fixed
+and two that broke. What matters is the list.
 """
 
 from __future__ import annotations
@@ -20,9 +20,9 @@ class Change:
 
 @dataclass
 class ScoreDiff:
-    fixed: list[Change]  # de fallo a acierto
-    broken: list[Change]  # de acierto a fallo
-    shifted: list[Change]  # mismo par, otras celdas (p. ej. FN/TN -> TP/FP)
+    fixed: list[Change]  # unsolved -> solved
+    broken: list[Change]  # solved -> unsolved
+    shifted: list[Change]  # still unsolved, other cells (e.g. FN/TN -> TP/FP)
     only_before: list[str]
     only_after: list[str]
     unchanged: int

@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Baja el bundle de CodeQL (CLI + packs de JS/TS precompilados) a una carpeta local.
+"""Download the CodeQL bundle (CLI + precompiled JS/TS packs) into a local directory.
 
-La CLI de CodeQL NO es open source: se usa bajo los "GitHub CodeQL Terms and
-Conditions", que permiten analizar un "Open Source Codebase" (un codebase
-publicado bajo licencia aprobada por la OSI), testear queries OSI y hacer
-academic research, pero *prohiben redistribuir la CLI*. Por eso el bundle no se
-commitea: se versiona la etiqueta exacta (BUNDLE_TAG) y este script lo baja.
+The CodeQL CLI is NOT open source: it is used under the "GitHub CodeQL Terms and
+Conditions", which allow analyzing an "Open Source Codebase" (a codebase
+released under an OSI-approved license), testing OSI queries and doing academic
+research, but *forbid redistributing the CLI*. So the bundle is not committed:
+the exact tag (BUNDLE_TAG) is versioned and this script downloads it.
 
-Este repo esta bajo MIT, asi que el corpus califica como Open Source Codebase.
+This repo is MIT-licensed, so the corpus qualifies as an Open Source Codebase.
 
     https://github.com/github/codeql-cli-binaries/blob/main/LICENSE.md
 
-Las queries (github/codeql) son MIT y si podrian redistribuirse; igual viajan
-dentro del bundle, que no.
+The queries (github/codeql) are MIT and could be redistributed; they ship
+inside the bundle anyway, which cannot.
 """
 
 from __future__ import annotations
@@ -39,24 +39,24 @@ PROVENANCE = ".provenance.json"
 
 
 def fetch(dest: Path, tag: str = BUNDLE_TAG) -> Path:
-    """Extrae el bundle en `dest`. Idempotente: reemplaza lo que haya."""
+    """Extract the bundle into `dest`. Idempotent: replaces whatever is there."""
     url = f"https://github.com/{BUNDLE_REPO}/releases/download/{tag}/{BUNDLE_ASSET}"
-    print(f"bajando {url}")
-    with urllib.request.urlopen(url) as response:  # noqa: S310 - URL fija
+    print(f"downloading {url}")
+    with urllib.request.urlopen(url) as response:  # noqa: S310 - fixed URL
         blob = zstd.decompress(response.read())
 
     if dest.exists():
         shutil.rmtree(dest)
     dest.mkdir(parents=True)
 
-    # El tar trae todo bajo `codeql/`; se aplana para que el binario quede en
-    # `dest/codeql` y no en `dest/codeql/codeql`.
+    # The tar has everything under `codeql/`; it is flattened so the binary
+    # ends up at `dest/codeql` and not `dest/codeql/codeql`.
     with tarfile.open(fileobj=io.BytesIO(blob), mode="r:") as tar:
         tar.extractall(dest.parent, filter="tar")
 
     binary = dest / "codeql"
     if not binary.is_file():
-        raise RuntimeError(f"el bundle no dejo un ejecutable en {binary}")
+        raise RuntimeError(f"the bundle left no executable at {binary}")
     binary.chmod(0o755)
 
     (dest / PROVENANCE).write_text(
@@ -68,14 +68,14 @@ def fetch(dest: Path, tag: str = BUNDLE_TAG) -> Path:
                 "language": LANGUAGE,
                 "suite": SUITE,
                 "fetched_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-                "license": "GitHub CodeQL Terms - solo sobre Open Source Codebase, sin redistribuir",
+                "license": "GitHub CodeQL Terms - Open Source Codebase only, no redistribution",
             },
             indent=2,
         )
         + "\n",
         encoding="utf-8",
     )
-    print(f"bundle {tag} en {dest}")
+    print(f"bundle {tag} in {dest}")
     return binary
 
 
