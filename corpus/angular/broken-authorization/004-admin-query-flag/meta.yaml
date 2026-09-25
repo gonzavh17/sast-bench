@@ -1,0 +1,18 @@
+id: ng-authz-004
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-807
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/dashboard.component.ts, line: 25}
+    rationale: >
+      El modo administrador se activa con ?admin=1 en la URL. Muestra la lista de
+      usuarios y el boton de bloquear a cualquiera que agregue el parametro.
+  safe:
+    label: safe
+    rationale: >
+      Mismo template, mismas acciones. El modo sale del rol que devuelve /api/me:
+      la URL no participa de la decision.

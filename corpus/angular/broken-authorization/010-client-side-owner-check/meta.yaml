@@ -1,0 +1,19 @@
+id: ng-authz-010
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-639
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/invoice-detail.component.ts, line: 31}
+    rationale: >
+      Hay un chequeo de dueno (ownerId !== me.id) y redirige a /forbidden. Pero la
+      factura ya llego al navegador: la respuesta de /api/invoices/:id queda en la
+      pestana de red. El control esta del lado equivocado de la red.
+  safe:
+    label: safe
+    rationale: >
+      Mismo id de la URL, misma redireccion. Se pide /api/me/invoices/:id: si la
+      factura no es del usuario, el servidor responde 404 y el dato nunca sale.

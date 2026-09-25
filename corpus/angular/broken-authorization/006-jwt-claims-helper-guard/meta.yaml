@@ -1,0 +1,21 @@
+id: ng-authz-006
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-602
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/auth.service.ts, line: 9}
+    rationale: >
+      readClaims decodifica el payload del JWT con atob, sin verificar la firma
+      (en el navegador no se puede). AuthService usa ese claim 'role' para decidir
+      si es admin y el guard confia en AuthService. Un token armado a mano con
+      role:admin pasa.
+  safe:
+    label: safe
+    rationale: >
+      El mismo helper sigue en uso, pero solo para mostrar el nombre en pantalla.
+      La decision de admin sale de /api/me. Mide si la herramienta distingue
+      decodificar para mostrar de decodificar para autorizar.

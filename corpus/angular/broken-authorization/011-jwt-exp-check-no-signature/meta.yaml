@@ -1,0 +1,20 @@
+id: ng-authz-011
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-347
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/admin.guard.ts, line: 12}
+    rationale: >
+      Parece una validacion completa: chequea que haya token, que no este vencido
+      y que el rol sea admin. Pero nunca verifica la firma. Un token armado a mano
+      con exp en el futuro y role:admin pasa todos los chequeos.
+  safe:
+    label: safe
+    rationale: >
+      Mismos chequeos de presencia y vencimiento, usados solo para cortar
+      temprano. El rol lo responde /api/session, que valida la firma del token en
+      el servidor.

@@ -1,0 +1,19 @@
+id: ng-authz-003
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-639
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/invoices.component.ts, line: 21}
+    rationale: >
+      El id del usuario cuyas facturas se piden sale de la URL (/users/:userId).
+      Cambiar el numero en la barra de direcciones pide las facturas de otro: la
+      pantalla delega en el cliente la eleccion de a quien pertenecen los datos.
+  safe:
+    label: safe
+    rationale: >
+      Misma pantalla, mismas facturas. La ruta /api/me/invoices no lleva id: el
+      servidor resuelve el dueno a partir de la sesion.

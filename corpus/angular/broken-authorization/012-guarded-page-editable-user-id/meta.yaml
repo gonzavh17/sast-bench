@@ -1,0 +1,20 @@
+id: ng-authz-012
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-639
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/settings.component.ts, line: 19}
+    rationale: >
+      La pagina esta protegida por un guard correcto contra /api/me: solo entra un
+      usuario logueado. Pero el id de la cuenta a borrar sale de ?user= en la URL.
+      Estar logueado no es lo mismo que ser el dueno: cualquier usuario borra a
+      otro.
+  safe:
+    label: safe
+    rationale: >
+      Mismo guard, misma ruta, mismo DELETE. El id sale de /api/me: el usuario
+      solo puede apuntar a su propia cuenta.

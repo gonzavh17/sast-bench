@@ -52,6 +52,19 @@ Así se mide si la herramienta entiende el patrón o solo reconoce una forma.
   es insuficiente. Mide si la herramienta *lee* la validación o solo ve que existe.
   El par se mantiene: no hay casos sueltos sin gemelo.
 
+### Criterio de `broken-authorization`
+
+La autorización se hace cumplir en el servidor, que no está en el corpus. Lo que
+se mide es si la herramienta nota que **el cliente toma o transmite una decisión
+de autorización basada en un dato que el usuario puede modificar**: rol en
+localStorage, claims de un JWT decodificado sin verificar, un id sacado de la
+URL, un header de identidad puesto por el cliente.
+
+La safe usa un dato que resolvió el servidor (`/api/me`, rutas `/api/me/...`,
+sesión en cookie). Asume que el servidor hace cumplir la regla; el caso no lo
+prueba. Límite conocido: un guard de Angular es evitable siempre, también en la
+safe. Lo que distingue a la vulnerable es que la autoridad vive en el cliente.
+
 ### Formato en disco
 
 Carpeta por par, metadata compartida. El vínculo entre gemelos es la carpeta misma.

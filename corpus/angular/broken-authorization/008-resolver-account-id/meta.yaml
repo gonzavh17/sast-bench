@@ -1,0 +1,20 @@
+id: ng-authz-008
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-639
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/account.service.ts, line: 14}
+    rationale: >
+      El accountId sale de la URL, lo lee el resolver y se lo pasa al servicio,
+      que arma /api/accounts/:id. Cambiar el numero en la URL carga la cuenta de
+      otro. La cadena cruza ruta, resolver y servicio; el componente solo recibe
+      el dato.
+  safe:
+    label: safe
+    rationale: >
+      Mismo resolver, mismo servicio, mismo componente. La ruta ya no lleva id y
+      el servicio pide /api/me/account: la cuenta la elige el servidor.
