@@ -1,5 +1,5 @@
-# Reglas de Semgrep: la Semgrep Rules License v1.0 permite usarlas localmente
-# pero prohibe redistribuirlas. Se bajan con scripts/fetch_rules.py.
+# Semgrep rules: the Semgrep Rules License v1.0 allows using them locally but
+# forbids redistributing them. Fetched with scripts/fetch_rules.py.
 runners/rules/
 
 .venv/
@@ -9,8 +9,8 @@ __pycache__/
 .pytest_cache/
 .env
 
-# CLI de CodeQL: los GitHub CodeQL Terms prohiben redistribuirla.
-# Se baja con scripts/fetch_codeql.py.
+# CodeQL CLI: the GitHub CodeQL Terms forbid redistributing it.
+# Fetched with scripts/fetch_codeql.py.
 runners/tools/
-# Bases de CodeQL cacheadas por contenido de variante (runners/codeql.py).
+# CodeQL databases cached by variant content (runners/codeql.py).
 .cache/

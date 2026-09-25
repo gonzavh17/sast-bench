@@ -1,7 +1,7 @@
 [project]
 name = "sast-bench"
 version = "0.1.0"
-description = "Benchmark de escaneres de seguridad sobre vulnerabilidades de Angular"
+description = "Benchmark of security scanners on Angular vulnerabilities"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"

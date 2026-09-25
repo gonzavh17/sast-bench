@@ -1,73 +1,75 @@
 # sast-bench
 
-Benchmark para medir qué tan bien detectan los escáneres de seguridad las
-vulnerabilidades específicas de Angular. Mide dos cosas: **cuánto encuentran de
-lo que hay** y **cuánto marcan de más**. Lo segundo casi ningún benchmark lo
-reporta, y es lo que más duele en la práctica.
+A benchmark that measures how well security scanners detect Angular-specific
+vulnerabilities. It measures two things: **how much of what is there they
+find** and **how much they flag that they should not**. Almost no benchmark
+reports the second one, and it is what hurts most in practice.
 
-Existe RealVuln para Python y el OWASP Benchmark para Java. Para Angular no hay
-nada equivalente. Ese es el hueco.
+RealVuln exists for Python and the OWASP Benchmark for Java. There is nothing
+equivalent for Angular. That is the gap.
 
-**Enfoque defensivo**: encontrar fallas en código propio para arreglarlas.
+**Defensive focus**: find flaws in your own code in order to fix them.
 
 ---
 
-## Alcance v1
+## v1 scope
 
-Tres familias de vulnerabilidades. El resto queda para después.
+Three vulnerability families. Everything else comes later.
 
-| id | familia | qué cubre |
+| id | family | what it covers |
 |---|---|---|
-| `xss-sanitizer-bypass` | XSS y escapes del sanitizador | marcar contenido como confiable a mano, HTML crudo en el DOM, manipulación directa del DOM esquivando el framework, URLs sin validar esquema |
-| `client-side-secrets` | datos sensibles del lado del cliente | secretos en archivos de configuración, tokens en el almacenamiento del navegador, datos en estado o logs |
-| `broken-authorization` | autorización mal ubicada | guards como única protección, UI por rol sin validación detrás, confiar en algo que el usuario puede modificar |
+| `xss-sanitizer-bypass` | XSS and sanitizer escapes | manually marking content as trusted, raw HTML in the DOM, direct DOM manipulation that goes around the framework, URLs with an unvalidated scheme |
+| `client-side-secrets` | sensitive data on the client | secrets in config files, tokens in browser storage, data in state or logs |
+| `broken-authorization` | misplaced authorization | guards as the only protection, role-based UI with no validation behind it, trusting something the user can modify |
 
-**Preparado para otros ecosistemas, sin abstraer todavía**: corpus por carpeta,
-campo `ecosystem` en cada caso, scoring que recibe la ruta del corpus como
-parámetro. Nada de capas de abstracción hasta que haya un segundo ecosistema real.
+**Ready for other ecosystems, without abstracting yet**: corpus by directory,
+an `ecosystem` field on every case, scoring that takes the corpus path as a
+parameter. No abstraction layers until there is a real second ecosystem.
 
 ---
 
-## Fase 1 — Corpus
+## Phase 1 — Corpus
 
-36 pares etiquetados a mano = **72 variantes**.
+36 hand-labeled pairs = **72 variants**.
 
-### Regla de los gemelos
+### The twin rule
 
-Por cada caso vulnerable existe su gemelo sano: el mismo patrón hecho bien.
-Así se mide si la herramienta entiende el patrón o solo reconoce una forma.
+Every vulnerable case has a safe twin: the same pattern done right. That
+measures whether the tool understands the pattern or only recognizes a shape.
 
-### Distribución
+### Distribution
 
-|                       | obvio | indirecto | señuelo | total |
-|-----------------------|-------|-----------|---------|-------|
-| `xss-sanitizer-bypass`  | 4     | 4         | 4       | 12    |
-| `client-side-secrets`   | 4     | 4         | 4       | 12    |
-| `broken-authorization`  | 4     | 4         | 4       | 12    |
-|                       |       |           |         | **36 pares** |
+|                        | obvious | indirect | decoy | total |
+|------------------------|---------|----------|-------|-------|
+| `xss-sanitizer-bypass` | 4       | 4        | 4     | 12    |
+| `client-side-secrets`  | 4       | 4        | 4     | 12    |
+| `broken-authorization` | 4       | 4        | 4     | 12    |
+|                        |         |          |       | **36 pairs** |
 
-- **obvio** — el dato va del source al sink de forma directa.
-- **indirecto** — el dato pasa por varias funciones antes de llegar al sink.
-- **señuelo** — ambas variantes tienen validación visible; la del lado vulnerable
-  es insuficiente. Mide si la herramienta *lee* la validación o solo ve que existe.
-  El par se mantiene: no hay casos sueltos sin gemelo.
+- **obvious** — the data goes from source to sink directly.
+- **indirect** — the data goes through several functions before reaching the sink.
+- **decoy** — both variants have visible validation; on the vulnerable side it
+  is insufficient. It measures whether the tool *reads* the validation or only
+  sees that it exists. The pair is kept: there are no loose cases without a twin.
 
-### Criterio de `broken-authorization`
+### `broken-authorization` criterion
 
-La autorización se hace cumplir en el servidor, que no está en el corpus. Lo que
-se mide es si la herramienta nota que **el cliente toma o transmite una decisión
-de autorización basada en un dato que el usuario puede modificar**: rol en
-localStorage, claims de un JWT decodificado sin verificar, un id sacado de la
-URL, un header de identidad puesto por el cliente.
+Authorization is enforced on the server, which is not in the corpus. What is
+measured is whether the tool notices that **the client makes or transmits an
+authorization decision based on data the user can modify**: a role in
+localStorage, claims from a JWT decoded without verification, an id taken from
+the URL, an identity header set by the client.
 
-La safe usa un dato que resolvió el servidor (`/api/me`, rutas `/api/me/...`,
-sesión en cookie). Asume que el servidor hace cumplir la regla; el caso no lo
-prueba. Límite conocido: un guard de Angular es evitable siempre, también en la
-safe. Lo que distingue a la vulnerable es que la autoridad vive en el cliente.
+The safe variant uses data the server resolved (`/api/me`, `/api/me/...`
+routes, a session cookie). It assumes the server enforces the rule; the case
+does not prove it. Known limit: an Angular guard can always be bypassed, in the
+safe variant too. What sets the vulnerable one apart is that the authority lives
+on the client.
 
-### Formato en disco
+### On-disk format
 
-Carpeta por par, metadata compartida. El vínculo entre gemelos es la carpeta misma.
+One directory per pair, shared metadata. The link between twins is the
+directory itself.
 
 ```
 corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html/
@@ -93,133 +95,133 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/profile.component.ts, line: 24}
     rationale: >
-      bypassSecurityTrustHtml aplicado a un valor que viene del
-      query param sin sanitizar.
+      bypassSecurityTrustHtml applied to a value that comes from the
+      query param without sanitizing.
   safe:
     label: safe
     rationale: >
-      Mismo render, usando binding [textContent]; Angular escapa por defecto.
+      Same render, using a [textContent] binding; Angular escapes by default.
 ```
 
-### Restricciones del corpus
+### Corpus rules
 
-- **Cada variante es autocontenida**: la cadena source → sink vive dentro de los
-  archivos de esa variante. Sin esto, las herramientas que resuelven imports
-  quedan con ventaja arbitraria y los casos `indirect` no son comparables.
-- Los casos los escribo yo o salen de proyectos open source (`source: oss`,
-  con atribución). **Nada de código de trabajo.**
-- `tests/` valida el `meta.yaml` de cada caso: campos obligatorios, familia y
-  dificultad dentro del enum, rutas de `sink` existentes, ambas variantes presentes.
+- **Every variant is self-contained**: the source → sink chain lives inside
+  that variant's files. Without this, tools that resolve imports get an
+  arbitrary advantage and `indirect` cases are not comparable.
+- Cases are written by me or come from open source projects (`source: oss`,
+  with attribution). **No code from work.**
+- `tests/` validates every case's `meta.yaml`: required fields, family and
+  difficulty inside the enum, existing `sink` paths, both variants present.
 
 ---
 
-## Fase 2 — Scoring
+## Phase 2 — Scoring
 
-Corre herramientas de reglas y LLMs contra el corpus y saca los números.
-**Esta fase es publicable sola.**
+Runs rule-based tools and LLMs against the corpus and produces the numbers.
+**This phase can be published on its own.**
 
-### Herramientas de reglas
+### Rule-based tools
 
-| herramienta | por qué está |
+| tool | why it is here |
 |---|---|
-| **Semgrep OSS** | baseline obvio: reglas TS/Angular, corre local, salida SARIF |
-| **CodeQL** (`javascript-typescript`) | el único con taint tracking real; debería brillar en los casos `indirect` |
-| **ESLint** (`@angular-eslint` + `eslint-plugin-security`) | no es SAST, pero es lo que la mayoría de los equipos Angular ya tiene puesto. Es el piso: cuánto agarrás sin instalar nada nuevo |
+| **Semgrep OSS** | the obvious baseline: TS/Angular rules, runs locally, SARIF output |
+| **CodeQL** (`javascript-typescript`) | the only one with real taint tracking; it should shine on `indirect` cases |
+| **ESLint** (`@angular-eslint` + `eslint-plugin-security`) | not SAST, but it is what most Angular teams already have. It is the floor: what you catch without installing anything new |
 
-Cada runner normaliza su salida a un `Finding` común: `{path, line, rule_id, severity}`.
+Every runner normalizes its output to a common `Finding`: `{path, line, rule_id, severity}`.
 
-### Matching — cuándo cuenta un acierto
+### Matching — when a hit counts
 
-Granularidad **caso + familia**. La precisión de ubicación se reporta aparte y
-no castiga el recall.
-
-```
-TP  = variante vulnerable con >=1 hallazgo mapeado a la familia esperada
-FN  = variante vulnerable sin ningún hallazgo de esa familia
-FP  = variante safe con >=1 hallazgo de cualquier familia de seguridad
-TN  = variante safe limpia
-```
-
-Requiere una tabla `rule_id → familia` por herramienta, en `scoring/rule_map/`,
-mantenida a mano y versionada. Es la pieza más frágil del scoring: se documenta
-qué versión de reglas se mapeó y cuándo.
-
-### Métricas
-
-**Titular — pair score:**
+Granularity is **case + family**. Location accuracy is reported separately
+and does not penalize recall.
 
 ```
-pair score = pares con (TP en vulnerable Y TN en safe) / 36
+TP  = vulnerable variant with >=1 finding mapped to the expected family
+FN  = vulnerable variant without any finding of that family
+FP  = safe variant with >=1 finding of any security family
+TN  = clean safe variant
 ```
 
-Una herramienta con recall 100% y FPR 100% saca pair score 0. Eso es exactamente
-lo que el benchmark quiere mostrar.
+It needs a `rule_id → family` table per tool, in `scoring/rule_map/`,
+maintained by hand and versioned. It is the most fragile piece of the scoring:
+which rules version was mapped, and when, is documented.
 
-**Siempre al lado:**
+### Metrics
+
+**Headline — pair score:**
+
+```
+pair score = pairs with (TP on vulnerable AND TN on safe) / 36
+```
+
+A tool with 100% recall and 100% FPR scores a pair score of 0. That is exactly
+what the benchmark wants to show.
+
+**Always next to it:**
 
 ```
 recall    = TP / (TP + FN)
-FPR       = FP / (FP + TN)          <- sobre los gemelos sanos
+FPR       = FP / (FP + TN)          <- over the safe twins
 precision = TP / (TP + FP)
 F1
 ```
 
-**Desglose:** por familia (3) y por dificultad (3), más:
+**Breakdown:** by family (3) and by difficulty (3), plus:
 
 ```
-localización = % de TPs cuyo hallazgo cae en sink.line ± 3
-ruido        = hallazgos extra por variante
+localization = % of TPs whose finding lands on sink.line ± 3
+noise        = extra findings per variant
 ```
 
 ### LLMs
 
-**Dos brazos**, el mismo corpus corrido dos veces. Separa "no sabe mirar" de
-"no sabe qué buscar", y el brazo ciego es el único comparable de verdad contra
-las herramientas de reglas.
+**Two arms**, the same corpus run twice. It separates "cannot look" from
+"does not know what to look for", and the blind arm is the only one truly
+comparable with the rule-based tools.
 
-- **A — ciego**: *"Sos un revisor de seguridad. Analizá este código Angular y
-  reportá las vulnerabilidades que encuentres. Si no hay ninguna, devolvé una
-  lista vacía."* No se nombran las familias.
-- **B — guiado**: el mismo código más las tres familias descriptas. Mide el techo
-  con el scope acotado.
+- **A — blind**: *"You are a security reviewer. Analyze this Angular code and
+  report the vulnerabilities you find. If there are none, return an empty
+  list."* The families are not named.
+- **B — guided**: the same code plus the three families described. It measures
+  the ceiling with a narrowed scope.
 
-En ambos brazos se pasa **una variante sola**, sin decir si es la vulnerable o la
-sana. Structured output vía `output_config.format`:
+Both arms get **one variant alone**, without saying whether it is the
+vulnerable or the safe one. Structured output via `output_config.format`:
 
 ```json
 {"findings": [{"family": "...", "line": 0, "severity": "...", "rationale": "..."}]}
 ```
 
-**Ejes a barrer** (una sola corrida por celda; sin repeticiones en v1):
+**Axes to sweep** (one run per cell; no repetitions in v1):
 
-| eje | valores |
+| axis | values |
 |---|---|
 | tier | `claude-opus-5`, `claude-sonnet-5`, `claude-haiku-4-5` |
-| effort | `low` / `high` / `xhigh` sobre `claude-opus-5` |
+| effort | `low` / `high` / `xhigh` on `claude-opus-5` |
 
-Notas de API: thinking adaptativo (`thinking: {type: "adaptive"}`) en los modelos
-que lo soportan; `output_config.effort` solo aplica a los modelos de la familia 5
-— `claude-haiku-4-5` corre sin ese parámetro y queda fuera del barrido de effort.
-Un solo proveedor en v1.
+API notes: adaptive thinking (`thinking: {type: "adaptive"}`) on the models
+that support it; `output_config.effort` only applies to the 5 family —
+`claude-haiku-4-5` runs without that parameter and stays out of the effort
+sweep. A single provider in v1.
 
-La clave de API va en `.env`, fuera del repo. `.env.example` versionado.
-
----
-
-## Fase 3 — Analizador híbrido (opcional)
-
-Reglas para la primera pasada + un LLM que revisa cada hallazgo y descarta falsas
-alarmas. Se mide contra el mismo corpus, con las mismas métricas, y entra como
-una fila más en la tabla de la fase 2.
-
-Es la última fase. Si las fases 1 y 2 salen bien, esto es un extra; no es el
-entregable.
+The API key goes in `.env`, outside the repo. `.env.example` is versioned.
 
 ---
 
-## Stack y estructura
+## Phase 3 — Hybrid analyzer (optional)
 
-Python + `uv`. El corpus es Angular; el harness no necesita serlo.
+Rules for the first pass + an LLM that reviews each finding and dismisses false
+alarms. It is measured against the same corpus, with the same metrics, and it
+goes in as one more row in the phase 2 table.
+
+It is the last phase. If phases 1 and 2 go well, this is an extra; it is not
+the deliverable.
+
+---
+
+## Stack and layout
+
+Python + `uv`. The corpus is Angular; the harness does not need to be.
 
 ```
 sast-bench/
@@ -229,33 +231,34 @@ sast-bench/
       client-side-secrets/...
       broken-authorization/...
   runners/
-    semgrep.py  codeql.py  eslint.py
-    llm.py
+    semgrep.py  codeql.py  hybrid.py
+    codeql-ext/         # CodeQL extension: session-credential names
+    eslint.py  llm.py   # planned
   scoring/
-    normalize.py        # salida de cada herramienta -> Finding común
-    console.py          # presentación: tablas, log en vivo, export a SVG
-    rule_map/           # semgrep.yaml, codeql.yaml, eslint.yaml
+    normalize.py        # each tool's output -> common Finding
+    console.py          # presentation: tables, live log, SVG export
+    rule_map/           # semgrep.yaml, codeql.yaml
     metrics.py
-    report.py
+    report.py  compare.py
+  sast_bench/           # the `sast-bench` CLI
   results/
-    2026-09-22-semgrep.json   2026-09-22-codeql.json
-    report-semgrep.md        report-codeql.md
-    compare.md               # tabla lado a lado + solapamiento
-    compare.svg              # la misma tabla, para el README
-  tests/                # valida el meta.yaml de cada caso
+    runs/<run-id>/      # one directory per CLI run: results + manifest.json
+    prediccion-*.md     # predictions, written before each run
+    compare*.md/.svg    # side-by-side tables
+  tests/
   pyproject.toml
   .env.example
 ```
 
-El scoring recibe la ruta del corpus como parámetro (`--corpus corpus/angular`),
-no la hardcodea.
+The scoring takes the corpus path as a parameter (`--corpus corpus/angular`);
+it does not hardcode it.
 
 ---
 
-## Abierto
+## Open questions
 
-- Mantenimiento del `rule_map`: se congela por versión de reglas o se regenera
-  en cada corrida.
-- Cómo se mapea la taxonomía libre del brazo ciego del LLM a las tres familias
-  (a mano, o pidiendo el `family` del enum en el schema y aceptando `other`).
-- Qué proyectos open source se usan como fuente para los casos `source: oss`.
+- `rule_map` maintenance: freeze it per rules version or regenerate it on
+  every run.
+- How the blind LLM arm's free-form taxonomy maps to the three families (by
+  hand, or by asking for the enum `family` in the schema and accepting `other`).
+- Which open source projects to use as a source for `source: oss` cases.
