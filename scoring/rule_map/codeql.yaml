@@ -42,4 +42,12 @@ rules:
   sast-bench/clear-text-storage-ext: client-side-secrets
   sast-bench/clear-text-logging-ext: client-side-secrets
 
+  # --- broken-authorization ---
+  # Sembradas antes de la primera corrida sobre la familia. Ver
+  # results/prediccion-authz.md: no se espera que disparen.
+  js/user-controlled-bypass: broken-authorization
+  js/jwt-missing-verification: broken-authorization
+  # js/client-side-request-forgery queda sin mapear a proposito (CWE-918, no
+  # es autorizacion). Si dispara, sale como ruido y se decide con el dato.
+
 ignore: []

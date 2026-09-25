@@ -30,4 +30,9 @@ rules:
   hardcoded-hmac-key: client-side-secrets
   react-jwt-in-localstorage: client-side-secrets
 
+  # --- broken-authorization ---
+  # Las dos exigen una libreria de JWT; los casos decodifican con atob.
+  jwt-decode-without-verify: broken-authorization
+  react-jwt-decoded-property: broken-authorization
+
 ignore: []
