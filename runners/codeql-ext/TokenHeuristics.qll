@@ -1,15 +1,15 @@
 /**
- * Nombres de credenciales de sesion que la heuristica de CodeQL no considera
- * sensibles.
+ * Session credential names that CodeQL's heuristic does not consider
+ * sensitive.
  *
- * `SensitiveDataHeuristics.qll` (codeql/concepts 0.0.32) cubre `password`,
- * `secret`, `apiKey`, `oauth`, `authKey`, pero no `accessToken`, `jwt` ni
- * `bearer`: justo lo que una SPA guarda despues del login. Esta extension suma
- * esos nombres como fuente para las dos queries de la familia.
+ * `SensitiveDataHeuristics.qll` (codeql/concepts 0.0.32) covers `password`,
+ * `secret`, `apiKey`, `oauth`, `authKey`, but not `accessToken`, `jwt` or
+ * `bearer`: exactly what an SPA stores after login. This extension adds those
+ * names as a source for the family's two queries.
  *
- * No se agrega `token` a secas: pega con `csrfToken`, `nextPageToken`,
- * `CancellationToken` o un tokenizer. Cuanto cuesta cada variante se mide
- * aparte, sobre repos reales.
+ * Bare `token` is not added: it matches `csrfToken`, `nextPageToken`,
+ * `CancellationToken` or a tokenizer. What each variant costs is measured
+ * separately, on real repos.
  */
 
 import javascript
@@ -17,15 +17,15 @@ import semmle.javascript.security.SensitiveActions
 import semmle.javascript.security.dataflow.CleartextLoggingCustomizations
 private import codeql.concepts.internal.SensitiveDataHeuristics
 
-/** Holds si `name` parece una credencial de sesion. */
+/** Holds if `name` looks like a session credential. */
 bindingset[name]
 predicate isSessionCredentialName(string name) {
   name.regexpMatch("(?i).*((access|refresh|id|auth|session|bearer).?token|jwt|bearer).*") and
-  // Reusa las exclusiones de CodeQL: hash, encrypt, url, path, etc.
+  // Reuse CodeQL's exclusions: hash, encrypt, url, path, etc.
   not name.regexpMatch(HeuristicNames::notSensitiveRegexp())
 }
 
-/** Una lectura de variable o propiedad cuyo nombre indica una credencial de sesion. */
+/** A variable or property read whose name indicates a session credential. */
 class SessionCredentialAccess extends DataFlow::Node {
   string name;
 
@@ -41,7 +41,7 @@ class SessionCredentialAccess extends DataFlow::Node {
   string getName() { result = name }
 }
 
-/** Fuente de `clear-text-storage`: extiende lo que CodeQL considera sensible. */
+/** Source for `clear-text-storage`: extends what CodeQL considers sensitive. */
 class SessionCredentialNode extends SensitiveNode instanceof SessionCredentialAccess {
   override string describe() { result = "an access to " + super.getName() }
 
@@ -50,7 +50,7 @@ class SessionCredentialNode extends SensitiveNode instanceof SessionCredentialAc
   }
 }
 
-/** Fuente de `clear-text-logging`, que tiene sus propias fuentes aparte de `SensitiveNode`. */
+/** Source for `clear-text-logging`, which has its own sources apart from `SensitiveNode`. */
 class SessionCredentialLogSource extends CleartextLogging::Source instanceof SessionCredentialAccess
 {
   override string describe() { result = "an access to " + super.getName() }

@@ -9,12 +9,13 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/changelog.component.ts, line: 15}
     rationale: >
-      insertAdjacentHTML parsea el string como markup y lo inserta en el DOM
-      sin pasar por el sanitizador de Angular, igual que .innerHTML. El valor
-      sale del query param `entry`.
+      insertAdjacentHTML parses the string as markup and inserts it into the DOM
+      without going through Angular's sanitizer, just like .innerHTML. The value
+      comes from the `entry` query param.
   safe:
     label: safe
     rationale: >
-      insertAdjacentText en la misma posicion del mismo nodo. Unica diferencia
-      entre gemelos: inserta el valor como texto, nunca lo parsea como HTML.
+      insertAdjacentText at the same position of the same node. It is the only
+      difference between the twins: it inserts the value as text and never parses
+      it as HTML.
 

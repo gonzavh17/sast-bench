@@ -9,15 +9,14 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/trusted-html.ts, line: 8}
     rationale: >
-      Hay limpieza a la vista, pero borrar <script> no borra lo que ejecuta JS
-      por atributo: `<img src=x onerror=alert(1)>` no tiene ninguna etiqueta
-      script y corre igual. El regex tampoco cubre `javascript:` en href ni las
-      etiquetas anidadas que se reconstruyen al sacar la de adentro.
+      There is visible cleanup, but removing <script> does not remove what runs JS
+      through attributes: `<img src=x onerror=alert(1)>` has no script tag and
+      still runs. The regex also misses `javascript:` in href and nested tags that
+      reassemble when the inner one is removed.
   safe:
     label: safe
     rationale: >
-      Mismo helper, misma firma, mismo bypass sobre el resultado. Cambia una
-      linea: sanitize(SecurityContext.HTML, html) en vez del regex. El
-      sanitizador de Angular saca los handlers on* y los esquemas peligrosos,
-      no solo las etiquetas.
+      Same helper, same signature, same bypass on the result. One line changes:
+      sanitize(SecurityContext.HTML, html) instead of the regex. Angular's
+      sanitizer removes on* handlers and dangerous schemes, not just tags.
 

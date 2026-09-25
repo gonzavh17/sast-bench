@@ -9,11 +9,11 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/profile.component.ts, line: 17}
     rationale: >
-      Se loguea el objeto de perfil entero, que incluye email, documento y
-      password. Queda en la consola del navegador de cada usuario y en cualquier
-      herramienta de monitoreo que capture la consola.
+      The whole profile object is logged, including email, national id and
+      password. It ends up in every user's browser console and in any monitoring
+      tool that captures the console.
   safe:
     label: safe
     rationale: >
-      Mismo log en la misma linea, con el id en vez del objeto. Un identificador
-      opaco alcanza para correlacionar y no expone nada.
+      Same log on the same line, with the id instead of the object. An opaque
+      identifier is enough to correlate and exposes nothing.

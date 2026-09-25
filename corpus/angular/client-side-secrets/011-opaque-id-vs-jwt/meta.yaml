@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/session-store.service.ts, line: 7}
     rationale: >
-      Las dos variantes guardan algo llamado session_token en sessionStorage y se
-      ven casi identicas. Esta guarda el JWT completo: quien lo lea puede actuar
-      como el usuario hasta que expire.
+      Both variants store something called session_token in sessionStorage and
+      look almost identical. This one stores the full JWT: whoever reads it can
+      act as the user until it expires.
   safe:
     label: safe
     rationale: >
-      Mismo storage, misma clave, misma firma. Guarda solo los primeros ocho
-      caracteres, que el backend usa como referencia opaca para reanudar la UI.
-      No autentica nada: sin la cookie httpOnly no sirve para nada.
+      Same storage, same key, same signature. It stores only the first eight
+      characters, which the backend uses as an opaque reference to resume the UI.
+      It authenticates nothing: without the httpOnly cookie it is useless.

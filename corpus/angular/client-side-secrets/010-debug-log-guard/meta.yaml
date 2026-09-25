@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/session-debug.service.ts, line: 13}
     rationale: >
-      Parece un log de desarrollo inofensivo, pero console.debug no lo elimina
-      ningun build: el nivel lo filtra la consola del navegador en tiempo de
-      ejecucion, no el compilador. En produccion se imprime el token de acceso.
+      It looks like a harmless development log, but no build removes
+      console.debug: the level is filtered by the browser console at runtime, not
+      by the compiler. In production it prints the access token.
   safe:
     label: safe
     rationale: >
-      Mismo console.debug, mismo mensaje, mismo servicio. Dos cambios minimos: un
-      early return con isDevMode(), que si se resuelve en build, y se loguea el
-      userId en vez de la sesion entera.
+      Same console.debug, same message, same service. Two minimal changes: an
+      early return with isDevMode(), which is resolved at build time, and logging
+      the userId instead of the whole session.

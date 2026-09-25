@@ -8,8 +8,8 @@ export class PaymentService {
   constructor(private http: HttpClient) {}
 
   charge(amountCents: number) {
-    // El backend tiene la clave; el navegador solo pide el cobro y la sesion
-    // viaja en una cookie httpOnly que el JS no puede leer.
+    // The backend holds the key; the browser only requests the charge and the session
+    // travels in an httpOnly cookie that JS cannot read.
     return this.http.post(`${environment.apiBaseUrl}/charges`, { amountCents }, {
       withCredentials: true,
     });

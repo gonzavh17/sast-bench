@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-/** Envoltorio generico sobre localStorage, usado por toda la app. */
+/** Generic wrapper over localStorage, used across the app. */
 @Injectable({ providedIn: 'root' })
 export class StorageService {
   save(key: string, value: string): void {

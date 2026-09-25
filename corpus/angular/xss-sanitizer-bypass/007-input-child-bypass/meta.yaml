@@ -9,13 +9,13 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/snippet.component.ts, line: 16}
     rationale: >
-      El padre lee el query param `snippet` y lo pasa por [html] al hijo. El
-      hijo bypasea su @Input() en ngOnChanges. El cruce ocurre en el template
-      del padre, asi que ningun .ts contiene el camino completo.
+      The parent reads the `snippet` query param and passes it through [html] to
+      the child. The child bypasses its @Input() in ngOnChanges. The crossing
+      happens in the parent's template, so no .ts file contains the whole path.
   safe:
     label: safe
     rationale: >
-      Mismo padre, mismo @Input(), mismo binding [innerHTML] en el hijo. El hijo
-      deja de inyectar DomSanitizer y bindea el string crudo: al no ser SafeHtml,
-      Angular lo sanea antes de insertarlo.
+      Same parent, same @Input(), same [innerHTML] binding in the child. The child
+      stops injecting DomSanitizer and binds the raw string: since it is not a
+      SafeHtml, Angular sanitizes it before inserting it.
 

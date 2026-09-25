@@ -10,8 +10,8 @@ export class ReportsService {
 
   download(reportId: string) {
     const url = buildReportUrl(environment.reportsBaseUrl, reportId);
-    // La sesion viaja en una cookie httpOnly: no queda en la URL, ni en el
-    // historial del navegador, ni en los logs del proxy.
+    // The session travels in an httpOnly cookie: it is not left in the URL, the
+    // browser history, or the proxy logs.
     return this.http.get(url, { responseType: 'blob', withCredentials: true });
   }
 }

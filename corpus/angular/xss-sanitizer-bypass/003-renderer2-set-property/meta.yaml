@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/banner.component.ts, line: 18}
     rationale: >
-      Renderer2.setProperty con la propiedad 'innerHTML' escribe markup
-      crudo sin pasar por el sanitizador. Que venga del API del framework
-      no agrega ninguna proteccion: equivale a tocar el DOM a mano.
+      Renderer2.setProperty with the 'innerHTML' property writes raw markup
+      without going through the sanitizer. Coming from the framework API adds no
+      protection: it is the same as touching the DOM by hand.
   safe:
     label: safe
     rationale: >
-      El mismo Renderer2.setProperty apuntando a 'textContent'. Unica
-      diferencia entre gemelos, y alcanza para que el valor nunca se
-      interprete como HTML.
+      The same Renderer2.setProperty targeting 'textContent'. It is the only
+      difference between the twins, and it is enough for the value never to be
+      interpreted as HTML.

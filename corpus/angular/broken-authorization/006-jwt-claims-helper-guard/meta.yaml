@@ -9,13 +9,13 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/auth.service.ts, line: 9}
     rationale: >
-      readClaims decodifica el payload del JWT con atob, sin verificar la firma
-      (en el navegador no se puede). AuthService usa ese claim 'role' para decidir
-      si es admin y el guard confia en AuthService. Un token armado a mano con
-      role:admin pasa.
+      readClaims decodes the JWT payload with atob, without verifying the
+      signature (a browser cannot). AuthService uses that 'role' claim to decide
+      whether the user is an admin, and the guard trusts AuthService. A hand-
+      crafted token with role:admin gets through.
   safe:
     label: safe
     rationale: >
-      El mismo helper sigue en uso, pero solo para mostrar el nombre en pantalla.
-      La decision de admin sale de /api/me. Mide si la herramienta distingue
-      decodificar para mostrar de decodificar para autorizar.
+      The same helper is still used, but only to show the name on screen. The
+      admin decision comes from /api/me. It measures whether the tool tells
+      decoding to display apart from decoding to authorize.

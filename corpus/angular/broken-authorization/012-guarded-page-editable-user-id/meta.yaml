@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/settings.component.ts, line: 19}
     rationale: >
-      La pagina esta protegida por un guard correcto contra /api/me: solo entra un
-      usuario logueado. Pero el id de la cuenta a borrar sale de ?user= en la URL.
-      Estar logueado no es lo mismo que ser el dueno: cualquier usuario borra a
-      otro.
+      The page is protected by a correct guard against /api/me: only a logged-in
+      user gets in. But the id of the account to delete comes from ?user= in the
+      URL. Being logged in is not the same as being the owner: any user can delete
+      another.
   safe:
     label: safe
     rationale: >
-      Mismo guard, misma ruta, mismo DELETE. El id sale de /api/me: el usuario
-      solo puede apuntar a su propia cuenta.
+      Same guard, same route, same DELETE. The id comes from /api/me: the user can
+      only target their own account.

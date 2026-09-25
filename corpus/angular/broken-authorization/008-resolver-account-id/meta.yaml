@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/account.service.ts, line: 14}
     rationale: >
-      El accountId sale de la URL, lo lee el resolver y se lo pasa al servicio,
-      que arma /api/accounts/:id. Cambiar el numero en la URL carga la cuenta de
-      otro. La cadena cruza ruta, resolver y servicio; el componente solo recibe
-      el dato.
+      The accountId comes from the URL, the resolver reads it and passes it to the
+      service, which builds /api/accounts/:id. Changing the number in the URL
+      loads someone else's account. The chain goes through route, resolver and
+      service; the component only receives the data.
   safe:
     label: safe
     rationale: >
-      Mismo resolver, mismo servicio, mismo componente. La ruta ya no lleva id y
-      el servicio pide /api/me/account: la cuenta la elige el servidor.
+      Same resolver, same service, same component. The route no longer carries an
+      id and the service requests /api/me/account: the server picks the account.

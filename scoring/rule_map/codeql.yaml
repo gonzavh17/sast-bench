@@ -1,35 +1,35 @@
-# rule_id -> familia, para CodeQL. Mantenido a mano y versionado.
+# rule_id -> family, for CodeQL. Maintained by hand and versioned.
 #
-# Los ids son los de SARIF (`js/xss`), que CodeQL publica tal cual. Cualquier
-# rule_id que aparezca en una corrida y no este ni en `rules` ni en `ignore` se
-# reporta como unmapped: cuenta como ruido, no entra en TP/FP, y el reporte lo
-# lista para que no se ignore por omision.
+# Ids are the SARIF ones (`js/xss`), which CodeQL publishes as is. Any rule_id
+# that shows up in a run and is in neither `rules` nor `ignore` is reported as
+# unmapped: it counts as noise, stays out of TP/FP, and the report lists it so
+# it is never ignored by omission.
 meta:
   tool: codeql
   rules_source: "github/codeql-action@codeql-bundle-v2.27.1 (javascript-security-extended)"
   mapped_at: "2026-09-23"
 
 rules:
-  # Taint de fuente remota a un sink de DOM/HTML.
+  # Taint from a remote source to a DOM/HTML sink.
   js/xss: xss-sanitizer-bypass
   js/xss-through-dom: xss-sanitizer-bypass
   js/html-constructed-from-input: xss-sanitizer-bypass
   js/unsafe-jquery-plugin: xss-sanitizer-bypass
-  # Validacion insuficiente: son las que apuntan a los decoy.
+  # Insufficient validation: these are the ones aimed at the decoys.
   js/incomplete-url-substring-sanitization: xss-sanitizer-bypass
   js/incomplete-multi-character-sanitization: xss-sanitizer-bypass
-  # Aparecio como unmapped en la corrida del 2026-09-22 sobre ng-xss-011:
-  # marca el regex que intenta filtrar etiquetas HTML. Es la familia.
+  # Showed up as unmapped in the 2026-09-22 run on ng-xss-011: it flags the
+  # regex that tries to filter HTML tags. It belongs to the family.
   js/bad-tag-filter: xss-sanitizer-bypass
   js/incomplete-sanitization: xss-sanitizer-bypass
   js/incomplete-hostname-regexp: xss-sanitizer-bypass
-  # La familia incluye "URLs sin validar esquema".
+  # The family includes "URLs with an unvalidated scheme".
   js/client-side-unvalidated-url-redirection: xss-sanitizer-bypass
 
   # --- client-side-secrets ---
-  # Sembradas antes de la primera corrida sobre la familia, leyendo la suite
-  # javascript-security-extended. Las que no disparen quedan igual: el costo
-  # de mapear de mas es cero, el de no mapear es contar un TP como ruido.
+  # Seeded before the first run on the family, reading the
+  # javascript-security-extended suite. The ones that never fire stay anyway: the
+  # cost of over-mapping is zero, the cost of not mapping is counting a TP as noise.
   js/clear-text-storage-of-sensitive-data: client-side-secrets
   js/clear-text-logging: client-side-secrets
   js/hardcoded-credentials: client-side-secrets
@@ -37,17 +37,17 @@ rules:
   js/build-artifact-leak: client-side-secrets
   js/password-in-configuration-file: client-side-secrets
   js/empty-password-in-configuration-file: client-side-secrets
-  # Versiones extendidas de runners/codeql-ext/ (suman accessToken, jwt,
-  # bearer, etc. a la heuristica de nombres). Solo aparecen en codeql+ext.
+  # Extended versions from runners/codeql-ext/ (they add accessToken, jwt,
+  # bearer, etc. to the name heuristic). They only show up in codeql+ext.
   sast-bench/clear-text-storage-ext: client-side-secrets
   sast-bench/clear-text-logging-ext: client-side-secrets
 
   # --- broken-authorization ---
-  # Sembradas antes de la primera corrida sobre la familia. Ver
-  # results/prediccion-authz.md: no se espera que disparen.
+  # Seeded before the first run on the family. See
+  # results/prediccion-authz.md: they are not expected to fire.
   js/user-controlled-bypass: broken-authorization
   js/jwt-missing-verification: broken-authorization
-  # js/client-side-request-forgery queda sin mapear a proposito (CWE-918, no
-  # es autorizacion). Si dispara, sale como ruido y se decide con el dato.
+  # js/client-side-request-forgery is left unmapped on purpose (CWE-918, not
+  # authorization). If it fires, it shows up as noise and gets decided with data.
 
 ignore: []

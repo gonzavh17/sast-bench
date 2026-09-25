@@ -9,11 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/refund.service.ts, line: 10}
     rationale: >
-      El pedido de reembolso viaja con el rol que el cliente dice tener, leido de
-      localStorage. Si el backend usa ese campo para autorizar, cualquier usuario
-      se declara 'admin' editando el storage o el body del request.
+      The refund request travels with the role the client claims to have, read
+      from localStorage. If the backend uses that field to authorize, any user can
+      declare themselves 'admin' by editing the storage or the request body.
   safe:
     label: safe
     rationale: >
-      Mismo endpoint, mismo body salvo el rol. La identidad viaja en la cookie de
-      sesion y el servidor deriva el rol de ella: el cliente no afirma nada.
+      Same endpoint, same body except for the role. The identity travels in the
+      session cookie and the server derives the role from it: the client asserts
+      nothing.

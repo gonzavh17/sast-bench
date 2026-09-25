@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/identity.interceptor.ts, line: 12}
     rationale: >
-      OrdersService pide /api/orders sin decir de quien: la identidad la agrega el
-      interceptor en un header X-User-Id leido de localStorage. Cambiar ese valor
-      en el storage hace que cada request de la app hable en nombre de otro
-      usuario. El servicio que pide los datos no muestra nada raro.
+      OrdersService requests /api/orders without saying for whom: the identity is
+      added by the interceptor in an X-User-Id header read from localStorage.
+      Changing that value in storage makes every request of the app speak for
+      another user. The service requesting the data shows nothing unusual.
   safe:
     label: safe
     rationale: >
-      Mismo servicio, mismo interceptor registrado. El interceptor solo manda la
-      cookie de sesion; quien es el usuario lo decide el servidor.
+      Same service, same registered interceptor. The interceptor only sends the
+      session cookie; the server decides who the user is.

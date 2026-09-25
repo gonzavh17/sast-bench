@@ -9,10 +9,10 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/dashboard.component.ts, line: 25}
     rationale: >
-      El modo administrador se activa con ?admin=1 en la URL. Muestra la lista de
-      usuarios y el boton de bloquear a cualquiera que agregue el parametro.
+      Admin mode is turned on with ?admin=1 in the URL. It shows the user list and
+      the ban button to anyone who adds the parameter.
   safe:
     label: safe
     rationale: >
-      Mismo template, mismas acciones. El modo sale del rol que devuelve /api/me:
-      la URL no participa de la decision.
+      Same template, same actions. The mode comes from the role /api/me returns:
+      the URL takes no part in the decision.

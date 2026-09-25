@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class SessionStoreService {
-  /** Guarda solo la referencia opaca que el backend usa para reanudar la UI.
-   *  No autentica nada: sin la cookie httpOnly no sirve para nada. */
+  /** Stores only the opaque reference the backend uses to resume the UI.
+   *  It authenticates nothing: without the httpOnly cookie it is useless. */
   remember(sessionToken: string): void {
     sessionStorage.setItem('session_token', sessionToken.slice(0, 8));
   }

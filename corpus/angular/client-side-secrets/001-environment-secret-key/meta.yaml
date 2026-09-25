@@ -9,13 +9,13 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/environment.ts, line: 5}
     rationale: >
-      environment.ts se compila dentro del bundle que baja el navegador, asi que
-      la clave secreta de Stripe queda legible para cualquiera que abra las
-      herramientas del navegador. El servicio la manda en un header Authorization,
-      pero el problema es que el valor este del lado del cliente.
+      environment.ts is compiled into the bundle the browser downloads, so the
+      Stripe secret key is readable by anyone who opens the browser's dev tools.
+      The service sends it in an Authorization header, but the problem is that the
+      value lives on the client side at all.
   safe:
     label: safe
     rationale: >
-      environment.ts solo tiene la URL base. El cobro lo hace el backend, que es
-      el unico que conoce la clave, y la sesion viaja en una cookie httpOnly que
-      el JavaScript de la pagina no puede leer.
+      environment.ts only has the base URL. The charge is made by the backend, the
+      only one that knows the key, and the session travels in an httpOnly cookie
+      that the page's JavaScript cannot read.

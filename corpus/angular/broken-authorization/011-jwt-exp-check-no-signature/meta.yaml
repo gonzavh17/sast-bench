@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/admin.guard.ts, line: 12}
     rationale: >
-      Parece una validacion completa: chequea que haya token, que no este vencido
-      y que el rol sea admin. Pero nunca verifica la firma. Un token armado a mano
-      con exp en el futuro y role:admin pasa todos los chequeos.
+      It looks like full validation: it checks there is a token, that it has not
+      expired and that the role is admin. But it never verifies the signature. A
+      hand-crafted token with a future exp and role:admin passes every check.
   safe:
     label: safe
     rationale: >
-      Mismos chequeos de presencia y vencimiento, usados solo para cortar
-      temprano. El rol lo responde /api/session, que valida la firma del token en
-      el servidor.
+      Same presence and expiry checks, used only to bail out early. The role is
+      answered by /api/session, which validates the token's signature on the
+      server.

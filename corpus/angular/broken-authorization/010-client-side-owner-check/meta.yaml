@@ -9,11 +9,13 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/invoice-detail.component.ts, line: 31}
     rationale: >
-      Hay un chequeo de dueno (ownerId !== me.id) y redirige a /forbidden. Pero la
-      factura ya llego al navegador: la respuesta de /api/invoices/:id queda en la
-      pestana de red. El control esta del lado equivocado de la red.
+      There is an owner check (ownerId !== me.id) and it redirects to /forbidden.
+      But the invoice has already reached the browser: the response of
+      /api/invoices/:id sits in the network tab. The control is on the wrong side
+      of the network.
   safe:
     label: safe
     rationale: >
-      Mismo id de la URL, misma redireccion. Se pide /api/me/invoices/:id: si la
-      factura no es del usuario, el servidor responde 404 y el dato nunca sale.
+      Same id from the URL, same redirect. It requests /api/me/invoices/:id: if
+      the invoice is not the user's, the server answers 404 and the data never
+      leaves.

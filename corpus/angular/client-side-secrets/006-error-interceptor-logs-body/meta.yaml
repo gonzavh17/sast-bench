@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/error.interceptor.ts, line: 11}
     rationale: >
-      El interceptor loguea req.body de toda peticion que falle. El componente de
-      login no loguea nada, pero manda la contrasena en el body: si el login
-      falla, la contrasena termina en la consola. El componente y el interceptor
-      estan en archivos distintos y ninguno se ve raro por separado.
+      The interceptor logs req.body of every failed request. The login component
+      logs nothing, but it sends the password in the body: if the login fails, the
+      password ends up in the console. The component and the interceptor are in
+      different files and neither looks odd on its own.
   safe:
     label: safe
     rationale: >
-      Mismo interceptor, mismo catchError, mismo console.error. Se loguea la URL
-      y el status, que es lo que sirve para diagnosticar, y no el body.
+      Same interceptor, same catchError, same console.error. It logs the URL and
+      the status, which is what helps with diagnosis, and not the body.

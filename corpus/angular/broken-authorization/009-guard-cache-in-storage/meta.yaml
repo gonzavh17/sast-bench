@@ -9,11 +9,11 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/admin.guard.ts, line: 11}
     rationale: >
-      El guard si consulta /api/me, pero guarda el rol en localStorage y lo lee
-      primero en la proxima navegacion. Escribir me_role=admin en el storage
-      saltea la consulta al servidor. La validacion existe; el cache la anula.
+      The guard does call /api/me, but it stores the role in localStorage and
+      reads it first on the next navigation. Writing me_role=admin into storage
+      skips the call to the server. The validation exists; the cache defeats it.
   safe:
     label: safe
     rationale: >
-      Mismo guard, misma consulta, mismo cache. El cache vive en una variable del
-      modulo: dura lo que la pestana y no hay storage donde escribirlo.
+      Same guard, same call, same cache. The cache lives in a module variable: it
+      lasts as long as the tab and there is no storage to write it to.

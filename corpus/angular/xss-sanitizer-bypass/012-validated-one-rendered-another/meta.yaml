@@ -9,14 +9,14 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/summary.component.ts, line: 23}
     rationale: >
-      El sanitizador se llama de verdad y sobre el valor correcto, pero el
-      resultado queda en `clean` y solo se usa para el if. Lo que se envuelve y
-      termina en el DOM es `raw`, el original sin tocar: la limpieza se calcula
-      y se descarta.
+      The sanitizer is really called, on the right value, but the result stays in
+      `clean` and is only used for the if. What gets wrapped and ends up in the
+      DOM is `raw`, the untouched original: the cleanup is computed and thrown
+      away.
   safe:
     label: safe
     rationale: >
-      Identico salvo el identificador que recibe el bypass: `clean` en vez de
-      `raw`. Un caracter de diferencia entre un componente sano y uno
-      explotable.
+      Identical except for the identifier passed to the bypass: `clean` instead of
+      `raw`. One word of difference between a safe component and an exploitable
+      one.
 

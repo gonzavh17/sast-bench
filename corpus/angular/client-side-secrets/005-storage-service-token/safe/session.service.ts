@@ -14,7 +14,7 @@ export class SessionService {
     return this.http.post<{ accessToken: string }>('/api/login', { email, password }).pipe(
       tap((response) => {
         this.accessToken = response.accessToken;
-        // En disco solo queda la preferencia de idioma, no la credencial.
+        // Only the language preference goes to disk, not the credential.
         this.storage.save('locale', 'es-AR');
       }),
     );

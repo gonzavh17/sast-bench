@@ -9,15 +9,15 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/trusted-html.ts, line: 5}
     rationale: >
-      toTrustedHtml() aplica bypassSecurityTrustHtml a cualquier string que le
-      pasen. El componente lee el query param `body` y se lo entrega. El helper
-      no sabe de donde viene el dato y el componente no sabe que el helper
-      bypasea: la falla solo existe al juntar los dos archivos.
+      toTrustedHtml() applies bypassSecurityTrustHtml to any string it receives.
+      The component reads the `body` query param and hands it over. The helper
+      does not know where the data comes from and the component does not know the
+      helper bypasses: the flaw only exists when both files come together.
   safe:
     label: safe
     rationale: >
-      Helper con la misma firma y el mismo llamador, pero devuelve
-      sanitize(SecurityContext.HTML, html) en vez de marcar el valor como
-      confiable. Al bindear un string (y no un SafeHtml) con [innerHTML],
-      Angular vuelve a sanear por su cuenta.
+      Helper with the same signature and the same caller, but it returns
+      sanitize(SecurityContext.HTML, html) instead of marking the value as
+      trusted. When a string (not a SafeHtml) is bound with [innerHTML], Angular
+      sanitizes it again on its own.
 

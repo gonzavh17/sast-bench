@@ -9,14 +9,14 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/safe-html.pipe.ts, line: 9}
     rationale: >
-      El pipe safeHtml bypasea todo lo que le entra, y el template se lo aplica
-      al query param `body`. El componente no toca el DomSanitizer: la decision
-      insegura esta en el pipe y el dato peligroso llega por el template, que es
-      donde se unen las dos mitades.
+      The safeHtml pipe bypasses everything that comes in, and the template
+      applies it to the `body` query param. The component never touches
+      DomSanitizer: the unsafe decision is in the pipe and the dangerous data
+      arrives through the template, which is where both halves meet.
   safe:
     label: safe
     rationale: >
-      Mismo pipe, mismo nombre, mismo uso en el template. transform() devuelve
-      sanitize(SecurityContext.HTML, value): el pipe sigue existiendo y la
-      indireccion es identica, solo deja de marcar como confiable.
+      Same pipe, same name, same use in the template. transform() returns
+      sanitize(SecurityContext.HTML, value): the pipe still exists and the
+      indirection is identical, it just stops marking the value as trusted.
 

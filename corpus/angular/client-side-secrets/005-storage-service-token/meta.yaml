@@ -9,13 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/session.service.ts, line: 13}
     rationale: >
-      StorageService es un envoltorio generico que no sabe que le estan pasando:
-      recibe una clave y un valor. El que decide guardar la credencial es
-      SessionService, en otro archivo. Ninguno de los dos contiene el problema
-      completo.
+      StorageService is a generic wrapper that does not know what it is given: it
+      takes a key and a value. The one that decides to store the credential is
+      SessionService, in another file. Neither of them contains the whole problem.
   safe:
     label: safe
     rationale: >
-      Mismo envoltorio, mismo llamador, misma llamada a save(). Lo que cambia es
-      que baja al disco: la preferencia de idioma en vez del token, que queda en
-      un campo privado en memoria.
+      Same wrapper, same caller, same call to save(). What changes is what goes to
+      disk: the language preference instead of the token, which stays in a private
+      field in memory.

@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/auth.service.ts, line: 12}
     rationale: >
-      El access token se persiste en localStorage, que no expira, sobrevive a
-      cerrar el navegador y es legible por cualquier script que corra en el
-      origen. Un solo XSS en cualquier pagina del sitio se lleva la sesion.
+      The access token is persisted in localStorage, which never expires, survives
+      closing the browser and is readable by any script running on the origin. A
+      single XSS on any page of the site takes the session.
   safe:
     label: safe
     rationale: >
-      Mismo login, misma respuesta. El token queda en un campo privado del
-      servicio: vive en memoria, muere al recargar, y ningun script lo puede leer
-      desde otro lado.
+      Same login, same response. The token stays in a private field of the
+      service: it lives in memory, dies on reload, and no script can read it from
+      elsewhere.

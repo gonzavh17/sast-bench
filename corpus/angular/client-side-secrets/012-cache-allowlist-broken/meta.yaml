@@ -9,12 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/public-cache.interceptor.ts, line: 11}
     rationale: >
-      Hay allowlist a la vista y con el nombre correcto, pero includes() busca el
-      texto en cualquier parte de la URL. /api/me?redirect=/public/home entra a la
-      cache, y tambien cualquier endpoint cuyo path contenga ese fragmento mas
-      adelante.
+      There is a visible allowlist with the right name, but includes() looks for
+      the text anywhere in the URL. /api/me?redirect=/public/home gets into the
+      cache, and so does any endpoint whose path contains that fragment further
+      along.
   safe:
     label: safe
     rationale: >
-      Misma cache, mismo nombre de metodo, misma idea. Parsea la URL y pregunta si
-      el pathname empieza con /public/, que es lo que el chequeo queria decir.
+      Same cache, same method name, same idea. It parses the URL and asks whether
+      the pathname starts with /public/, which is what the check meant to say.

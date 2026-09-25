@@ -9,11 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/role.service.ts, line: 7}
     rationale: >
-      Cuatro archivos: la ruta pide el rol 'finance', el guard compara contra lo
-      que devuelve RoleService, y RoleService lo lee de localStorage. Ni el guard
-      ni la ruta muestran de donde sale el rol; el problema esta en el servicio.
+      Four files: the route asks for the 'finance' role, the guard compares
+      against what RoleService returns, and RoleService reads it from
+      localStorage. Neither the guard nor the route shows where the role comes
+      from; the problem is in the service.
   safe:
     label: safe
     rationale: >
-      Misma ruta, mismo guard, misma firma de currentRole(). El servicio pide el
-      rol a /api/me en vez de leerlo del storage.
+      Same route, same guard, same currentRole() signature. The service asks
+      /api/me for the role instead of reading it from storage.

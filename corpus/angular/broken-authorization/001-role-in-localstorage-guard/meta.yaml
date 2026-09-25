@@ -9,13 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/admin.guard.ts, line: 5}
     rationale: >
-      El guard decide el acceso al panel con el rol guardado en localStorage.
-      Cualquiera lo cambia desde la consola del navegador
-      (localStorage.setItem('role', 'admin')). Que la app tome su rol de ahi
-      indica que la autoridad vive en el cliente.
+      The guard decides access to the panel with the role stored in localStorage.
+      Anyone can change it from the browser console (localStorage.setItem('role',
+      'admin')). The app taking its role from there means the authority lives on
+      the client.
   safe:
     label: safe
     rationale: >
-      Mismo guard, misma ruta, mismo panel. El rol sale de /api/me, que el
-      servidor resuelve a partir de la sesion: el cliente no tiene donde
-      escribirlo.
+      Same guard, same route, same panel. The role comes from /api/me, which the
+      server resolves from the session: the client has nowhere to write it.

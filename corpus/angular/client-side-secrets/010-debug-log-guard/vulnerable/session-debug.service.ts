@@ -8,8 +8,8 @@ export interface Session {
 @Injectable({ providedIn: 'root' })
 export class SessionDebugService {
   trace(session: Session): void {
-    // console.debug no se elimina en el build de produccion: el nivel lo
-    // decide la consola del navegador, no el compilador.
+    // console.debug is not stripped from the production build: the level is
+    // decided by the browser console, not the compiler.
     console.debug('sesion activa', session);
   }
 }

@@ -9,11 +9,11 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/note.component.ts, line: 15}
     rationale: >
-      El query param `note` se escribe en .innerHTML del nativeElement
-      obtenido por ViewChild. Al tocar el DOM directo se esquiva el
-      sanitizador de Angular, que solo interviene en los bindings.
+      The `note` query param is written into .innerHTML of the nativeElement
+      obtained through ViewChild. Touching the DOM directly bypasses Angular's
+      sanitizer, which only steps in on bindings.
   safe:
     label: safe
     rationale: >
-      Mismo acceso por ElementRef pero asignando .textContent, que trata
-      el valor como texto y nunca lo parsea como markup.
+      Same ElementRef access but assigning .textContent, which treats the value as
+      text and never parses it as markup.

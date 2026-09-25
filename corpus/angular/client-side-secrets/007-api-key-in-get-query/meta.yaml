@@ -9,12 +9,13 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/url-builder.ts, line: 3}
     rationale: >
-      La clave sale de environment.ts, pasa por el servicio y termina en la query
-      string que arma un helper. Las URLs completas quedan en el historial del
-      navegador, en el header Referer y en los logs de cualquier proxy del camino.
-      El helper recibe un string llamado apiKey y no sabe de donde viene.
+      The key comes from environment.ts, goes through the service and ends up in
+      the query string built by a helper. Full URLs are kept in the browser
+      history, in the Referer header and in the logs of any proxy on the way. The
+      helper receives a string called apiKey and does not know where it comes
+      from.
   safe:
     label: safe
     rationale: >
-      Mismo helper con un parametro menos y misma llamada. La credencial no viaja
-      en la URL: la sesion va en una cookie httpOnly.
+      Same helper with one parameter less and the same call. The credential does
+      not travel in the URL: the session goes in an httpOnly cookie.

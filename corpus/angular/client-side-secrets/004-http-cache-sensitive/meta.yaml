@@ -9,11 +9,11 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/cache.interceptor.ts, line: 21}
     rationale: >
-      El interceptor cachea toda respuesta GET sin mirar de que endpoint viene,
-      asi que /api/me y cualquier recurso autenticado quedan guardados en memoria
-      compartida por toda la aplicacion, incluso despues de cerrar sesion.
+      The interceptor caches every GET response without looking at which endpoint
+      it comes from, so /api/me and any authenticated resource are kept in memory
+      shared by the whole application, even after logging out.
   safe:
     label: safe
     rationale: >
-      Mismo interceptor y misma cache, con una lista explicita de endpoints
-      publicos comparada contra el pathname parseado. Lo autenticado nunca entra.
+      Same interceptor and same cache, with an explicit list of public endpoints
+      compared against the parsed pathname. Authenticated responses never get in.

@@ -9,11 +9,12 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/invoices.component.ts, line: 21}
     rationale: >
-      El id del usuario cuyas facturas se piden sale de la URL (/users/:userId).
-      Cambiar el numero en la barra de direcciones pide las facturas de otro: la
-      pantalla delega en el cliente la eleccion de a quien pertenecen los datos.
+      The id of the user whose invoices are requested comes from the URL
+      (/users/:userId). Changing the number in the address bar requests someone
+      else's invoices: the screen leaves it to the client to choose whose data it
+      is.
   safe:
     label: safe
     rationale: >
-      Misma pantalla, mismas facturas. La ruta /api/me/invoices no lleva id: el
-      servidor resuelve el dueno a partir de la sesion.
+      Same screen, same invoices. The /api/me/invoices route carries no id: the
+      server resolves the owner from the session.

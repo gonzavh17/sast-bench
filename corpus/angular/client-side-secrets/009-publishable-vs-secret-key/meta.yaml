@@ -9,14 +9,14 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/environment.ts, line: 5}
     rationale: >
-      Las dos variantes ponen una clave de Stripe en el environment y se la pasan
-      al SDK igual. La diferencia esta en el prefijo: sk_live_ es la clave de
-      servidor y da acceso total a la cuenta. Ninguna clave con ese prefijo debe
-      estar del lado del cliente.
+      Both variants put a Stripe key in the environment and pass it to the SDK the
+      same way. The difference is the prefix: sk_live_ is the server key and gives
+      full access to the account. No key with that prefix should be on the client
+      side.
   safe:
     label: safe
     rationale: >
-      Misma forma, mismo nombre de campo, mismo uso. pk_live_ es la clave
-      publicable, disenada para vivir en el navegador: solo permite tokenizar una
-      tarjeta y no lee ni cobra nada por si sola. Una clave en el bundle no es
-      automaticamente una falla.
+      Same shape, same field name, same use. pk_live_ is the publishable key,
+      designed to live in the browser: it only allows tokenizing a card and cannot
+      read or charge anything on its own. A key in the bundle is not automatically
+      a flaw.

@@ -9,16 +9,15 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/preview.component.ts, line: 24}
     rationale: >
-      Hay validacion a la vista y contra la constante correcta, pero
-      startsWith compara texto y un dominio se lee de derecha a izquierda:
-      `https://cdn.example.com.attacker.example/x` pasa el chequeo y pertenece a
-      attacker.example. El bypassSecurityTrustResourceUrl deja ese origen dentro de un
-      iframe, asi que el atacante controla el contenido del frame.
+      There is visible validation against the right constant, but startsWith
+      compares text and a domain is read right to left:
+      `https://cdn.example.com.attacker.example/x` passes the check and belongs to
+      attacker.example. bypassSecurityTrustResourceUrl puts that origin inside an
+      iframe, so the attacker controls the frame's content.
   safe:
     label: safe
     rationale: >
-      Misma constante, mismo bypass, mismo iframe. La diferencia es que compara
-      `new URL(raw).origin`: el parser del navegador es el que decide donde
-      termina el host, y `cdn.example.com.attacker.example` no da igual al origen
-      permitido.
+      Same constant, same bypass, same iframe. The difference is that it compares
+      `new URL(raw).origin`: the browser's parser decides where the host ends, and
+      `cdn.example.com.attacker.example` does not equal the allowed origin.
 

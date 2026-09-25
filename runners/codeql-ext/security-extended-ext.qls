@@ -1,7 +1,7 @@
-# javascript-security-extended con las dos queries de la familia
-# client-side-secrets reemplazadas por sus versiones extendidas. Todo lo demas
-# corre igual, para que la fila codeql+ext sea comparable con la de codeql.
-- description: javascript-security-extended + credenciales de sesion
+# javascript-security-extended with the two client-side-secrets queries
+# replaced by their extended versions. Everything else runs the same, so the
+# codeql+ext row is comparable with the codeql one.
+- description: javascript-security-extended + session credentials
 - import: codeql-suites/javascript-security-extended.qls
   from: codeql/javascript-queries
 - exclude:

@@ -9,11 +9,11 @@ variants:
     label: vulnerable
     sink: {file: vulnerable/profile.component.ts, line: 19}
     rationale: >
-      bypassSecurityTrustHtml aplicado al query param `bio` sin sanitizar.
-      El SafeHtml resultante se bindea con [innerHTML], asi que Angular
-      inyecta el markup tal cual y no escapa nada.
+      bypassSecurityTrustHtml applied to the `bio` query param without sanitizing.
+      The resulting SafeHtml is bound with [innerHTML], so Angular injects the
+      markup as is and escapes nothing.
   safe:
     label: safe
     rationale: >
-      Mismo render sin DomSanitizer: el query param se guarda como string
-      y se interpola con {{ bio }}, que Angular escapa por defecto.
+      Same render without DomSanitizer: the query param is stored as a string and
+      interpolated with {{ bio }}, which Angular escapes by default.

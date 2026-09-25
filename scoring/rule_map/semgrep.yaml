@@ -1,28 +1,28 @@
-# rule_id -> familia, para Semgrep. Mantenido a mano y versionado.
+# rule_id -> family, for Semgrep. Maintained by hand and versioned.
 #
-# Los ids son los cortos (sin el prefijo de ruta que Semgrep antepone al
-# check_id). Cualquier rule_id que aparezca en una corrida y no este ni en
-# `rules` ni en `ignore` se reporta como unmapped: cuenta como ruido, no entra
-# en TP/FP, y el reporte lo lista para que no se ignore por omision.
+# Ids are the short ones (without the path prefix Semgrep puts in front of the
+# check_id). Any rule_id that shows up in a run and is in neither `rules` nor
+# `ignore` is reported as unmapped: it counts as noise, stays out of TP/FP, and
+# the report lists it so it is never ignored by omission.
 meta:
   tool: semgrep
   rules_source: "semgrep/semgrep-rules@40b8c63f75dc7c22c8a77482d73bfb864b146f7e"
   mapped_at: "2026-09-23"
 
 rules:
-  # Disparan sobre el corpus actual.
+  # They fire on the current corpus.
   insecure-innerhtml: xss-sanitizer-bypass
   insecure-document-method: xss-sanitizer-bypass
-  # Su pattern-sources solo acepta un parametro de funcion tipado string, nunca
-  # ActivatedRoute ni una propiedad de clase. Dispara en ng-xss-005 (funcion
-  # suelta) y ng-xss-006 (metodo transform de un pipe: Semgrep normaliza los
-  # metodos de clase a definicion de funcion, asi que tambien matchean).
+  # Its pattern-sources only accepts a function parameter typed string, never
+  # ActivatedRoute or a class property. It fires on ng-xss-005 (standalone
+  # function) and ng-xss-006 (a pipe's transform method: Semgrep normalizes class
+  # methods to function definitions, so they match too).
   angular-bypasssecuritytrust: xss-sanitizer-bypass
 
   # --- client-side-secrets ---
-  # Ninguna aplica a Angular idiomatico (son de Express, passport,
-  # jsonwebtoken, HMAC, o exigen import de jwt-decode), pero se mapean para
-  # que si alguna dispara cuente como deteccion y no como ruido.
+  # None applies to idiomatic Angular (they are for Express, passport,
+  # jsonwebtoken, HMAC, or require importing jwt-decode), but they are mapped so
+  # that if one fires it counts as a detection and not as noise.
   express-jwt-hardcoded-secret: client-side-secrets
   express-session-hardcoded-secret: client-side-secrets
   hardcoded-jwt-secret: client-side-secrets
@@ -31,7 +31,7 @@ rules:
   react-jwt-in-localstorage: client-side-secrets
 
   # --- broken-authorization ---
-  # Las dos exigen una libreria de JWT; los casos decodifican con atob.
+  # Both require a JWT library; the cases decode with atob.
   jwt-decode-without-verify: broken-authorization
   react-jwt-decoded-property: broken-authorization
 
