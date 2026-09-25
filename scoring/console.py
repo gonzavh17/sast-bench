@@ -147,7 +147,7 @@ def progress_bar(console: Console) -> Progress:
     )
 
 
-def _box_for(console: Console) -> box.Box:
+def table_box(console: Console) -> box.Box:
     """Si la terminal no banca los simbolos, tampoco banca el box-drawing."""
     return box.SIMPLE if symbols_for(console) is UNICODE else box.ASCII
 
@@ -159,7 +159,7 @@ def cases_table(
     tools = [tool for tool, _, _ in runs]
     by_case = {tool: {p.case_id: p for p in score.pairs} for tool, _, score in runs}
 
-    table = Table(box=_box_for(console), pad_edge=False)
+    table = Table(box=table_box(console), pad_edge=False)
     table.add_column("caso", no_wrap=True)
     table.add_column("dificultad", no_wrap=True)
     for tool in tools:
@@ -176,7 +176,7 @@ def cases_table(
 
 def metrics_table(console: Console, runs: list[tuple[str, dict, Score]]) -> Table:
     """Nombres en castellano. Las siglas y el resto viven en el JSON y report.md."""
-    table = Table(box=_box_for(console), pad_edge=False)
+    table = Table(box=table_box(console), pad_edge=False)
     table.add_column("engine", no_wrap=True)
     table.add_column("pares", justify="right", no_wrap=True)
     table.add_column("encuentra", justify="right", no_wrap=True)

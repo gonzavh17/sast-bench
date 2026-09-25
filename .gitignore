@@ -4,6 +4,7 @@ runners/rules/
 
 .venv/
 __pycache__/
+*.egg-info/
 *.pyc
 .pytest_cache/
 .env
@@ -11,3 +12,5 @@ __pycache__/
 # CLI de CodeQL: los GitHub CodeQL Terms prohiben redistribuirla.
 # Se baja con scripts/fetch_codeql.py.
 runners/tools/
+# Bases de CodeQL cacheadas por contenido de variante (runners/codeql.py).
+.cache/

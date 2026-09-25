@@ -219,6 +219,40 @@ def apply_decisions(
     ]
 
 
+def filter_results(
+    results: dict[str, Any],
+    base_results: str,
+    cases: dict[str, Case],
+    client: anthropic.Anthropic,
+    model: str,
+    console: Console,
+) -> tuple[dict[str, Any], list[DecisionRecord]]:
+    """Revisa cada hallazgo y arma el results filtrado, con el mismo formato de siempre."""
+    records = review(results, cases, client, model, console)
+
+    confirmed = sum(r.veredicto == "confirmado" for r in records)
+    log_event(
+        console,
+        "hibrido",
+        f"{confirmed} confirmados, {len(records) - confirmed} descartados",
+    )
+
+    filtered = {
+        "tool": f"{results['tool']}+llm",
+        "rule_map": results.get("rule_map", results["tool"]),
+        "tool_version": f"{results['tool']} {results['tool_version']} + {model}",
+        "run_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+        "rules": results["rules"],
+        "base_results": base_results,
+        "variants": apply_decisions(results, records),
+    }
+    return filtered, records
+
+
+def dump_decisions(records: list[DecisionRecord]) -> str:
+    return json.dumps([r.model_dump() for r in records], indent=2, ensure_ascii=False) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", type=Path, required=True)
@@ -242,33 +276,14 @@ def main() -> None:
         f"{total} hallazgos de {results['tool']} para revisar con {args.model}",
     )
 
-    client = anthropic.Anthropic()
-    records = review(results, cases, client, args.model, console)
-
-    confirmed = sum(r.veredicto == "confirmado" for r in records)
-    log_event(
-        console,
-        "hibrido",
-        f"{confirmed} confirmados, {len(records) - confirmed} descartados",
+    filtered, records = filter_results(
+        results, str(args.results), cases, anthropic.Anthropic(), args.model, console
     )
-
-    filtered = {
-        "tool": f"{results['tool']}+llm",
-        "rule_map": results.get("rule_map", results["tool"]),
-        "tool_version": f"{results['tool']} {results['tool_version']} + {args.model}",
-        "run_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-        "rules": results["rules"],
-        "base_results": str(args.results),
-        "variants": apply_decisions(results, records),
-    }
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(filtered, indent=2) + "\n", encoding="utf-8")
     args.decisions.parent.mkdir(parents=True, exist_ok=True)
-    args.decisions.write_text(
-        json.dumps([r.model_dump() for r in records], indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    args.decisions.write_text(dump_decisions(records), encoding="utf-8")
     log_event(console, "hibrido", f"escrito {args.out}")
     log_event(console, "hibrido", f"escrito {args.decisions}")
 
