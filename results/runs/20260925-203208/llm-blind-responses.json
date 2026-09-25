@@ -1,0 +1,63 @@
+[
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 7,
+        "cwe": "CWE-922",
+        "severity": "medium",
+        "rationale": "The session token is persisted in sessionStorage, which is readable by any JavaScript running in the origin. Unlike an HttpOnly, Secure, SameSite cookie, this storage offers no protection against token exfiltration via XSS or malicious third-party scripts, enabling session hijacking. Tokens should be kept in HttpOnly cookies or, at minimum, in memory only."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 11,
+        "cwe": "CWE-1004",
+        "severity": "low",
+        "rationale": "recall() exposes the raw session token to any caller/script context in the page, widening the attack surface for credential theft; a token accessible to client-side JS cannot be protected with HttpOnly/Secure flags."
+      }
+    ],
+    "input_tokens": 831,
+    "output_tokens": 353,
+    "reviewed_at": "2026-09-25T23:32:16+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "cwe": "CWE-331",
+        "severity": "high",
+        "rationale": "The session token is truncated to its first 8 characters before being persisted, and the backend resumes the session from this shortened reference. Truncation drastically reduces the entropy of the session identifier, making it feasible to brute-force or guess valid session references and hijack another user's session."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "cwe": "CWE-922",
+        "severity": "medium",
+        "rationale": "The (partial) session token is stored in sessionStorage, which is readable by any JavaScript running in the origin. Any XSS or malicious third-party script can exfiltrate the session reference; tokens should be kept in HttpOnly, Secure cookies or in memory instead."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 12,
+        "cwe": "CWE-522",
+        "severity": "medium",
+        "rationale": "recall() exposes the stored credential/session reference to any caller from client-side storage with no integrity or expiry checks, facilitating credential theft and session fixation/replay."
+      }
+    ],
+    "input_tokens": 859,
+    "output_tokens": 623,
+    "reviewed_at": "2026-09-25T23:32:25+00:00"
+  }
+]

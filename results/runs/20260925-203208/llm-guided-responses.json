@@ -1,0 +1,49 @@
+[
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 7,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The session token (a bearer credential) is persisted in sessionStorage, which is readable by any JavaScript running in the origin. An XSS or malicious third-party script can exfiltrate the token and hijack the session; HttpOnly/Secure cookies or in-memory storage would avoid this exposure."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 11,
+        "family": "client-side-secrets",
+        "severity": "low",
+        "rationale": "recall() reads the credential back from user-controllable client storage. Any code (or an attacker who can write to sessionStorage) can supply or read this token, so it must never be treated as a trusted authentication/authorization assertion on the client."
+      }
+    ],
+    "input_tokens": 1093,
+    "output_tokens": 265,
+    "reviewed_at": "2026-09-25T23:32:30+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "A fragment of the session token is persisted in sessionStorage, which is readable by any JavaScript running in the origin (e.g. via XSS or a compromised third-party script). Since the comment states the backend resumes the session from this stored reference, the stored value is effectively a bearer credential living in browser storage; truncating it to 8 characters also drastically reduces its entropy, making it guessable/brute-forceable. Session credentials should be kept in HttpOnly, Secure, SameSite cookies rather than web storage."
+      }
+    ],
+    "input_tokens": 1121,
+    "output_tokens": 499,
+    "reviewed_at": "2026-09-25T23:32:38+00:00"
+  }
+]

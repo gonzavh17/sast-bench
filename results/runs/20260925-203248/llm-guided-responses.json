@@ -1,0 +1,1688 @@
+[
+  {
+    "case_id": "ng-authz-001",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 4,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The route guard decides admin access from `localStorage.getItem('role')`, a value fully under the user's control (any user can run `localStorage.setItem('role','admin')` in devtools). Authorization must be enforced server-side; the client guard is only a UX convenience. Combined with /api/admin/users this can expose admin UI and data if the backend trusts the client."
+      }
+    ],
+    "input_tokens": 1427,
+    "output_tokens": 167,
+    "reviewed_at": "2026-09-25T23:42:19+00:00"
+  },
+  {
+    "case_id": "ng-authz-001",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1573,
+    "output_tokens": 96,
+    "reviewed_at": "2026-09-25T23:42:21+00:00"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "refund.service.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The caller's role is read from localStorage, which the user can freely edit via DevTools, and is then sent to the server as part of the refund request. If the backend trusts this `role` field, any customer can set localStorage.role='admin' and issue privileged refunds. Authorization must be derived server-side from the authenticated session/token, never from client-supplied state."
+      },
+      {
+        "file": "refund.service.ts",
+        "line": 10,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The POST body propagates the client-asserted `role` claim to /api/refunds, making a client-side value part of the authorization decision path; the orderId is also taken unvalidated from the caller, so ownership of the order must be verified server-side."
+      }
+    ],
+    "input_tokens": 1091,
+    "output_tokens": 322,
+    "reviewed_at": "2026-09-25T23:42:27+00:00"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1071,
+    "output_tokens": 125,
+    "reviewed_at": "2026-09-25T23:42:31+00:00"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "invoices.component.ts",
+        "line": 20,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The `userId` used to fetch invoices is taken directly from the URL route parameter and sent to the API without any client- or server-verified identity binding. Any authenticated user can edit the URL to another user's id and retrieve their invoices (IDOR). The resource owner should be derived from the session/token on the server, not from a user-modifiable URL segment."
+      }
+    ],
+    "input_tokens": 1292,
+    "output_tokens": 224,
+    "reviewed_at": "2026-09-25T23:42:35+00:00"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1220,
+    "output_tokens": 51,
+    "reviewed_at": "2026-09-25T23:42:38+00:00"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "dashboard.component.ts",
+        "line": 25,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Admin privileges are granted purely from a user-controlled URL query parameter ('?admin=1'). Any visitor can enable adminMode, revealing the admin UI and triggering admin API calls; authorization must be enforced server-side and derived from a verified session, not from the URL."
+      },
+      {
+        "file": "dashboard.component.ts",
+        "line": 27,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The admin user listing request is gated only by the client-side adminMode flag derived from the URL. If the backend relies on the client to restrict access, this exposes all users' emails/ids to unauthorized callers."
+      },
+      {
+        "file": "dashboard.component.ts",
+        "line": 32,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The ban action is a privileged state-changing operation exposed whenever the client-set adminMode flag is true, with the target id taken directly from client state; server-side role verification is required."
+      }
+    ],
+    "input_tokens": 1433,
+    "output_tokens": 348,
+    "reviewed_at": "2026-09-25T23:42:44+00:00"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1484,
+    "output_tokens": 107,
+    "reviewed_at": "2026-09-25T23:42:48+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "role.service.ts",
+        "line": 7,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The user's role is read directly from localStorage, which any user can edit via devtools (e.g. localStorage.setItem('role','finance')). This makes the role an attacker-controlled value rather than a server-asserted claim."
+      },
+      {
+        "file": "role.guard.ts",
+        "line": 7,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The canActivate guard authorizes access to the 'finance' route solely by comparing route data to a client-stored role. Authorization decided on client-modifiable data is trivially bypassed; access control must be enforced server-side (and the route could also be reached directly by calling the API)."
+      },
+      {
+        "file": "app.routes.ts",
+        "line": 10,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The sensitive payroll reports route relies exclusively on the client-side roleGuard with a static data.role, providing only cosmetic protection for privileged data."
+      },
+      {
+        "file": "reports.component.ts",
+        "line": 14,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "Sensitive payroll data is fetched without any evidence of server-side authorization; if /api/reports/payroll trusts the client-side guard, any user can request the endpoint directly and read the data."
+      }
+    ],
+    "input_tokens": 1657,
+    "output_tokens": 513,
+    "reviewed_at": "2026-09-25T23:42:56+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1798,
+    "output_tokens": 124,
+    "reviewed_at": "2026-09-25T23:43:00+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "auth.service.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Admin authorization is decided client-side from an unverified JWT payload read out of localStorage. A user can mint/edit a token (the signature is never checked) setting role='admin' and gain access to admin-guarded routes/UI. Authorization must be enforced server-side."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "readClaims base64-decodes and JSON.parses the JWT payload with no signature or issuer verification, and the result is used as a trust decision. It also ignores 'exp', so expired tokens still yield valid-looking claims. Malformed tokens will additionally throw (split('.')[1] may be undefined), turning the guard into an unhandled error."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 6,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The route guard relies solely on AuthService.isAdmin(), i.e. on attacker-controllable localStorage data, as the sole access-control gate. Client guards are UX only; without server-side checks on the corresponding APIs this is a real privilege-escalation path."
+      },
+      {
+        "file": "auth.service.ts",
+        "line": 8,
+        "family": "client-side-secrets",
+        "severity": "low",
+        "rationale": "The identity token is stored in localStorage, which is readable by any script on the origin (XSS) and is not scoped/expirable like an HttpOnly cookie, increasing the impact of token theft."
+      }
+    ],
+    "input_tokens": 1341,
+    "output_tokens": 631,
+    "reviewed_at": "2026-09-25T23:43:09+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "auth.service.ts",
+        "line": 14,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The JWT id_token is persisted in localStorage, which is readable by any script running on the origin (e.g. via XSS or a compromised third-party dependency) and never expires with the session. Bearer credentials should be kept in memory or in HttpOnly, Secure cookies."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "low",
+        "rationale": "readClaims base64-decodes and JSON.parses the token payload without verifying the signature or expiry, and the TokenClaims interface exposes a 'role' claim. Any consumer that trusts these client-decoded claims (the token is user-modifiable in localStorage) would be making an authorization decision on attacker-controlled data. Currently only 'sub' is used for display, so impact is limited to spoofed UI text, but the primitive is unsafe."
+      },
+      {
+        "file": "auth.service.ts",
+        "line": 15,
+        "family": "other",
+        "severity": "low",
+        "rationale": "displayName() renders the 'sub' claim taken from a token the user fully controls in localStorage, with no validation; a tampered token yields an arbitrary displayed identity (UI spoofing) and an unhandled exception path if the token is malformed."
+      }
+    ],
+    "input_tokens": 1561,
+    "output_tokens": 575,
+    "reviewed_at": "2026-09-25T23:43:18+00:00"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "identity.interceptor.ts",
+        "line": 12,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The interceptor attaches an 'X-User-Id' identity header taken from localStorage, a store the user fully controls. If the backend trusts this header to identify the caller, any user can impersonate another by editing localStorage (IDOR/auth bypass). Identity must be derived server-side from a verified session/token, not a client-set header."
+      },
+      {
+        "file": "identity.interceptor.ts",
+        "line": 8,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "User identity is read from localStorage ('user_id'), which is attacker-modifiable and not integrity-protected; using it as an authentication/authorization assertion is unsafe. It is also readable by any XSS payload on the origin."
+      },
+      {
+        "file": "identity.interceptor.ts",
+        "line": 12,
+        "family": "other",
+        "severity": "low",
+        "rationale": "The header is appended to every outgoing request without checking the request URL/origin, so the user identifier can leak to third-party or cross-origin endpoints called through HttpClient."
+      }
+    ],
+    "input_tokens": 1368,
+    "output_tokens": 396,
+    "reviewed_at": "2026-09-25T23:43:24+00:00"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1299,
+    "output_tokens": 358,
+    "reviewed_at": "2026-09-25T23:43:31+00:00"
+  },
+  {
+    "case_id": "ng-authz-008",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1643,
+    "output_tokens": 497,
+    "reviewed_at": "2026-09-25T23:43:39+00:00"
+  },
+  {
+    "case_id": "ng-authz-008",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1595,
+    "output_tokens": 91,
+    "reviewed_at": "2026-09-25T23:43:42+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The guard reads the user's role from localStorage, which is fully attacker-controlled from the browser console/devtools. Setting `me_role` to 'admin' bypasses the guard entirely and grants access to admin routes without any server verification."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 11,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Authorization decision (`cached === 'admin'`) is made purely on client-side mutable data, short-circuiting the server `/api/me` check. Role checks must be re-validated server-side on every protected API call."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 16,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "Persisting the privilege/role claim into localStorage caches security-relevant state in a tamper-prone, long-lived store shared across tabs and readable by any injected script; it also becomes stale after role revocation."
+      }
+    ],
+    "input_tokens": 1250,
+    "output_tokens": 344,
+    "reviewed_at": "2026-09-25T23:43:48+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 11,
+        "family": "broken-authorization",
+        "severity": "low",
+        "rationale": "The admin role is cached in a module-level variable that is never invalidated (no reset on logout, session change, or role revocation). Once populated, subsequent navigations short-circuit the /api/me check, so a stale 'admin' value can keep granting access to admin routes after privileges change or a different user logs in in the same SPA session. Client-side guards must still be backed by server-side authorization on every API call."
+      }
+    ],
+    "input_tokens": 1251,
+    "output_tokens": 503,
+    "reviewed_at": "2026-09-25T23:43:56+00:00"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "invoice-detail.component.ts",
+        "line": 33,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Ownership/authorization is enforced entirely in the browser: the component requests /api/invoices/{id} with an arbitrary, user-controlled route parameter and only then compares invoice.ownerId to the identity from /api/me, navigating away on mismatch. The server evidently returns another user's invoice data regardless, so an attacker can read it directly from the network response (or by tampering with the client) and bypass the redirect. Authorization must be enforced server-side for the requested invoice id."
+      },
+      {
+        "file": "invoice-detail.component.ts",
+        "line": 31,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The invoice identifier is taken directly from the URL and used to fetch data before any access check, making it a classic IDOR entry point; the request succeeds for resources the user does not own and the data reaches the client."
+      }
+    ],
+    "input_tokens": 1560,
+    "output_tokens": 449,
+    "reviewed_at": "2026-09-25T23:44:04+00:00"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1450,
+    "output_tokens": 192,
+    "reviewed_at": "2026-09-25T23:44:09+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 12,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The route guard grants admin access purely from claims decoded out of a JWT stored in localStorage. The token is never verified against the server (no signature check), and localStorage is fully writable by the user or any injected script, so an attacker can craft/edit a token payload with role:'admin' and a future exp to reach admin routes. Client-side guards must be backed by server-side authorization on every privileged API call."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "readClaims base64-decodes and JSON.parses the JWT payload without any signature or issuer validation, returning attacker-controllable data that is then used as an authorization decision source. It also throws on malformed input (no try/catch), making tampered tokens produce unhandled errors."
+      }
+    ],
+    "input_tokens": 1256,
+    "output_tokens": 370,
+    "reviewed_at": "2026-09-25T23:44:16+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 10,
+        "family": "client-side-secrets",
+        "severity": "low",
+        "rationale": "The bearer/ID token is read from localStorage, which is readable by any script in the origin; if an XSS ever occurs the credential is exfiltratable (no httpOnly cookie protection). The guard itself is otherwise safe because the authoritative role check is done server-side via /api/session."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 15,
+        "family": "broken-authorization",
+        "severity": "low",
+        "rationale": "The expiry is taken from an unverified, client-decoded JWT payload (readClaims does no signature verification). This only fails closed (an attacker forging a longer exp still gets rejected by the server /api/session call), so impact is minimal, but no authorization decision should rely on unvalidated token claims."
+      }
+    ],
+    "input_tokens": 1461,
+    "output_tokens": 767,
+    "reviewed_at": "2026-09-25T23:44:28+00:00"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "settings.component.ts",
+        "line": 15,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The target user identity is taken from a user-controllable URL query parameter ('user') instead of from the authenticated session/server-verified identity. Any authenticated user can set ?user=<victim-id>."
+      },
+      {
+        "file": "settings.component.ts",
+        "line": 19,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "DELETE /api/users/{id} is issued with an id derived from the URL, enabling IDOR: a logged-in user can delete another user's account if the backend trusts this client-supplied identifier. The destructive action should target the current session's user."
+      },
+      {
+        "file": "auth.guard.ts",
+        "line": 13,
+        "family": "broken-authorization",
+        "severity": "low",
+        "rationale": "The guard only checks that /api/me succeeds (authentication) and ignores the returned role, so it performs no authorization check; client-side route guards must be backed by server-side enforcement for privileged settings operations."
+      }
+    ],
+    "input_tokens": 1682,
+    "output_tokens": 420,
+    "reviewed_at": "2026-09-25T23:44:34+00:00"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1669,
+    "output_tokens": 181,
+    "reviewed_at": "2026-09-25T23:44:38+00:00"
+  },
+  {
+    "case_id": "ng-sec-001",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 5,
+        "family": "client-side-secrets",
+        "severity": "critical",
+        "rationale": "A live Stripe secret key (sk_live_...) is hardcoded in the Angular environment file, which is bundled and shipped to every browser. Anyone can read it from the JS bundle and issue arbitrary charges/refunds against the merchant account. Secret keys must only live server-side; the client should use publishable keys or a backend-created token."
+      },
+      {
+        "file": "payment.service.ts",
+        "line": 12,
+        "family": "client-side-secrets",
+        "severity": "critical",
+        "rationale": "The secret API key is placed into an Authorization header sent from the browser, exposing it in network traffic, devtools, and any proxy/extension. This also effectively lets the client authenticate directly to the payment provider with full privileges."
+      },
+      {
+        "file": "payment.service.ts",
+        "line": 14,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Charge authorization relies on a credential held by the client and a client-supplied amount (amountCents); a user can modify the amount or replay the request with the exposed secret, so the payment authorization decision is effectively made client-side."
+      }
+    ],
+    "input_tokens": 1290,
+    "output_tokens": 384,
+    "reviewed_at": "2026-09-25T23:44:45+00:00"
+  },
+  {
+    "case_id": "ng-sec-001",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1216,
+    "output_tokens": 10,
+    "reviewed_at": "2026-09-25T23:44:47+00:00"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "auth.service.ts",
+        "line": 12,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The access token (a bearer credential) is persisted in localStorage, which is readable by any JavaScript on the origin and survives the session. Any XSS or malicious third-party script can exfiltrate the token and impersonate the user. Prefer an httpOnly, Secure, SameSite cookie or keep the token in memory only."
+      }
+    ],
+    "input_tokens": 1151,
+    "output_tokens": 221,
+    "reviewed_at": "2026-09-25T23:44:51+00:00"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1169,
+    "output_tokens": 10,
+    "reviewed_at": "2026-09-25T23:44:53+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 17,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The whole UserProfile object is logged to the browser console, including sensitive fields such as `password`, `nationalId` and `email`. Console logs are readable by any script on the page (e.g. injected third-party or XSS payloads) and by anyone with access to the device/debug tooling, leaking credentials and PII."
+      },
+      {
+        "file": "profile.service.ts",
+        "line": 9,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The client-side profile model retrieves and holds a `password` field (and `nationalId`) from /api/me. Shipping credential material to the browser means it lives in memory/state and can be serialized into logs, caches or devtools; the API should never return the password to the client."
+      }
+    ],
+    "input_tokens": 1437,
+    "output_tokens": 275,
+    "reviewed_at": "2026-09-25T23:44:58+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.service.ts",
+        "line": 9,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The UserProfile model retrieved from /api/me includes a `password` field (and `nationalId`), meaning the backend ships the user's credential and sensitive PII to the browser. Any XSS, extension, devtools inspection or HTTP cache would expose the plaintext/hashed password. Credentials should never be part of a client-facing profile payload."
+      },
+      {
+        "file": "profile.component.ts",
+        "line": 16,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The full profile object, including the `password` and `nationalId` fields, is assigned to a public component property and kept in client-side component state, making the secret reachable from the template, debug tooling and any in-page script."
+      },
+      {
+        "file": "profile.component.ts",
+        "line": 17,
+        "family": "client-side-secrets",
+        "severity": "low",
+        "rationale": "Profile data (user identifier) is written to the browser console; such logging of user identity data in production can leak PII to console captures/monitoring scripts and is a common path for accidentally logging the whole sensitive object."
+      }
+    ],
+    "input_tokens": 1439,
+    "output_tokens": 620,
+    "reviewed_at": "2026-09-25T23:45:08+00:00"
+  },
+  {
+    "case_id": "ng-sec-004",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "cache.interceptor.ts",
+        "line": 21,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "Every GET response is stored indefinitely in an in-memory Map with no regard for Cache-Control/Pragma/no-store directives, authentication state, or response sensitivity. Responses containing personal data, tokens or other secrets stay cached in the browser for the lifetime of the app and are never invalidated on logout, leaking sensitive data into long-lived client state."
+      },
+      {
+        "file": "cache.interceptor.ts",
+        "line": 14,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The cache key is only req.urlWithParams; it ignores Authorization headers, cookies and the current user identity. After a user switches (login/logout or token refresh), a request to the same URL is served the previously cached response of the other principal, bypassing server-side authorization checks and exposing another user's data."
+      }
+    ],
+    "input_tokens": 1361,
+    "output_tokens": 462,
+    "reviewed_at": "2026-09-25T23:45:15+00:00"
+  },
+  {
+    "case_id": "ng-sec-004",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1452,
+    "output_tokens": 219,
+    "reviewed_at": "2026-09-25T23:45:20+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session.service.ts",
+        "line": 13,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The access token returned by /api/login is persisted in localStorage via StorageService.save. localStorage is readable by any JavaScript running on the origin, so any XSS or malicious third-party script can exfiltrate the session token; it also persists indefinitely across tabs/sessions. Prefer an HttpOnly, Secure, SameSite cookie or in-memory storage for the token."
+      },
+      {
+        "file": "storage.service.ts",
+        "line": 7,
+        "family": "client-side-secrets",
+        "severity": "low",
+        "rationale": "Generic wrapper writes arbitrary values to localStorage with no distinction for sensitive data, encouraging storage of credentials/tokens in a JS-accessible, non-expiring store used across the app."
+      }
+    ],
+    "input_tokens": 1361,
+    "output_tokens": 364,
+    "reviewed_at": "2026-09-25T23:45:26+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1435,
+    "output_tokens": 10,
+    "reviewed_at": "2026-09-25T23:45:28+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "error.interceptor.ts",
+        "line": 11,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The interceptor logs the full request body for every failed request via console.error. Since LoginComponent POSTs {email, password} to /api/login, a failed login writes plaintext credentials (and any other sensitive payload, e.g. tokens, PII) to the browser console, where they can be read by anyone with access to the device, by browser extensions, or shipped to remote log collectors. Log only the URL/status, or redact sensitive fields."
+      }
+    ],
+    "input_tokens": 1467,
+    "output_tokens": 243,
+    "reviewed_at": "2026-09-25T23:45:32+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1463,
+    "output_tokens": 161,
+    "reviewed_at": "2026-09-25T23:45:36+00:00"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 4,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "A live API key ('rk_live_...') is hardcoded in the Angular environment file, which is bundled and shipped to the browser. Anyone can read it from the JS bundle or network traffic and call the reports API directly."
+      },
+      {
+        "file": "reports.service.ts",
+        "line": 15,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The service reads the secret API key from the client-side environment and attaches it to an outbound request from the browser, exposing the credential in DevTools/network logs. Secrets should be held by a backend proxy that authenticates the user session instead."
+      },
+      {
+        "file": "url-builder.ts",
+        "line": 3,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The API key is placed in the URL query string, so it leaks into browser history, Referer headers, proxy/CDN and server access logs and any shared link. Credentials should travel in an Authorization header, not the URL."
+      },
+      {
+        "file": "url-builder.ts",
+        "line": 3,
+        "family": "other",
+        "severity": "medium",
+        "rationale": "`reportId` is interpolated into the URL path without encodeURIComponent, allowing user-controlled values containing '../', '?' or '#' to alter the request path/query (path traversal to other API endpoints or dropping/overriding the api_key parameter). Also `base` is unvalidated, so a non-constant base could redirect the key-bearing request to an attacker origin."
+      }
+    ],
+    "input_tokens": 1397,
+    "output_tokens": 639,
+    "reviewed_at": "2026-09-25T23:45:45+00:00"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "url-builder.ts",
+        "line": 3,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "The caller-supplied `reportId` is interpolated straight into the URL with no encodeURIComponent() and no validation. A value such as `../../evil` or `..%2f..%2f`, or one containing `?`/`#`/`\\` or a protocol-relative prefix, lets an attacker escape the `/reports/` path (and in some browser/parsing paths even the origin), redirecting the request to an endpoint the developer never intended."
+      },
+      {
+        "file": "reports.service.ts",
+        "line": 15,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The request is issued with `withCredentials: true` against a URL whose path segment is fully attacker-controllable (see url-builder.ts:3). If the attacker can steer the URL to another path/host, the user's session cookie is sent along with it, leaking authenticated credentials to an unintended destination."
+      },
+      {
+        "file": "reports.service.ts",
+        "line": 12,
+        "family": "other",
+        "severity": "low",
+        "rationale": "`environment.reportsBaseUrl` is shipped to the browser and used as a trust anchor without any check that the final URL still resolves inside that origin; there is no allow-list validation of the resulting absolute URL before the credentialed request is made."
+      }
+    ],
+    "input_tokens": 1321,
+    "output_tokens": 925,
+    "reviewed_at": "2026-09-25T23:45:58+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "checkout.service.ts",
+        "line": 14,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The whole Customer object, including the raw creditCardNumber (and email/PII), is passed to logEvent, which serializes it into the browser console. Sensitive payment data ends up in client-side logs where it can be read by anyone with devtools access, browser extensions, or any log-forwarding/monitoring hook that wraps console."
+      },
+      {
+        "file": "logger.ts",
+        "line": 3,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "logEvent blindly JSON.stringify's arbitrary payloads to console.error with no redaction/allow-listing of fields, so any caller passing credentials, tokens or PII leaks them into browser console output (and any attached error-reporting pipeline)."
+      }
+    ],
+    "input_tokens": 1200,
+    "output_tokens": 280,
+    "reviewed_at": "2026-09-25T23:46:03+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1206,
+    "output_tokens": 10,
+    "reviewed_at": "2026-09-25T23:46:07+00:00"
+  },
+  {
+    "case_id": "ng-sec-009",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 5,
+        "family": "client-side-secrets",
+        "severity": "critical",
+        "rationale": "A Stripe *secret* key (sk_live_ prefix) is stored in the Angular environment file, which is bundled and shipped to every browser. Secret keys grant full API access to the Stripe account (charges, refunds, customer data). Only publishable keys (pk_...) may be exposed client-side; secret keys must stay server-side."
+      },
+      {
+        "file": "checkout.component.ts",
+        "line": 13,
+        "family": "client-side-secrets",
+        "severity": "critical",
+        "rationale": "The component passes environment.stripeKey (a live secret key) into the browser-side Stripe() constructor, embedding the credential in the shipped JS bundle where any user can read it from devtools or the network tab."
+      }
+    ],
+    "input_tokens": 1226,
+    "output_tokens": 303,
+    "reviewed_at": "2026-09-25T23:46:12+00:00"
+  },
+  {
+    "case_id": "ng-sec-009",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1233,
+    "output_tokens": 100,
+    "reviewed_at": "2026-09-25T23:46:15+00:00"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-debug.service.ts",
+        "line": 13,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "console.debug logs the whole Session object, including the accessToken (bearer credential) and userId, into the browser console. Such logs are readable by anyone with DevTools access, any script running on the page (e.g. injected/third-party scripts or XSS payloads that hook console), and may be captured by client-side telemetry/error-reporting tools, leaking a reusable credential. Log only non-sensitive identifiers, or redact/strip the token before tracing, and disable debug tracing in production builds."
+      }
+    ],
+    "input_tokens": 1082,
+    "output_tokens": 252,
+    "reviewed_at": "2026-09-25T23:46:20+00:00"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1098,
+    "output_tokens": 72,
+    "reviewed_at": "2026-09-25T23:46:24+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 7,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The session token (a bearer credential) is persisted in sessionStorage, which is readable by any JavaScript running on the origin. A single XSS or malicious third-party script can exfiltrate the token and hijack the session; tokens should be kept in memory or in HttpOnly, Secure, SameSite cookies."
+      }
+    ],
+    "input_tokens": 1093,
+    "output_tokens": 222,
+    "reviewed_at": "2026-09-25T23:46:28+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "A session token (truncated to its first 8 characters) is persisted in sessionStorage, which is readable by any JavaScript running in the origin (e.g., via XSS or a malicious third-party script). Truncation is not a security control: the stored prefix is still credential material that the backend uses to resume the session, and an 8-character reference also has low entropy and is brute-forceable. Session identifiers should be kept in HttpOnly, Secure, SameSite cookies or in non-persistent in-memory state instead of web storage."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 12,
+        "family": "broken-authorization",
+        "severity": "low",
+        "rationale": "recall() returns a session reference read straight from sessionStorage, a store the user (or any injected script) can freely modify. Any downstream code that treats this value as proof of an authenticated session or identity would be basing authorization on client-controlled data; the server must independently validate the session on every request."
+      }
+    ],
+    "input_tokens": 1121,
+    "output_tokens": 555,
+    "reviewed_at": "2026-09-25T23:46:37+00:00"
+  },
+  {
+    "case_id": "ng-sec-012",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 11,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The decision that a response is \"public\" (and therefore safe to cache and replay) is made client-side by a naive substring test on the request URL. Any URL that merely contains '/public/' anywhere — e.g. /api/accounts/123/private/public/docs, or a path/segment value influenced by user input — is treated as unauthenticated public data, so authenticated, per-user responses can end up in the shared cache."
+      },
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 25,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "Responses are stored in an in-memory cache keyed only by urlWithParams, ignoring Authorization/cookie/tenant context and any Cache-Control/no-store directives. Sensitive response bodies persist in the SPA for the lifetime of the page (including after logout), making them retrievable from client state."
+      },
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 18,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "A cache hit short-circuits the request and returns the stored response without ever contacting the server, so the backend never re-evaluates authorization. If the session/token changes (logout, user switch, privilege downgrade), the previous user's data is still served from the cache."
+      },
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 8,
+        "family": "other",
+        "severity": "low",
+        "rationale": "The cache is unbounded and has no eviction/TTL; an attacker able to trigger many distinct GET URLs matching '/public/' can grow it without limit, causing client-side memory exhaustion and serving indefinitely stale data."
+      }
+    ],
+    "input_tokens": 1429,
+    "output_tokens": 1170,
+    "reviewed_at": "2026-09-25T23:46:54+00:00"
+  },
+  {
+    "case_id": "ng-sec-012",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1449,
+    "output_tokens": 809,
+    "reviewed_at": "2026-09-25T23:47:07+00:00"
+  },
+  {
+    "case_id": "ng-xss-001",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 19,
+        "family": "xss-sanitizer-bypass",
+        "severity": "critical",
+        "rationale": "The 'bio' value is taken directly from the URL query parameter (fully attacker-controlled) and passed to bypassSecurityTrustHtml, disabling Angular's sanitization. The result is bound to [innerHTML], allowing reflected XSS via a crafted link (e.g. ?bio=<img src=x onerror=...>)."
+      },
+      {
+        "file": "profile.component.html",
+        "line": 3,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] renders a SafeHtml value that was explicitly marked trusted without sanitization or validation, writing raw attacker-controlled HTML into the DOM."
+      }
+    ],
+    "input_tokens": 1335,
+    "output_tokens": 271,
+    "reviewed_at": "2026-09-25T23:47:13+00:00"
+  },
+  {
+    "case_id": "ng-xss-001",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1212,
+    "output_tokens": 82,
+    "reviewed_at": "2026-09-25T23:47:16+00:00"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "note.component.ts",
+        "line": 15,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The `note` query parameter (fully attacker-controlled via the URL) is written directly to `nativeElement.innerHTML`, bypassing Angular's template sanitization entirely. An attacker can craft a link such as ?note=<img src=x onerror=alert(1)> to execute arbitrary script in the victim's origin (DOM-based XSS). Use interpolation/textContent, or sanitize with DomSanitizer.sanitize(SecurityContext.HTML, ...) before injecting."
+      },
+      {
+        "file": "note.component.ts",
+        "line": 14,
+        "family": "other",
+        "severity": "low",
+        "rationale": "Untrusted content is taken from the URL query string (route snapshot) and used as rendered content without any validation or encoding, which is the source of the DOM injection sink on the next line."
+      }
+    ],
+    "input_tokens": 1282,
+    "output_tokens": 309,
+    "reviewed_at": "2026-09-25T23:47:21+00:00"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1280,
+    "output_tokens": 79,
+    "reviewed_at": "2026-09-25T23:47:23+00:00"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "banner.component.ts",
+        "line": 18,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "Renderer2.setProperty(..., 'innerHTML', message) writes raw, user-controlled query-parameter content directly into the DOM. Unlike the [innerHTML] template binding, this path performs no DomSanitizer sanitization, so an attacker-crafted URL (e.g. ?message=<img src=x onerror=...>) yields reflected XSS."
+      },
+      {
+        "file": "banner.component.ts",
+        "line": 17,
+        "family": "other",
+        "severity": "low",
+        "rationale": "Untrusted input taken from the URL query string is used without any validation or encoding, providing the tainted source for the DOM injection below; it should be escaped or rendered via interpolation/textContent."
+      }
+    ],
+    "input_tokens": 1314,
+    "output_tokens": 315,
+    "reviewed_at": "2026-09-25T23:47:29+00:00"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1312,
+    "output_tokens": 43,
+    "reviewed_at": "2026-09-25T23:47:32+00:00"
+  },
+  {
+    "case_id": "ng-xss-004",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 19,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "bypassSecurityTrustHtml is applied to a bio string taken directly from the URL query parameter, disabling Angular's sanitizer. An attacker can craft a link with a 'bio' parameter containing markup such as <img src=x onerror=...> which is then rendered via [innerHTML], resulting in stored/reflected XSS."
+      },
+      {
+        "file": "profile-bio.service.ts",
+        "line": 9,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "Untrusted, attacker-controllable input is read from the route query params and returned without validation or encoding; it flows straight into a trusted-HTML bypass, so it is the source of the XSS sink."
+      },
+      {
+        "file": "profile.component.html",
+        "line": 3,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] binding renders a SafeHtml value that bypassed sanitization, writing raw attacker-controlled HTML into the DOM."
+      }
+    ],
+    "input_tokens": 1505,
+    "output_tokens": 374,
+    "reviewed_at": "2026-09-25T23:47:37+00:00"
+  },
+  {
+    "case_id": "ng-xss-004",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1395,
+    "output_tokens": 10,
+    "reviewed_at": "2026-09-25T23:47:40+00:00"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 5,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "toTrustedHtml calls DomSanitizer.bypassSecurityTrustHtml on an arbitrary string, disabling Angular's HTML sanitization for every caller. Any attacker-controlled markup passed here is rendered verbatim, allowing script/event-handler injection."
+      },
+      {
+        "file": "article.component.ts",
+        "line": 20,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The 'body' query parameter (fully attacker-controlled via a crafted link) is taken from the URL and passed straight to the bypass helper, then bound to [innerHTML], yielding a reflected XSS."
+      },
+      {
+        "file": "article.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] binding receives a SafeHtml value created with bypassSecurityTrustHtml, so Angular performs no sanitization and raw untrusted HTML is written into the DOM."
+      }
+    ],
+    "input_tokens": 1486,
+    "output_tokens": 398,
+    "reviewed_at": "2026-09-25T23:47:46+00:00"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1503,
+    "output_tokens": 138,
+    "reviewed_at": "2026-09-25T23:47:48+00:00"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "safe-html.pipe.ts",
+        "line": 9,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The pipe calls bypassSecurityTrustHtml on arbitrary input, disabling Angular's built-in HTML sanitization for every consumer. Any attacker-controlled string passed through it is rendered as trusted markup, enabling stored/reflected XSS."
+      },
+      {
+        "file": "comment.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] is bound to body piped through safeHtml, which bypasses sanitization; raw untrusted HTML is injected into the DOM."
+      },
+      {
+        "file": "comment.component.ts",
+        "line": 14,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The 'body' value is taken directly from the URL query parameter with no validation or escaping and then rendered as trusted HTML, giving a one-click reflected XSS via a crafted link (e.g. ?body=<img src=x onerror=...>)."
+      }
+    ],
+    "input_tokens": 1425,
+    "output_tokens": 368,
+    "reviewed_at": "2026-09-25T23:47:54+00:00"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1427,
+    "output_tokens": 156,
+    "reviewed_at": "2026-09-25T23:47:58+00:00"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "snippet.component.ts",
+        "line": 16,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "bypassSecurityTrustHtml is applied to an arbitrary @Input value, disabling Angular's sanitizer. The value flows from a URL query parameter, so an attacker-crafted 'snippet' param is rendered as trusted HTML via [innerHTML], enabling stored/reflected XSS (e.g. <img onerror=...>)."
+      },
+      {
+        "file": "feed.component.ts",
+        "line": 14,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "Untrusted user-controlled query parameter 'snippet' is read without validation or escaping and passed directly to a component that renders it as trusted HTML, forming the source of the XSS chain."
+      },
+      {
+        "file": "snippet.component.html",
+        "line": 1,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] binds a SafeHtml value produced by bypassSecurityTrustHtml, so no sanitization occurs when the attacker-controlled markup is injected into the DOM."
+      }
+    ],
+    "input_tokens": 1541,
+    "output_tokens": 389,
+    "reviewed_at": "2026-09-25T23:48:05+00:00"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "snippet.component.html",
+        "line": 1,
+        "family": "xss-sanitizer-bypass",
+        "severity": "low",
+        "rationale": "Attacker-controlled HTML (the 'snippet' query parameter, passed down as the `html` input) is bound to [innerHTML], writing raw markup into the DOM. Angular's built-in DomSanitizer still runs here (the value is a plain string, not a SafeHtml), so script execution is stripped, but the sink still permits markup/attribute/style injection (content spoofing, UI redress, clickable links) and becomes a full XSS the moment anyone wraps the value in bypassSecurityTrustHtml or the component is used with sanitization disabled. Sanitize/escape server-side or render as text instead."
+      },
+      {
+        "file": "feed.component.ts",
+        "line": 14,
+        "family": "other",
+        "severity": "low",
+        "rationale": "Untrusted URL query parameter is taken verbatim from the route snapshot and stored as `raw` with no validation or encoding before being forwarded to an HTML-rendering child component; this is the taint source that feeds the [innerHTML] sink and makes the injection reflected/URL-triggerable."
+      }
+    ],
+    "input_tokens": 1358,
+    "output_tokens": 666,
+    "reviewed_at": "2026-09-25T23:48:15+00:00"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "changelog.component.ts",
+        "line": 15,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-controlled `entry` query parameter is injected as raw HTML via insertAdjacentHTML, bypassing Angular's sanitization and enabling DOM-based XSS."
+      },
+      {
+        "file": "changelog.component.ts",
+        "line": 14,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "Untrusted input is read directly from the URL query string with no validation, encoding, or sanitization before being used as an HTML sink."
+      }
+    ],
+    "input_tokens": 1300,
+    "output_tokens": 205,
+    "reviewed_at": "2026-09-25T23:48:19+00:00"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1298,
+    "output_tokens": 100,
+    "reviewed_at": "2026-09-25T23:48:22+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "preview.component.ts",
+        "line": 21,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "Origin validation uses a naive string prefix check (`startsWith('https://cdn.example.com')`). An attacker-supplied URL such as `https://cdn.example.com.evil.com/x` or `https://cdn.example.com@evil.com/x` or `https://cdn.example.com.attacker.io` passes the check, so the allow-list can be bypassed. The URL should be parsed with `new URL()` and its `origin`/`protocol` compared exactly."
+      },
+      {
+        "file": "preview.component.ts",
+        "line": 24,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "`bypassSecurityTrustResourceUrl` is applied to a value taken directly from the `src` query parameter, disabling Angular's sanitizer. Combined with the weak prefix check, an attacker can control the iframe `src` (including hostile origins or even `javascript:`/`data:` style payloads if the prefix check is evaded), leading to XSS/content injection in the embedding page."
+      }
+    ],
+    "input_tokens": 1417,
+    "output_tokens": 502,
+    "reviewed_at": "2026-09-25T23:48:29+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1516,
+    "output_tokens": 569,
+    "reviewed_at": "2026-09-25T23:48:38+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 6,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The raw string is wrapped with bypassSecurityTrustHtml before sanitize() is called. Angular's sanitize() returns the unwrapped value verbatim for a SafeValue, so the subsequent sanitize(SecurityContext.HTML, trusted) is a no-op and performs no filtering at all."
+      },
+      {
+        "file": "trusted-html.ts",
+        "line": 8,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The (unsanitized) result is re-marked as trusted HTML, guaranteeing Angular will not sanitize it when bound to [innerHTML]; any script/event-handler markup reaches the DOM."
+      },
+      {
+        "file": "release-notes.component.ts",
+        "line": 20,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "Attacker-controlled input from the 'notes' query parameter is passed straight into the ineffective toSafeHtml helper, giving a reflected XSS via crafted URL."
+      },
+      {
+        "file": "release-notes.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] binding of a SafeHtml value that was force-trusted bypasses Angular's built-in HTML sanitization, rendering untrusted markup directly into the DOM."
+      }
+    ],
+    "input_tokens": 1607,
+    "output_tokens": 597,
+    "reviewed_at": "2026-09-25T23:48:46+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 7,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The result of sanitize() is re-wrapped with bypassSecurityTrustHtml(), permanently marking the string as trusted. Angular will no longer sanitize it at the [innerHTML] binding, so any gap in the one-off sanitize pass (mXSS, serialization differences, later refactor that drops the sanitize call or passes the value through other transforms) yields direct script injection. Sanitized output should be returned as a plain string and left for Angular's binding-time sanitizer."
+      },
+      {
+        "file": "release-notes.component.ts",
+        "line": 20,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "Fully attacker-controlled input (the 'notes' query parameter) is fed into a helper that returns a bypassSecurityTrust value, making a reflected-XSS sink out of a URL parameter; a crafted link would render attacker markup in the victim's session."
+      },
+      {
+        "file": "release-notes.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "[innerHTML] is bound to a SafeHtml value that has been explicitly marked trusted, so Angular's built-in HTML sanitization for this binding is disabled and raw markup from the URL is written into the DOM."
+      }
+    ],
+    "input_tokens": 1572,
+    "output_tokens": 697,
+    "reviewed_at": "2026-09-25T23:48:56+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 8,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "bypassSecurityTrustHtml marks attacker-controlled markup as trusted, disabling Angular's sanitizer entirely."
+      },
+      {
+        "file": "trusted-html.ts",
+        "line": 7,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "A regex that only removes complete <script>...</script> pairs is trivially bypassed (e.g. <img src=x onerror=alert(1)>, <svg onload=...>, unclosed/nested script tags)."
+      },
+      {
+        "file": "digest.component.ts",
+        "line": 20,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The 'digest' query parameter is fully attacker-controlled and flows unsanitized into trusted HTML, giving reflected XSS via a crafted URL."
+      },
+      {
+        "file": "digest.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] binding renders the trusted (unsanitized) value directly into the DOM, executing injected event-handler payloads."
+      }
+    ],
+    "input_tokens": 1553,
+    "output_tokens": 404,
+    "reviewed_at": "2026-09-25T23:49:02+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 7,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The helper calls bypassSecurityTrustHtml() on the value, permanently marking attacker-controlled markup as trusted so Angular skips all further sanitization at binding time. Pre-sanitizing once does not make this safe: the sanitizer's serialized output can be re-parsed differently (mutation-XSS / nested-context re-interpretation), and any future change or caller that passes unsanitized input through this function yields direct XSS. The correct pattern is to bind the sanitized string (or the raw value) and let Angular sanitize at bind time, never to bypass."
+      },
+      {
+        "file": "digest.component.ts",
+        "line": 20,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "Untrusted user input taken straight from the URL query parameter 'digest' is turned into trusted HTML and rendered via [innerHTML], giving an attacker full control over the markup injected into the page through a crafted link (reflected XSS)."
+      },
+      {
+        "file": "digest.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "[innerHTML] binding receives a SafeHtml value that has been explicitly marked trusted, so Angular's built-in HTML sanitization is bypassed for this DOM sink."
+      }
+    ],
+    "input_tokens": 1543,
+    "output_tokens": 717,
+    "reviewed_at": "2026-09-25T23:49:12+00:00"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "summary.component.ts",
+        "line": 23,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The sanitized output (`clean`) is only used as a non-empty check and then discarded; the untrusted `raw` query parameter is passed to `bypassSecurityTrustHtml`, so attacker-controlled HTML/script from the URL is marked trusted and rendered verbatim, yielding reflected XSS."
+      },
+      {
+        "file": "summary.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "[innerHTML] binds a SafeHtml value that was explicitly bypassed, so Angular performs no sanitization and injects raw user-supplied markup into the DOM."
+      },
+      {
+        "file": "summary.component.ts",
+        "line": 18,
+        "family": "other",
+        "severity": "medium",
+        "rationale": "Untrusted input is taken directly from the route query parameter and flows into an HTML sink without any validation or encoding, providing the attack source for the XSS."
+      }
+    ],
+    "input_tokens": 1389,
+    "output_tokens": 406,
+    "reviewed_at": "2026-09-25T23:49:18+00:00"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "summary.component.ts",
+        "line": 23,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-controlled query parameter 'summary' is marked as trusted HTML via bypassSecurityTrustHtml and bound to [innerHTML]. Wrapping the value in a SafeHtml permanently disables Angular's sanitization at the binding site, so the string is injected raw into the DOM. The earlier sanitize() call does not make this safe: its output is re-parsed without re-sanitization (mutation-XSS / mXSS re-parsing differences), and any future refactor that moves or relaxes the sanitize step yields direct XSS. The correct pattern is to bind the sanitized string directly and let Angular sanitize, never to call bypassSecurityTrust* on attacker-controlled input."
+      },
+      {
+        "file": "summary.component.ts",
+        "line": 18,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "HTML content is taken directly from the URL query string (route.snapshot.queryParamMap.get('summary')), an entirely attacker-controlled source that can be delivered through a crafted link, and is then routed into an innerHTML sink. Untrusted URL data should never be treated as markup."
+      },
+      {
+        "file": "summary.component.html",
+        "line": 2,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "[innerHTML] sink receives a SafeHtml value, which instructs Angular to skip sanitization entirely and write the raw markup into the DOM; combined with the URL-derived source this is the actual injection point."
+      }
+    ],
+    "input_tokens": 1389,
+    "output_tokens": 850,
+    "reviewed_at": "2026-09-25T23:49:30+00:00"
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "tool": "llm-guided",
+  "tool_version": "claude-opus-5",
+  "run_at": "2026-09-25T23:32:38+00:00",
+  "rules": {
+    "kind": "prompt",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null
+  },
+  "variants": [
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 7,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "session-store.service.ts",
+          "line": 11,
+          "rule_id": "client-side-secrets",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 8,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}

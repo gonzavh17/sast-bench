@@ -1,0 +1,1973 @@
+[
+  {
+    "case_id": "ng-authz-001",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 4,
+        "cwe": "CWE-807",
+        "severity": "high",
+        "rationale": "The route guard makes an authorization decision based on the 'role' value read from localStorage, which is fully attacker-controlled (any user can run localStorage.setItem('role','admin') in the browser console or via XSS). This is an untrusted input used for a security decision, allowing trivial privilege escalation to the admin route."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 5,
+        "cwe": "CWE-602",
+        "severity": "high",
+        "rationale": "Access control to the admin area is enforced only client-side by returning true/false from the CanActivateFn. Client-side enforcement can be bypassed by modifying localStorage or the bundled JS; authorization must be re-validated server-side for every privileged resource."
+      },
+      {
+        "file": "admin-panel.component.ts",
+        "line": 14,
+        "cwe": "CWE-639",
+        "severity": "medium",
+        "rationale": "The component fetches sensitive admin data (/api/admin/users, exposing user emails) relying solely on the client-side guard for protection. If the backend does not independently authorize the request, any authenticated or unauthenticated user can call the endpoint directly and obtain the user list."
+      }
+    ],
+    "input_tokens": 1165,
+    "output_tokens": 542,
+    "reviewed_at": "2026-09-25T23:32:57+00:00"
+  },
+  {
+    "case_id": "ng-authz-001",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 8,
+        "cwe": "CWE-602",
+        "severity": "high",
+        "rationale": "Authorization is decided purely on the client: the guard fetches /api/me and compares me.role === 'admin' in browser code. An attacker can bypass the Angular router guard entirely (e.g., by tampering with the JS, forging the /api/me response via a proxy/devtools, or calling the API directly), so this is not an enforceable access control. Role checks must be enforced server-side on every /api/admin/* endpoint."
+      },
+      {
+        "file": "admin.routes.ts",
+        "line": 7,
+        "cwe": "CWE-284",
+        "severity": "medium",
+        "rationale": "The admin route's only protection is canActivate: [adminGuard], a client-side check. There is no CanMatch/CanLoad or server-side gating, so the admin panel bundle and its data calls are reachable by any user who manipulates client-side routing."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 10,
+        "cwe": "CWE-754",
+        "severity": "low",
+        "rationale": "The guard returns the raw HTTP observable without catchError; if /api/me fails (401, network error) the observable errors instead of emitting false, leaving navigation in an undefined state rather than deterministically denying access (fail-open/unhandled error path)."
+      },
+      {
+        "file": "admin-panel.component.ts",
+        "line": 14,
+        "cwe": "CWE-359",
+        "severity": "low",
+        "rationale": "The component unconditionally fetches and renders the full user list (emails, PII) as soon as it initializes, relying solely on the bypassable client guard to restrict who reaches this code; without server-side authorization on /api/admin/users this exposes sensitive user data."
+      }
+    ],
+    "input_tokens": 1311,
+    "output_tokens": 817,
+    "reviewed_at": "2026-09-25T23:33:08+00:00"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "refund.service.ts",
+        "line": 9,
+        "cwe": "CWE-807",
+        "severity": "high",
+        "rationale": "The user's role is read from localStorage, which is fully controllable by the client (e.g., via DevTools or XSS). Using this value as part of a refund request makes an authorization-relevant decision depend on untrusted input; an attacker can set role='admin' to attempt privileged refunds."
+      },
+      {
+        "file": "refund.service.ts",
+        "line": 10,
+        "cwe": "CWE-602",
+        "severity": "high",
+        "rationale": "The role is transmitted to the /api/refunds endpoint from the client rather than being derived server-side from an authenticated session/token. This pushes a server-side security control to the client and enables privilege escalation if the backend trusts the supplied role."
+      },
+      {
+        "file": "refund.service.ts",
+        "line": 9,
+        "cwe": "CWE-922",
+        "severity": "low",
+        "rationale": "Security-relevant state (user role) is persisted in localStorage, which is not integrity-protected and is readable/writable by any script on the origin, making it an insecure storage location for authorization data."
+      }
+    ],
+    "input_tokens": 829,
+    "output_tokens": 485,
+    "reviewed_at": "2026-09-25T23:33:16+00:00"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "refund.service.ts",
+        "line": 9,
+        "cwe": "CWE-352",
+        "severity": "medium",
+        "rationale": "State-changing POST to /api/refunds is sent with withCredentials:true (ambient cookies) and no anti-CSRF token is attached or explicitly configured. If the app does not enable Angular's HttpClientXsrfModule (or the server does not validate a token), a third-party site could trigger refunds on behalf of an authenticated user."
+      }
+    ],
+    "input_tokens": 809,
+    "output_tokens": 492,
+    "reviewed_at": "2026-09-25T23:33:24+00:00"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "invoices.component.ts",
+        "line": 21,
+        "cwe": "CWE-639",
+        "severity": "high",
+        "rationale": "The component takes the `userId` straight from the route parameter and uses it to build the API request `/api/users/${userId}/invoices` without any check that the authenticated user actually owns that id. An attacker can simply change the id segment in the browser URL to enumerate and read other users' invoices (Insecure Direct Object Reference / authorization bypass through a user-controlled key). The identity used for the lookup should come from the authenticated session/token on the server, and the backend must enforce ownership rather than trusting the client-supplied id."
+      },
+      {
+        "file": "invoices.component.ts",
+        "line": 20,
+        "cwe": "CWE-20",
+        "severity": "low",
+        "rationale": "The route parameter is consumed without validation or encoding before being interpolated into the request URL. A malformed or crafted value (e.g. containing path traversal segments or query characters) is passed verbatim into the HTTP path, which can alter the target endpoint. Validate the id format and use encodeURIComponent()/typed params."
+      }
+    ],
+    "input_tokens": 1030,
+    "output_tokens": 511,
+    "reviewed_at": "2026-09-25T23:33:33+00:00"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 958,
+    "output_tokens": 101,
+    "reviewed_at": "2026-09-25T23:33:36+00:00"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "dashboard.component.ts",
+        "line": 25,
+        "cwe": "CWE-602",
+        "severity": "high",
+        "rationale": "Admin privilege is decided entirely on the client from an attacker-controllable URL query parameter ('?admin=1'). Anyone can append the parameter to unlock the admin UI and trigger privileged endpoints, relying on the client to enforce a server-side security decision."
+      },
+      {
+        "file": "dashboard.component.ts",
+        "line": 26,
+        "cwe": "CWE-285",
+        "severity": "high",
+        "rationale": "No role/permission check against an authenticated identity (token claims, server call) is performed before rendering admin data and calling /api/admin/users; authorization is improper and trivially bypassed by URL manipulation."
+      },
+      {
+        "file": "dashboard.component.ts",
+        "line": 32,
+        "cwe": "CWE-639",
+        "severity": "medium",
+        "rationale": "The ban action interpolates a user-supplied id directly into a privileged admin endpoint URL with no authorization check or id validation/encoding, enabling direct object manipulation if the client-side gate is bypassed."
+      }
+    ],
+    "input_tokens": 1171,
+    "output_tokens": 463,
+    "reviewed_at": "2026-09-25T23:33:44+00:00"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "dashboard.component.ts",
+        "line": 27,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "Administrative capability (rendering the user list and exposing ban actions) is gated solely by a client-side flag derived from the /api/me response. An attacker can flip `adminMode` in the browser (devtools/manipulated response) to unlock the admin UI and issue /api/admin/* calls; authorization must be enforced server-side on every admin endpoint, not by the Angular template condition."
+      },
+      {
+        "file": "dashboard.component.ts",
+        "line": 29,
+        "cwe": "CWE-285",
+        "severity": "medium",
+        "rationale": "The privileged /api/admin/users fetch is invoked based only on the locally computed `adminMode` value, meaning the front end assumes the trust decision. If the backend relies on the UI to restrict who calls this route, any authenticated user can enumerate all user emails/ids."
+      },
+      {
+        "file": "dashboard.component.ts",
+        "line": 35,
+        "cwe": "CWE-352",
+        "severity": "low",
+        "rationale": "The state-changing ban request is a POST with an empty body and no explicit CSRF/anti-forgery token handling (no XSRF interceptor configuration shown). If the API accepts cookie-based auth without a token, this endpoint is exposed to cross-site request forgery."
+      }
+    ],
+    "input_tokens": 1222,
+    "output_tokens": 574,
+    "reviewed_at": "2026-09-25T23:33:53+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "role.service.ts",
+        "line": 7,
+        "cwe": "CWE-807",
+        "severity": "high",
+        "rationale": "The user's role is read directly from localStorage, which is fully attacker-controllable from the browser console or any XSS payload. Setting localStorage.setItem('role','finance') grants access to the 'finance' guarded route, so the authorization decision is based on untrusted input."
+      },
+      {
+        "file": "role.guard.ts",
+        "line": 7,
+        "cwe": "CWE-602",
+        "severity": "high",
+        "rationale": "Authorization for the payroll reports route is enforced only client-side via a CanActivateFn reading a browser-stored role. A user can bypass the guard entirely (modify storage, or call /api/reports/payroll directly), so sensitive payroll data is protected only by client-side logic."
+      },
+      {
+        "file": "reports.component.ts",
+        "line": 14,
+        "cwe": "CWE-639",
+        "severity": "medium",
+        "rationale": "The component requests sensitive payroll data on init relying on the client-side role guard for protection; without server-side authorization on /api/reports/payroll, any authenticated or unauthenticated user can retrieve the data directly."
+      }
+    ],
+    "input_tokens": 1395,
+    "output_tokens": 586,
+    "reviewed_at": "2026-09-25T23:34:02+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "role.guard.ts",
+        "line": 7,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "Authorization is decided entirely in the browser: the guard fetches /api/me, compares the returned role string to route.data['role'], and grants access. A user can tamper with the client bundle, intercept/modify the /api/me response, or simply call /api/reports/payroll directly, bypassing the check. Route guards are UX only; the payroll endpoint must enforce role checks server-side."
+      },
+      {
+        "file": "reports.component.ts",
+        "line": 14,
+        "cwe": "CWE-862",
+        "severity": "medium",
+        "rationale": "The component unconditionally requests sensitive payroll data on init and relies solely on the client-side roleGuard for access control. If the guard is bypassed (direct navigation, modified client code, guard error handling changes), the request is still issued and the raw response is rendered, so protection of this resource depends on a client-side-only check."
+      },
+      {
+        "file": "role.guard.ts",
+        "line": 9,
+        "cwe": "CWE-754",
+        "severity": "low",
+        "rationale": "No error handling or fallback on the currentRole() observable and no redirect when the check fails; an HTTP failure of /api/me produces an unhandled error in the guard, leaving navigation state undefined instead of an explicit deny/redirect to a login page."
+      }
+    ],
+    "input_tokens": 1536,
+    "output_tokens": 765,
+    "reviewed_at": "2026-09-25T23:34:13+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-347",
+        "severity": "high",
+        "rationale": "readClaims() base64-decodes and JSON.parses the JWT payload without ever verifying the token's signature (no key, no algorithm check). Any attacker can craft/modify a token payload (e.g. set role='admin') and it will be accepted as valid claims."
+      },
+      {
+        "file": "auth.service.ts",
+        "line": 9,
+        "cwe": "CWE-863",
+        "severity": "high",
+        "rationale": "Authorization decision (isAdmin) is derived from an unverified, attacker-controllable value in localStorage. A user can simply write a self-made token with role='admin' into localStorage to escalate privileges."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-613",
+        "severity": "medium",
+        "rationale": "The exp claim is parsed but never validated, so expired tokens are treated as valid, allowing indefinite session/token reuse."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 6,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "Admin access control is enforced solely client-side in a route guard based on a locally-decoded token; if the server relies on this, restricted functionality can be reached by bypassing the guard or tampering with localStorage."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 8,
+        "cwe": "CWE-20",
+        "severity": "low",
+        "rationale": "No validation that the token has three segments or that the payload is valid base64/JSON; a malformed token causes an unhandled exception (TypeError/SyntaxError) inside the guard, leading to a denial of service / unhandled navigation error."
+      }
+    ],
+    "input_tokens": 1079,
+    "output_tokens": 726,
+    "reviewed_at": "2026-09-25T23:34:23+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-347",
+        "severity": "medium",
+        "rationale": "readClaims() base64-decodes and JSON.parses the JWT payload without verifying the token signature or checking the 'exp' claim. Any value placed in localStorage under 'id_token' is trusted as authentic claim data (sub/role). While the admin guard currently re-checks the role server-side via /api/me, these unverified claims are surfaced to the UI and are a trap for future authorization use."
+      },
+      {
+        "file": "auth.service.ts",
+        "line": 14,
+        "cwe": "CWE-922",
+        "severity": "low",
+        "rationale": "The identity token is read from localStorage, which is accessible to any JavaScript running on the origin (e.g., via XSS or a compromised third-party script) and has no HttpOnly/SameSite protection, enabling token theft and session hijacking."
+      },
+      {
+        "file": "auth.service.ts",
+        "line": 15,
+        "cwe": "CWE-20",
+        "severity": "low",
+        "rationale": "readClaims() is called on unvalidated attacker-controllable storage content; a malformed token (missing '.' segment, non-base64, or non-JSON payload) causes an unhandled exception from split()[1], atob(), or JSON.parse(), breaking the component that renders the display name (availability/robustness issue)."
+      }
+    ],
+    "input_tokens": 1299,
+    "output_tokens": 739,
+    "reviewed_at": "2026-09-25T23:34:34+00:00"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "identity.interceptor.ts",
+        "line": 8,
+        "cwe": "CWE-807",
+        "severity": "high",
+        "rationale": "The user identity is read from localStorage, which is fully attacker-controllable client-side storage. Using it as the authentication/identity source for requests is relying on an untrusted input for a security decision."
+      },
+      {
+        "file": "identity.interceptor.ts",
+        "line": 12,
+        "cwe": "CWE-290",
+        "severity": "high",
+        "rationale": "Attaching a client-supplied 'X-User-Id' header as the identity assertion allows trivial impersonation/IDOR: a user can edit localStorage (or forge the header) to read another user's orders. Identity must be derived from a server-verified token/session, not a plain user id header."
+      },
+      {
+        "file": "identity.interceptor.ts",
+        "line": 12,
+        "cwe": "CWE-200",
+        "severity": "medium",
+        "rationale": "The interceptor adds the identity header to every outgoing HttpRequest without checking the request URL/origin, so the user identifier is leaked to any third-party/cross-origin endpoint the app calls."
+      },
+      {
+        "file": "identity.interceptor.ts",
+        "line": 8,
+        "cwe": "CWE-922",
+        "severity": "medium",
+        "rationale": "Storing the identity credential in localStorage makes it readable by any script on the page (XSS) and it is never cleared/expired, increasing the risk of credential theft."
+      }
+    ],
+    "input_tokens": 1106,
+    "output_tokens": 455,
+    "reviewed_at": "2026-09-25T23:34:41+00:00"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "identity.interceptor.ts",
+        "line": 8,
+        "cwe": "CWE-346",
+        "severity": "medium",
+        "rationale": "The interceptor unconditionally sets `withCredentials: true` on every outgoing HttpRequest without validating the request URL against an allow-list of trusted origins. Any absolute URL request (e.g., to a third-party CDN, analytics endpoint, or an attacker-controlled host injected via configuration/user data) will carry the user's session cookies and HTTP auth headers cross-origin, leaking authentication credentials to untrusted destinations. Credentials should only be attached when the request targets a known first-party API origin (relative URL or explicit allow-listed host)."
+      },
+      {
+        "file": "identity.interceptor.ts",
+        "line": 8,
+        "cwe": "CWE-352",
+        "severity": "low",
+        "rationale": "Requests are made cookie-authenticated (`withCredentials: true`) but the interceptor adds no anti-CSRF token (e.g., X-XSRF-TOKEN) and the app does not use Angular's HttpClientXsrfModule here. Relying purely on ambient cookie credentials for state-changing API calls leaves the backend exposed to cross-site request forgery unless the server independently enforces SameSite/token checks."
+      }
+    ],
+    "input_tokens": 1037,
+    "output_tokens": 598,
+    "reviewed_at": "2026-09-25T23:34:50+00:00"
+  },
+  {
+    "case_id": "ng-authz-008",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "account.service.ts",
+        "line": 14,
+        "cwe": "CWE-23",
+        "severity": "high",
+        "rationale": "The user-controlled `accountId` route parameter is interpolated directly into the request URL without `encodeURIComponent`. Values such as `../../admin/users` or `?x=` allow relative-path traversal / query injection, letting an attacker redirect the request to arbitrary backend endpoints and render the response in the component."
+      },
+      {
+        "file": "account.routes.ts",
+        "line": 7,
+        "cwe": "CWE-639",
+        "severity": "medium",
+        "rationale": "The route `accounts/:accountId` has no CanActivate/authorization guard and the resolver blindly loads whatever account id appears in the URL, so any authenticated user can enumerate and view other users' accounts (insecure direct object reference) unless the backend independently enforces ownership."
+      }
+    ],
+    "input_tokens": 1381,
+    "output_tokens": 463,
+    "reviewed_at": "2026-09-25T23:34:58+00:00"
+  },
+  {
+    "case_id": "ng-authz-008",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "account.routes.ts",
+        "line": 7,
+        "cwe": "CWE-862",
+        "severity": "medium",
+        "rationale": "The '/account' route exposes sensitive financial data (IBAN, balance) and triggers a resolver that calls /api/me/account, yet it declares no canActivate/canMatch guard. Any unauthenticated visitor can navigate to the route, causing the privileged API call and rendering of whatever is returned; access control is left entirely implicit. A route guard (plus server-side enforcement) should protect this route."
+      }
+    ],
+    "input_tokens": 1333,
+    "output_tokens": 356,
+    "reviewed_at": "2026-09-25T23:35:04+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 11,
+        "cwe": "CWE-807",
+        "severity": "high",
+        "rationale": "The route guard makes its authorization decision from 'me_role' in localStorage, which is fully attacker-controllable from the browser (DevTools/XSS). Setting localStorage.me_role='admin' bypasses the guard and grants access to admin routes without any server verification."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 16,
+        "cwe": "CWE-613",
+        "severity": "medium",
+        "rationale": "The role is persisted in localStorage with no expiry or invalidation on logout/role change, so a demoted or logged-out user keeps the cached 'admin' privilege indefinitely across sessions (stale, insufficiently expired authorization state)."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 9,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "Authorization is enforced purely client-side by short-circuiting on a cached value and skipping the /api/me check; without matching server-side checks on the protected resources this provides no real access control."
+      }
+    ],
+    "input_tokens": 988,
+    "output_tokens": 534,
+    "reviewed_at": "2026-09-25T23:35:13+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 11,
+        "cwe": "CWE-613",
+        "severity": "high",
+        "rationale": "The admin role is cached in a module-level variable (`cachedRole`) that is never invalidated or given a TTL. After the first `/api/me` call, the guard short-circuits and never re-verifies with the server. If the user logs out and a different user logs in within the same SPA session, or if the user's role is revoked/downgraded server-side, the stale cached value still grants access to admin routes (privilege persistence / insufficient session expiration)."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 12,
+        "cwe": "CWE-863",
+        "severity": "medium",
+        "rationale": "Authorization decision is made purely from a cached client-side value rather than a fresh, authenticated server response tied to the current session. An attacker who can influence the cached value (e.g., by triggering the guard while authenticated as admin and then switching identity/token) obtains incorrect authorization for admin routes; no server-side re-validation occurs on subsequent navigations."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 17,
+        "cwe": "CWE-524",
+        "severity": "low",
+        "rationale": "Sensitive authorization state is stored in a global mutable module variable shared across all guard invocations and user identities, with no clearing hook on logout, leaking one principal's privilege state into another's navigation context."
+      }
+    ],
+    "input_tokens": 989,
+    "output_tokens": 671,
+    "reviewed_at": "2026-09-25T23:35:23+00:00"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "invoice-detail.component.ts",
+        "line": 33,
+        "cwe": "CWE-602",
+        "severity": "high",
+        "rationale": "Authorization is enforced only in the browser: the component fetches /api/invoices/{id} for an arbitrary, user-controlled route id and only afterwards compares invoice.ownerId to the current user, redirecting to /forbidden. The server has already returned the full invoice body, so any user can read another user's invoice simply by observing the network response or disabling/modifying the client code. Ownership checks must be enforced server-side (also CWE-639 / CWE-284, IDOR)."
+      }
+    ],
+    "input_tokens": 1298,
+    "output_tokens": 339,
+    "reviewed_at": "2026-09-25T23:35:29+00:00"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "invoice-detail.component.ts",
+        "line": 26,
+        "cwe": "CWE-116",
+        "severity": "low",
+        "rationale": "The route parameter `id` is interpolated directly into the request URL without encodeURIComponent(). A crafted value such as '../../admin/users' or one containing '?'/'#' can break out of the intended path segment and cause the client to call a different API endpoint than intended (client-side request-path injection)."
+      },
+      {
+        "file": "invoice-detail.component.ts",
+        "line": 25,
+        "cwe": "CWE-639",
+        "severity": "low",
+        "rationale": "The invoice id comes straight from the URL and the returned object's ownerId is never compared with the current user; the component relies entirely on the '/api/me/...' endpoint enforcing ownership. If the backend scoping is missing, this becomes an insecure direct object reference (note: client-side checks alone would not be a fix)."
+      }
+    ],
+    "input_tokens": 1188,
+    "output_tokens": 758,
+    "reviewed_at": "2026-09-25T23:35:41+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-347",
+        "severity": "high",
+        "rationale": "readClaims() base64-decodes and JSON.parses the JWT payload without ever verifying the token signature or issuer. Any attacker can craft/modify a token (e.g. set role to 'admin' and a far-future exp) and it will be accepted as valid claims."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 12,
+        "cwe": "CWE-863",
+        "severity": "high",
+        "rationale": "Authorization decision is made solely from unverified, attacker-controllable claims in a localStorage token. A user can edit localStorage/token payload to grant themselves the 'admin' role and bypass the route guard; no server-side verification is performed."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 6,
+        "cwe": "CWE-922",
+        "severity": "medium",
+        "rationale": "The bearer/ID token is stored in localStorage, which is readable by any script on the origin; an XSS flaw leads directly to token theft and session hijacking (no HttpOnly protection)."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 8,
+        "cwe": "CWE-754",
+        "severity": "low",
+        "rationale": "No validation that the token has the expected three-part structure or that atob/JSON.parse succeed; a malformed token throws an uncaught exception inside the guard, breaking navigation (denial of service)."
+      }
+    ],
+    "input_tokens": 994,
+    "output_tokens": 623,
+    "reviewed_at": "2026-09-25T23:35:50+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-347",
+        "severity": "medium",
+        "rationale": "readClaims() base64-decodes and JSON.parses the JWT payload without ever verifying the token signature. Any claim it returns (sub, role, exp) is fully attacker-controlled, since the token is read from localStorage which a user or injected script can overwrite."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 15,
+        "cwe": "CWE-807",
+        "severity": "medium",
+        "rationale": "The expiry decision is made from an unverified, client-controlled claim (claims.exp). An attacker can forge a token with an arbitrary future exp and pass this gate; any security decision derived from unsigned JWT claims is untrustworthy and must be re-validated server-side."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 8,
+        "cwe": "CWE-248",
+        "severity": "low",
+        "rationale": "token.split('.')[1] and atob()/JSON.parse are unguarded: a malformed or non-JWT value in localStorage throws a TypeError/InvalidCharacterError/SyntaxError inside the route guard, which is not caught (the catchError only covers the HTTP call), breaking navigation."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 10,
+        "cwe": "CWE-522",
+        "severity": "low",
+        "rationale": "The bearer token is persisted in localStorage, which is readable by any JavaScript on the origin, making the credential trivially exfiltratable via XSS; an HttpOnly cookie or in-memory storage is preferable."
+      }
+    ],
+    "input_tokens": 1199,
+    "output_tokens": 926,
+    "reviewed_at": "2026-09-25T23:36:03+00:00"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "settings.component.ts",
+        "line": 19,
+        "cwe": "CWE-639",
+        "severity": "high",
+        "rationale": "The target user id for the DELETE request is taken directly from the URL query parameter ('user') and interpolated into the API path. Any authenticated user can change ?user=<other-id> and delete another account (IDOR / authorization bypass through user-controlled key). The identity should come from the authenticated session (e.g. the /api/me response) and ownership must be enforced server-side."
+      },
+      {
+        "file": "settings.component.ts",
+        "line": 15,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "The 'user' query parameter is used unvalidated/unencoded in a URL path template; no encodeURIComponent or format validation (e.g. UUID) is applied, allowing path segments such as '../' to alter the requested endpoint."
+      },
+      {
+        "file": "auth.guard.ts",
+        "line": 9,
+        "cwe": "CWE-862",
+        "severity": "medium",
+        "rationale": "The guard only verifies that /api/me succeeds (authentication) and ignores the returned 'role'; no authorization check is performed for the destructive settings route. Combined with the client-only nature of route guards, access control must also be enforced on the server for the delete endpoint."
+      }
+    ],
+    "input_tokens": 1420,
+    "output_tokens": 522,
+    "reviewed_at": "2026-09-25T23:36:13+00:00"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "auth.guard.ts",
+        "line": 11,
+        "cwe": "CWE-862",
+        "severity": "medium",
+        "rationale": "The guard only verifies that /api/me returns successfully (i.e. that a session exists) and completely ignores the `role` field of the returned Me object. Any authenticated user, regardless of privilege level, is granted access to the protected route, so there is no authorization check at all — only authentication."
+      },
+      {
+        "file": "settings.routes.ts",
+        "line": 7,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "Access control for the settings route (and the destructive account-deletion action it exposes) is enforced solely by a client-side route guard. A user can bypass the guard by invoking the component/endpoint directly, so the server must re-validate; relying on the front-end guard is trusting client-side enforcement."
+      },
+      {
+        "file": "settings.component.ts",
+        "line": 20,
+        "cwe": "CWE-639",
+        "severity": "medium",
+        "rationale": "The destructive DELETE targets an arbitrary user identifier embedded in the URL path that comes from client-held state. If the backend does not verify that the id matches the authenticated session, this is an insecure direct object reference allowing deletion of other users' accounts."
+      },
+      {
+        "file": "settings.component.ts",
+        "line": 20,
+        "cwe": "CWE-20",
+        "severity": "low",
+        "rationale": "`userId` is initialized to an empty string and is only populated asynchronously by the /api/me request; if the user clicks before it resolves (or the request fails), the app issues `DELETE /api/users/` with no id, which may hit a collection endpoint and cause unintended/mass deletion. No validation of the id is performed before the destructive call."
+      }
+    ],
+    "input_tokens": 1407,
+    "output_tokens": 1105,
+    "reviewed_at": "2026-09-25T23:36:28+00:00"
+  },
+  {
+    "case_id": "ng-sec-001",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 5,
+        "cwe": "CWE-798",
+        "severity": "critical",
+        "rationale": "A Stripe live secret key is hard-coded in the Angular environment file. Everything in an Angular environment file is bundled into the client-side JavaScript and is fully readable by anyone loading the app, so the secret is effectively public. An attacker can extract it and issue arbitrary charges/refunds or read customer data via the payment provider API. Secrets must live only on a server; the client should call a backend endpoint that holds the key."
+      },
+      {
+        "file": "payment.service.ts",
+        "line": 12,
+        "cwe": "CWE-522",
+        "severity": "critical",
+        "rationale": "The secret key is placed into an Authorization: Bearer header from browser-side code, transmitting a privileged credential from an untrusted client and exposing it in the shipped bundle, devtools network traffic, and any intermediary. The charge call should be proxied through a trusted backend that attaches the credential server-side."
+      },
+      {
+        "file": "payment.service.ts",
+        "line": 14,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "The charge amount (amountCents) is supplied entirely by the client and sent directly with a privileged credential, so an attacker can tamper with the amount. Amount/authorization must be validated and computed server-side."
+      }
+    ],
+    "input_tokens": 1028,
+    "output_tokens": 436,
+    "reviewed_at": "2026-09-25T23:36:36+00:00"
+  },
+  {
+    "case_id": "ng-sec-001",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "payment.service.ts",
+        "line": 13,
+        "cwe": "CWE-352",
+        "severity": "high",
+        "rationale": "State-changing POST /charges is sent with `withCredentials: true` to an absolute cross-origin URL (environment.apiBaseUrl). Angular's built-in HttpXsrfInterceptor only attaches the XSRF-TOKEN header to relative/same-origin requests, so this request carries the session cookie with no anti-CSRF token. Any origin that can induce the browser (or an authenticated user) to trigger this call can cause an unauthorized charge. Add an explicit CSRF token header (or use a non-cookie bearer token) for cross-origin state-changing calls."
+      },
+      {
+        "file": "payment.service.ts",
+        "line": 14,
+        "cwe": "CWE-1275",
+        "severity": "medium",
+        "rationale": "Relying on ambient cookie credentials (`withCredentials: true`) for a sensitive money-moving endpoint depends entirely on the server setting SameSite/strict CORS correctly; if the cookie is SameSite=None (required for this cross-site call to work at all) the credentials are attached to attacker-initiated requests, enabling cross-site request abuse of the charge endpoint."
+      },
+      {
+        "file": "payment.service.ts",
+        "line": 13,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "The charge amount (`amountCents`) is supplied entirely by the client with no server-side authorization/price validation visible; trusting client-provided monetary values for a payment operation permits tampering with the charged amount if the backend echoes this value."
+      }
+    ],
+    "input_tokens": 954,
+    "output_tokens": 686,
+    "reviewed_at": "2026-09-25T23:36:46+00:00"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "auth.service.ts",
+        "line": 12,
+        "cwe": "CWE-922",
+        "severity": "medium",
+        "rationale": "The access token (bearer credential) is persisted in localStorage, which is readable by any JavaScript running in the origin. Any XSS or malicious third-party script can exfiltrate the token, and it persists indefinitely across sessions with no expiry or clearing. Prefer an HttpOnly, Secure, SameSite cookie set by the server, or at minimum keep the token in memory only."
+      }
+    ],
+    "input_tokens": 889,
+    "output_tokens": 271,
+    "reviewed_at": "2026-09-25T23:36:51+00:00"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 907,
+    "output_tokens": 101,
+    "reviewed_at": "2026-09-25T23:36:55+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 17,
+        "cwe": "CWE-532",
+        "severity": "medium",
+        "rationale": "The whole UserProfile object is written to the browser console. That object includes sensitive fields (password, nationalId, email), so credentials and PII end up in client-side logs/telemetry where any script, browser extension, or person with access to the console can read them. Log only non-sensitive identifiers, or remove the statement in production builds."
+      },
+      {
+        "file": "profile.service.ts",
+        "line": 17,
+        "cwe": "CWE-201",
+        "severity": "medium",
+        "rationale": "The /api/me response model includes the user's password and national ID, meaning the backend transmits secrets to the client that the UI never needs. This over-exposure of sensitive data in the transport/DTO is what makes the downstream console logging (and any error reporting that serializes the object) leak credentials; the profile payload should omit password and mask nationalId."
+      }
+    ],
+    "input_tokens": 1175,
+    "output_tokens": 400,
+    "reviewed_at": "2026-09-25T23:37:01+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.service.ts",
+        "line": 9,
+        "cwe": "CWE-200",
+        "severity": "high",
+        "rationale": "The UserProfile model retrieved from /api/me includes the user's password and nationalId, meaning the backend ships credentials and government identifiers to the browser where they live in JS memory, can be read via devtools, and may leak through caches/extensions. The client-side DTO should omit password/nationalId entirely."
+      },
+      {
+        "file": "profile.component.ts",
+        "line": 17,
+        "cwe": "CWE-532",
+        "severity": "low",
+        "rationale": "Profile data is written to the browser console in production code. Since the fetched object carries sensitive fields (password, nationalId), console logging of profile data is a leak vector (and here exposes the internal user id); such debug logging should be removed or gated behind a dev-only flag."
+      }
+    ],
+    "input_tokens": 1177,
+    "output_tokens": 506,
+    "reviewed_at": "2026-09-25T23:37:10+00:00"
+  },
+  {
+    "case_id": "ng-sec-004",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "cache.interceptor.ts",
+        "line": 21,
+        "cwe": "CWE-524",
+        "severity": "high",
+        "rationale": "Every GET HttpResponse is stored verbatim in a process-wide Map without honoring Cache-Control/Pragma/no-store directives or any expiry. Authenticated, user-specific or otherwise sensitive payloads (profiles, tokens, PII) persist in memory indefinitely and are replayed on subsequent requests, including after logout or after a different user signs in within the same app instance."
+      },
+      {
+        "file": "cache.interceptor.ts",
+        "line": 14,
+        "cwe": "CWE-639",
+        "severity": "high",
+        "rationale": "The cache key is only req.urlWithParams; it ignores the Authorization header, cookies/credential context, and other request headers (Accept, tenant/locale headers). Two different principals requesting the same URL collide, so user A's cached response can be served to user B — an authorization bypass / cross-user data leak."
+      },
+      {
+        "file": "cache.interceptor.ts",
+        "line": 8,
+        "cwe": "CWE-770",
+        "severity": "medium",
+        "rationale": "The Map grows without bound: no size limit, TTL, or eviction policy. An attacker (or ordinary navigation with unique query strings) can drive unlimited distinct urlWithParams keys, exhausting browser memory and causing a client-side denial of service."
+      },
+      {
+        "file": "cache.interceptor.ts",
+        "line": 16,
+        "cwe": "CWE-672",
+        "severity": "medium",
+        "rationale": "Cached entries are returned forever with no freshness validation (no ETag/If-None-Match, max-age, or invalidation on mutating requests). Stale responses — including revoked permissions or outdated security-relevant state — continue to be served, allowing an attacker to keep the client acting on obsolete authorization data."
+      }
+    ],
+    "input_tokens": 1099,
+    "output_tokens": 847,
+    "reviewed_at": "2026-09-25T23:37:21+00:00"
+  },
+  {
+    "case_id": "ng-sec-004",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "cache.interceptor.ts",
+        "line": 17,
+        "cwe": "CWE-524",
+        "severity": "high",
+        "rationale": "Responses are cached in a singleton Map keyed only by req.urlWithParams. The key ignores the Authorization header / session identity and the cache is never invalidated on logout or token change, so a response fetched for one authenticated principal can be replayed to another (e.g., after user switch in the same SPA session), exposing sensitive per-user data."
+      },
+      {
+        "file": "cache.interceptor.ts",
+        "line": 24,
+        "cwe": "CWE-770",
+        "severity": "medium",
+        "rationale": "Cache entries are added without any TTL, size bound, or eviction policy. Because the key includes arbitrary query parameters (urlWithParams), any code path or attacker-influenced parameter variation on /api/countries?… can grow the Map indefinitely, causing unbounded memory consumption (client-side DoS) and permanently stale data."
+      },
+      {
+        "file": "cache.interceptor.ts",
+        "line": 13,
+        "cwe": "CWE-346",
+        "severity": "low",
+        "rationale": "Cacheability is decided only on the resolved pathname; the origin/host of an absolute request URL is ignored. A request to https://attacker.example/api/plans is therefore treated as a cacheable trusted endpoint, allowing untrusted third-party responses to be stored and served from the application cache."
+      }
+    ],
+    "input_tokens": 1190,
+    "output_tokens": 1167,
+    "reviewed_at": "2026-09-25T23:37:38+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session.service.ts",
+        "line": 13,
+        "cwe": "CWE-922",
+        "severity": "medium",
+        "rationale": "The authentication access token returned by /api/login is persisted via StorageService into localStorage. localStorage is readable by any JavaScript running in the origin, so any XSS (or malicious third-party script/dependency) can exfiltrate the session token, and the token persists indefinitely across tabs/sessions with no HttpOnly/SameSite protection. Tokens should be kept in memory or in an HttpOnly, Secure, SameSite cookie."
+      },
+      {
+        "file": "storage.service.ts",
+        "line": 7,
+        "cwe": "CWE-312",
+        "severity": "low",
+        "rationale": "Generic localStorage wrapper writes values in cleartext with no restriction on what may be stored; it is used to persist sensitive credentials (session token), resulting in cleartext storage of sensitive information accessible to client-side scripts."
+      }
+    ],
+    "input_tokens": 1099,
+    "output_tokens": 402,
+    "reviewed_at": "2026-09-25T23:37:45+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1173,
+    "output_tokens": 73,
+    "reviewed_at": "2026-09-25T23:37:48+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "error.interceptor.ts",
+        "line": 11,
+        "cwe": "CWE-532",
+        "severity": "medium",
+        "rationale": "The global HTTP error interceptor logs the entire request body (`req.body`) and URL to the browser console for every failed request. Since the login flow (login.component.ts:16) posts `{ email, password }`, a failed login will dump plaintext credentials into the console, where they can be read by any script running on the page (e.g., XSS payloads or third-party analytics/error-reporting tools that hook console) and can persist in exported logs or browser devtools history. Sensitive fields should be redacted or only non-sensitive metadata (status, URL) logged."
+      }
+    ],
+    "input_tokens": 1205,
+    "output_tokens": 329,
+    "reviewed_at": "2026-09-25T23:37:54+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1201,
+    "output_tokens": 262,
+    "reviewed_at": "2026-09-25T23:37:59+00:00"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 4,
+        "cwe": "CWE-798",
+        "severity": "high",
+        "rationale": "A live API key ('rk_live_...') is hard-coded into the Angular environment file, which is bundled and shipped to every browser client. Anyone can read it from the JS bundle and replay privileged calls to reports.example.com. Secrets must live server-side behind a proxy endpoint."
+      },
+      {
+        "file": "url-builder.ts",
+        "line": 3,
+        "cwe": "CWE-598",
+        "severity": "medium",
+        "rationale": "The API key is transmitted as a query string parameter (?api_key=...), so it leaks into server access logs, browser history, proxy logs and Referer headers. Credentials should be sent in an Authorization header instead."
+      },
+      {
+        "file": "url-builder.ts",
+        "line": 3,
+        "cwe": "CWE-116",
+        "severity": "medium",
+        "rationale": "reportId is interpolated into the URL path without encodeURIComponent (unlike apiKey). A caller-controlled id containing '../', '?' or '#' can traverse to a different endpoint or append/override query parameters (e.g. overriding api_key or redirecting the request), enabling request manipulation/SSRF-style abuse of the client request."
+      },
+      {
+        "file": "reports.service.ts",
+        "line": 11,
+        "cwe": "CWE-20",
+        "severity": "low",
+        "rationale": "download() accepts reportId directly from callers and passes it to URL construction with no validation or allow-list check, which is the entry point enabling the URL manipulation in buildReportUrl."
+      }
+    ],
+    "input_tokens": 1135,
+    "output_tokens": 617,
+    "reviewed_at": "2026-09-25T23:38:08+00:00"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "url-builder.ts",
+        "line": 3,
+        "cwe": "CWE-23",
+        "severity": "high",
+        "rationale": "`reportId` is interpolated straight into the URL path without `encodeURIComponent` or validation. A value like `../../admin/secrets` or `..%2f..%2f` is normalized by the browser/HttpClient and lets the caller reach arbitrary paths on the reports host; a value containing `?`, `#`, or `&` also lets the caller inject query/fragment components, and `//attacker.tld` style input can alter the effective request target. Classic relative path traversal / URL-construction injection."
+      },
+      {
+        "file": "reports.service.ts",
+        "line": 15,
+        "cwe": "CWE-441",
+        "severity": "medium",
+        "rationale": "The request is issued with `withCredentials: true` to a URL built from unvalidated caller-controlled input (`reportId`). Combined with the unsanitized path concatenation in `buildReportUrl`, an attacker-influenced id can cause the session cookie to be attached to a request for an unintended endpoint (confused-deputy / SSRF-style request forgery from the client), potentially exfiltrating authenticated responses."
+      },
+      {
+        "file": "reports.service.ts",
+        "line": 12,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "`download()` performs no validation of the `reportId` parameter (e.g., allow-listing an ID format such as /^[A-Za-z0-9_-]+$/) before using it to construct a network request URL, making the injection issues in `buildReportUrl` reachable from any caller."
+      }
+    ],
+    "input_tokens": 1059,
+    "output_tokens": 882,
+    "reviewed_at": "2026-09-25T23:38:21+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "checkout.service.ts",
+        "line": 14,
+        "cwe": "CWE-532",
+        "severity": "high",
+        "rationale": "The entire Customer object, including the raw `creditCardNumber` (and email/PII), is passed to logEvent which serializes it with JSON.stringify and writes it to the console/log sink. Sensitive cardholder data ends up in browser console and any log aggregation pipeline, violating PCI-DSS and exposing it to anyone with log or devtools access. Only non-sensitive identifiers (e.g. customer.id, masked PAN) should be logged."
+      },
+      {
+        "file": "logger.ts",
+        "line": 3,
+        "cwe": "CWE-532",
+        "severity": "medium",
+        "rationale": "logEvent blindly JSON.stringify's an arbitrary `unknown` payload into console output with no redaction/allow-list of fields, making it trivial for callers to leak secrets or PII into logs. It also uses console.error for normal events, inflating error logs with sensitive content."
+      }
+    ],
+    "input_tokens": 938,
+    "output_tokens": 436,
+    "reviewed_at": "2026-09-25T23:38:27+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 944,
+    "output_tokens": 84,
+    "reviewed_at": "2026-09-25T23:38:30+00:00"
+  },
+  {
+    "case_id": "ng-sec-009",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 5,
+        "cwe": "CWE-798",
+        "severity": "critical",
+        "rationale": "A Stripe *secret* key (sk_live_ prefix) is hard-coded into the Angular environment file. Everything in environment.ts is bundled into the client-side JavaScript and served to every visitor, so the live secret key is publicly exposed and would allow an attacker to issue arbitrary charges, refunds, and read customer data via the Stripe API. Only publishable keys (pk_live_/pk_test_) belong in front-end code; secret keys must live server-side and be injected via a secure secret store."
+      },
+      {
+        "file": "checkout.component.ts",
+        "line": 13,
+        "cwe": "CWE-200",
+        "severity": "high",
+        "rationale": "The component passes the secret API key from environment into the browser-side Stripe.js initializer, embedding the credential in the shipped bundle and exposing it to anyone who views the page source or network traffic. Stripe.js expects a publishable key; using the secret key here leaks sensitive information to untrusted clients."
+      }
+    ],
+    "input_tokens": 964,
+    "output_tokens": 466,
+    "reviewed_at": "2026-09-25T23:38:37+00:00"
+  },
+  {
+    "case_id": "ng-sec-009",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 971,
+    "output_tokens": 131,
+    "reviewed_at": "2026-09-25T23:38:41+00:00"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-debug.service.ts",
+        "line": 13,
+        "cwe": "CWE-532",
+        "severity": "medium",
+        "rationale": "The whole Session object, including the `accessToken` (and userId), is written to the browser console via console.debug. In production builds this leaks the bearer credential into the developer console and any log/telemetry collector that hooks console output, enabling session hijacking if an attacker can read logs (e.g., via a browser extension, shared machine, or error-reporting service). Sensitive fields should be redacted or the logging removed/guarded behind a non-production environment flag."
+      }
+    ],
+    "input_tokens": 820,
+    "output_tokens": 243,
+    "reviewed_at": "2026-09-25T23:38:46+00:00"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 836,
+    "output_tokens": 132,
+    "reviewed_at": "2026-09-25T23:38:50+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 7,
+        "cwe": "CWE-922",
+        "severity": "medium",
+        "rationale": "The session token is persisted in sessionStorage, which is readable by any JavaScript running in the origin. Unlike an HttpOnly, Secure, SameSite cookie, this storage offers no protection against token exfiltration via XSS or malicious third-party scripts, enabling session hijacking. Sensitive authentication tokens should be kept in HttpOnly cookies or held only in memory."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 11,
+        "cwe": "CWE-312",
+        "severity": "low",
+        "rationale": "recall() returns the raw session token from client-side storage in cleartext, spreading the unprotected credential through the application where it can be logged, attached to template bindings, or leaked to third-party code."
+      }
+    ],
+    "input_tokens": 831,
+    "output_tokens": 348,
+    "reviewed_at": "2026-09-25T23:38:56+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "cwe": "CWE-922",
+        "severity": "high",
+        "rationale": "The session token is persisted in sessionStorage, which is readable by any JavaScript running in the origin. Any XSS or malicious third-party script can exfiltrate the session reference and hijack the user's session; session credentials belong in HttpOnly, Secure, SameSite cookies rather than web storage."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "cwe": "CWE-331",
+        "severity": "high",
+        "rationale": "The token is truncated to its first 8 characters before being stored, and per the comment the backend resumes the session from this shortened reference. Reducing the credential to 8 characters drastically lowers its entropy, making the session identifier feasible to brute-force or guess (CWE-330/331 insufficient entropy in session identifier)."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 12,
+        "cwe": "CWE-522",
+        "severity": "medium",
+        "rationale": "recall() returns the raw session credential from client-side storage with no integrity or expiry checks, so the credential is handed back in plaintext to any caller in the page context, compounding the insecure client-side credential storage."
+      }
+    ],
+    "input_tokens": 859,
+    "output_tokens": 664,
+    "reviewed_at": "2026-09-25T23:39:04+00:00"
+  },
+  {
+    "case_id": "ng-sec-012",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 11,
+        "cwe": "CWE-697",
+        "severity": "high",
+        "rationale": "The 'public' decision is made by a naive substring check on the whole URL (including query string). URLs such as /api/private/report?redirect=/public/ or /api/v1/public/../admin/secrets satisfy url.includes('/public/'), so responses from private, authenticated endpoints are treated as publicly cacheable. Path/URL classification should be done on the normalized path with a prefix/regex anchor, not includes()."
+      },
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 18,
+        "cwe": "CWE-524",
+        "severity": "high",
+        "rationale": "The cache key is only req.urlWithParams; it ignores the request's auth context (Authorization header, cookies, tenant/user headers). A response fetched for one authenticated principal is replayed to any later request for the same URL — e.g. after logout or user switch in the same app instance — leaking another user's data (cache poisoning / sensitive info in cache)."
+      },
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 25,
+        "cwe": "CWE-770",
+        "severity": "medium",
+        "rationale": "Every GET response matching the loose 'public' test is stored forever in an unbounded Map with no size limit, TTL, or eviction, and no respect for Cache-Control/no-store/Vary headers. Attacker-influenced query parameters can generate unlimited distinct keys, causing memory exhaustion, and stale/revoked data is served indefinitely."
+      }
+    ],
+    "input_tokens": 1167,
+    "output_tokens": 888,
+    "reviewed_at": "2026-09-25T23:39:18+00:00"
+  },
+  {
+    "case_id": "ng-sec-012",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 18,
+        "cwe": "CWE-524",
+        "severity": "high",
+        "rationale": "The cache key is only the URL (req.urlWithParams). Authorization/Cookie headers, Vary, and response Cache-Control/no-store directives are ignored, so a response fetched while one user was authenticated is replayed from the shared, application-wide Map to any other caller of the same URL. Any per-user data served under a /public/ path leaks across sessions/users, and logout does not clear the cache."
+      },
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 25,
+        "cwe": "CWE-770",
+        "severity": "medium",
+        "rationale": "Responses are stored in an unbounded Map with no size limit, TTL, or eviction. Since the key includes query parameters, an attacker (or a simple polling loop with varying params) can force unlimited entries, retaining every response body in memory and exhausting the browser tab's heap (client-side DoS)."
+      },
+      {
+        "file": "public-cache.interceptor.ts",
+        "line": 11,
+        "cwe": "CWE-22",
+        "severity": "medium",
+        "rationale": "The 'public' authorization check relies on URL.pathname, which does not percent-decode segments. A request such as /public/%2e%2e/private/secret (or /public/%2F..) passes startsWith('/public/') while the server may normalize it to a private endpoint, causing a privileged response to be stored in the shared cache and later served to other callers. Additionally, absolute or protocol-relative URLs to other hosts pass the check as long as their path starts with /public/."
+      }
+    ],
+    "input_tokens": 1187,
+    "output_tokens": 1422,
+    "reviewed_at": "2026-09-25T23:39:36+00:00"
+  },
+  {
+    "case_id": "ng-xss-001",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 19,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "User-controlled query parameter 'bio' is passed to DomSanitizer.bypassSecurityTrustHtml, disabling Angular's built-in sanitization. The resulting SafeHtml is bound to [innerHTML] in profile.component.html (line 3), so an attacker can craft a URL like ?bio=<img src=x onerror=...> to execute arbitrary script in the victim's session (reflected XSS). Fix: render as text via interpolation, or use sanitizer.sanitize(SecurityContext.HTML, bio) / plain [innerHTML] binding without bypass."
+      },
+      {
+        "file": "profile.component.html",
+        "line": 3,
+        "cwe": "CWE-79",
+        "severity": "medium",
+        "rationale": "[innerHTML] binding renders a value that has been explicitly marked trusted, so Angular performs no sanitization on it; this is the sink that turns the untrusted query parameter into executable DOM content."
+      }
+    ],
+    "input_tokens": 1073,
+    "output_tokens": 384,
+    "reviewed_at": "2026-09-25T23:39:42+00:00"
+  },
+  {
+    "case_id": "ng-xss-001",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 950,
+    "output_tokens": 73,
+    "reviewed_at": "2026-09-25T23:39:45+00:00"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "note.component.ts",
+        "line": 15,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The 'note' query parameter is taken directly from the URL and assigned to nativeElement.innerHTML, bypassing Angular's built-in sanitization (which only applies to [innerHTML] template bindings, not direct DOM writes). An attacker can craft a link like ?note=<img src=x onerror=...> to execute arbitrary script in the victim's origin (DOM-based XSS), enabling session/token theft. Fix by using textContent, or sanitizing with DomSanitizer.sanitize(SecurityContext.HTML, note) / an [innerHTML] binding."
+      }
+    ],
+    "input_tokens": 1020,
+    "output_tokens": 267,
+    "reviewed_at": "2026-09-25T23:39:50+00:00"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1018,
+    "output_tokens": 66,
+    "reviewed_at": "2026-09-25T23:39:53+00:00"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "banner.component.ts",
+        "line": 18,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The 'message' query parameter (attacker-controlled via URL) is written directly into the DOM as innerHTML using Renderer2.setProperty. Renderer2 bypasses Angular's built-in DomSanitizer, so injected markup such as <img src=x onerror=...> or <svg onload=...> executes in the user's session, yielding reflected DOM-based XSS. Safe alternatives: set 'textContent', use interpolation {{ message }}, or sanitize with DomSanitizer.sanitize(SecurityContext.HTML, ...)."
+      },
+      {
+        "file": "banner.component.ts",
+        "line": 17,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "Untrusted routing input is read from the query string and used without any validation, encoding, or allow-listing before being passed to a dangerous DOM sink, which is the root cause enabling the injection on line 18."
+      }
+    ],
+    "input_tokens": 1052,
+    "output_tokens": 411,
+    "reviewed_at": "2026-09-25T23:39:59+00:00"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1050,
+    "output_tokens": 75,
+    "reviewed_at": "2026-09-25T23:40:02+00:00"
+  },
+  {
+    "case_id": "ng-xss-004",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 19,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "bypassSecurityTrustHtml is applied to the attacker-controlled 'bio' query parameter, disabling Angular's built-in sanitization. The resulting SafeHtml is bound via [innerHTML], so a crafted URL (e.g. ?bio=<img src=x onerror=...>) executes arbitrary script in the victim's session (reflected DOM XSS)."
+      },
+      {
+        "file": "profile-bio.service.ts",
+        "line": 9,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "Untrusted query parameter 'bio' is returned verbatim with no validation, encoding, or allow-list filtering, providing the tainted source that later flows into a trusted-HTML sink."
+      },
+      {
+        "file": "profile.component.html",
+        "line": 3,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "[innerHTML] binding renders a value that was explicitly marked as trusted, so Angular performs no sanitization at this sink and injected markup/scripts from the URL are rendered into the DOM."
+      }
+    ],
+    "input_tokens": 1243,
+    "output_tokens": 388,
+    "reviewed_at": "2026-09-25T23:40:08+00:00"
+  },
+  {
+    "case_id": "ng-xss-004",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1133,
+    "output_tokens": 72,
+    "reviewed_at": "2026-09-25T23:40:11+00:00"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 5,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "toTrustedHtml calls DomSanitizer.bypassSecurityTrustHtml() on an arbitrary string argument, disabling Angular's built-in HTML sanitization. Any caller passing untrusted input produces a SafeHtml value that is injected verbatim into the DOM, enabling stored/reflected XSS (e.g. <img src=x onerror=...>)."
+      },
+      {
+        "file": "article.component.ts",
+        "line": 21,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The 'body' value read from the URL query string (line 20) is attacker-controlled and is passed straight to toTrustedHtml, which bypasses sanitization. The result is bound to [innerHTML], so a crafted link executes arbitrary script in the victim's session (reflected XSS)."
+      },
+      {
+        "file": "article.component.html",
+        "line": 2,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "[innerHTML] binding renders a SafeHtml value that was explicitly marked trusted without sanitization, so Angular performs no escaping and injected markup/event handlers execute."
+      }
+    ],
+    "input_tokens": 1224,
+    "output_tokens": 473,
+    "reviewed_at": "2026-09-25T23:40:18+00:00"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1241,
+    "output_tokens": 165,
+    "reviewed_at": "2026-09-25T23:40:21+00:00"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "safe-html.pipe.ts",
+        "line": 9,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The pipe calls DomSanitizer.bypassSecurityTrustHtml() on an arbitrary string, disabling Angular's built-in HTML sanitization. Any untrusted value passed through this pipe is rendered as raw HTML, enabling stored/reflected XSS (e.g. <img src=x onerror=...>)."
+      },
+      {
+        "file": "comment.component.html",
+        "line": 2,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "[innerHTML] is bound to attacker-controlled data that has been marked trusted via the safeHtml pipe, so Angular skips sanitization and injects the raw markup into the DOM, resulting in reflected XSS."
+      },
+      {
+        "file": "comment.component.ts",
+        "line": 14,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "The 'body' query parameter is taken directly from the URL with no validation, encoding, or sanitization before being rendered as HTML, making it a direct untrusted input source for the XSS sink."
+      }
+    ],
+    "input_tokens": 1163,
+    "output_tokens": 381,
+    "reviewed_at": "2026-09-25T23:40:27+00:00"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1165,
+    "output_tokens": 125,
+    "reviewed_at": "2026-09-25T23:40:30+00:00"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "snippet.component.ts",
+        "line": 16,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "bypassSecurityTrustHtml() is applied to the untrusted @Input() `html`, disabling Angular's built-in DOM sanitization. The value flows from the URL query parameter 'snippet' (feed.component.ts:14) into [innerHTML], allowing an attacker to inject arbitrary HTML/DOM-based script (e.g. <img src=x onerror=...>) via a crafted link — reflected XSS."
+      },
+      {
+        "file": "snippet.component.html",
+        "line": 1,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "[innerHTML] binding renders a SafeHtml value that was explicitly marked trusted without sanitization or allow-listing, so attacker-controlled markup from the query string is injected directly into the DOM."
+      },
+      {
+        "file": "feed.component.ts",
+        "line": 14,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "Query parameter 'snippet' is read from the route snapshot and passed downstream as raw HTML with no validation, encoding, or sanitization, serving as the untrusted source for the XSS sink."
+      }
+    ],
+    "input_tokens": 1279,
+    "output_tokens": 439,
+    "reviewed_at": "2026-09-25T23:40:36+00:00"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "snippet.component.html",
+        "line": 1,
+        "cwe": "CWE-79",
+        "severity": "medium",
+        "rationale": "Attacker-controlled data (the 'snippet' query parameter) is bound to [innerHTML], rendering raw HTML from an untrusted source. Although Angular's default DomSanitizer strips <script> and most event handlers, this pattern is a classic DOM-XSS sink: any future bypassSecurityTrustHtml, sanitizer misconfiguration, or sanitizer bypass gadget (e.g., with third-party libraries/templating) yields script execution, and it still permits HTML/CSS injection such as phishing forms, overlays and styled content."
+      },
+      {
+        "file": "feed.component.ts",
+        "line": 14,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "Untrusted input is read straight from the URL query string without validation, encoding, or explicit sanitization and stored for direct HTML rendering downstream, forming the source of the DOM-based injection flow into the app-snippet [innerHTML] sink."
+      }
+    ],
+    "input_tokens": 1096,
+    "output_tokens": 556,
+    "reviewed_at": "2026-09-25T23:40:45+00:00"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "changelog.component.ts",
+        "line": 15,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The 'entry' query parameter is taken directly from the URL and injected into the DOM via insertAdjacentHTML, bypassing Angular's built-in sanitization/contextual escaping. An attacker can craft a link like ?entry=<img src=x onerror=...> to execute arbitrary script in the victim's session (DOM-based XSS). Use textContent, Angular interpolation, or DomSanitizer.sanitize(SecurityContext.HTML, ...) instead."
+      },
+      {
+        "file": "changelog.component.ts",
+        "line": 14,
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "rationale": "Untrusted input from the route query parameters is consumed with no validation, allow-listing, or encoding before being used in a dangerous DOM sink, enabling the injection at line 15."
+      }
+    ],
+    "input_tokens": 1038,
+    "output_tokens": 343,
+    "reviewed_at": "2026-09-25T23:40:51+00:00"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1036,
+    "output_tokens": 62,
+    "reviewed_at": "2026-09-25T23:40:54+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "preview.component.ts",
+        "line": 21,
+        "cwe": "CWE-20",
+        "severity": "high",
+        "rationale": "Origin validation uses a naive `startsWith` prefix check on the raw query parameter. Attacker-controlled values such as `https://cdn.example.com.evil.com/x`, `https://cdn.example.com@evil.com/x`, or `https://cdn.example.com.attacker.io` satisfy the check while resolving to a hostile origin, defeating the intended allow-list. Proper validation requires parsing the URL (e.g., `new URL(src)`) and comparing `origin`/`protocol`+`host` exactly."
+      },
+      {
+        "file": "preview.component.ts",
+        "line": 24,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "`bypassSecurityTrustResourceUrl()` is applied to a user-controlled `src` query parameter, disabling Angular's sanitizer for the iframe resource URL. Because the preceding guard is bypassable (prefix match), an attacker can load an arbitrary origin—or a `javascript:`/`data:` style payload that still passes the prefix test—into the iframe, leading to cross-site scripting / content injection in the application's context."
+      },
+      {
+        "file": "preview.component.html",
+        "line": 2,
+        "cwe": "CWE-1021",
+        "severity": "medium",
+        "rationale": "The iframe embeds externally supplied content without `sandbox`, `referrerpolicy`, or CSP `frame-src` restrictions, so untrusted framed content can perform top-level navigation, trigger downloads, or abuse the parent context (clickjacking/UI redress) once the origin check is bypassed."
+      }
+    ],
+    "input_tokens": 1155,
+    "output_tokens": 761,
+    "reviewed_at": "2026-09-25T23:41:04+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "preview.component.ts",
+        "line": 24,
+        "cwe": "CWE-79",
+        "severity": "medium",
+        "rationale": "User-controlled query parameter 'src' is passed to DomSanitizer.bypassSecurityTrustResourceUrl(), disabling Angular's built-in sanitization for the iframe src. Only the origin is validated; the scheme/path/query remain fully attacker-controlled, so URLs whose origin resolves to the allow-listed host (e.g. blob:https://cdn.example.com/..., or arbitrary user-uploaded/reflective paths on that CDN) are framed and executed with the trust of the application, enabling script execution/clickjacking-style attacks from the embedded document."
+      },
+      {
+        "file": "preview.component.ts",
+        "line": 21,
+        "cwe": "CWE-601",
+        "severity": "low",
+        "rationale": "The allow-list check relies solely on URL.origin equality of unvalidated input before embedding it in an iframe. Any parsing quirk or attacker-controlled content hosted under the allowed origin lets an externally supplied destination be loaded inside the app frame, which can be abused for phishing/redirect-style attacks; the path and query are never restricted."
+      }
+    ],
+    "input_tokens": 1254,
+    "output_tokens": 1199,
+    "reviewed_at": "2026-09-25T23:41:21+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 6,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The raw, attacker-controlled HTML is wrapped with bypassSecurityTrustHtml() before being passed to sanitize(). Angular's DomSanitizer.sanitize() returns SafeValue inputs unwrapped and untouched, so the subsequent sanitize() call on line 7 is a no-op and the markup is never cleaned. The final bypassSecurityTrustHtml() on line 8 re-marks it as trusted, so arbitrary HTML/JS (e.g. <img src=x onerror=...>) reaches [innerHTML], yielding reflected DOM XSS."
+      },
+      {
+        "file": "release-notes.component.ts",
+        "line": 21,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "Untrusted query parameter 'notes' is taken directly from the URL and passed to a helper that effectively bypasses Angular's built-in sanitization, then bound to [innerHTML] in the template — a reflected cross-site scripting sink."
+      },
+      {
+        "file": "release-notes.component.html",
+        "line": 2,
+        "cwe": "CWE-79",
+        "severity": "medium",
+        "rationale": "[innerHTML] binding renders a SafeHtml value that was explicitly marked trusted without effective sanitization, disabling Angular's default HTML escaping/sanitization for user-controlled content."
+      }
+    ],
+    "input_tokens": 1345,
+    "output_tokens": 595,
+    "reviewed_at": "2026-09-25T23:41:29+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 7,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The helper re-wraps the sanitizer output with bypassSecurityTrustHtml, marking attacker-influenced markup as trusted. This disables Angular's automatic sanitization at the [innerHTML] binding, so only a single sanitizer pass is applied. Angular's sanitizer is not guaranteed idempotent against mutation-XSS (mXSS) payloads, where re-parsing the serialized 'clean' string re-materializes executable markup; bypassing the second pass removes that defense. The bypass also defeats any Trusted Types/CSP enforcement for this sink."
+      },
+      {
+        "file": "release-notes.component.ts",
+        "line": 21,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "Fully attacker-controlled input from the 'notes' query parameter is passed into toSafeHtml(), which returns a SafeHtml value that Angular will render verbatim. Tainted URL data flows directly into an HTML sink without any allow-listing or encoding beyond the single bypassed sanitizer call, enabling reflected XSS via a crafted link."
+      },
+      {
+        "file": "release-notes.component.html",
+        "line": 2,
+        "cwe": "CWE-79",
+        "severity": "medium",
+        "rationale": "The [innerHTML] binding receives a SafeHtml object, so Angular skips its built-in DomSanitizer step and injects the string into the DOM as-is. This is the actual injection sink for the untrusted 'notes' query parameter; it should bind a plain string (letting Angular sanitize) or render escaped text instead."
+      }
+    ],
+    "input_tokens": 1310,
+    "output_tokens": 847,
+    "reviewed_at": "2026-09-25T23:41:41+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 8,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "bypassSecurityTrustHtml() disables Angular's built-in DOM sanitizer and marks attacker-controlled markup as trusted. The only defense is a regex that strips <script>...</script> blocks, which is a trivially bypassable denylist (e.g. <img src=x onerror=alert(1)>, <svg onload=...>, <iframe srcdoc=...>, unclosed/obfuscated script tags). Result is stored/reflected DOM XSS."
+      },
+      {
+        "file": "digest.component.ts",
+        "line": 21,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "Untrusted value taken from the 'digest' query parameter (line 20) is passed directly into a sanitizer-bypass helper and bound to the view, allowing an attacker to execute arbitrary script via a crafted URL."
+      },
+      {
+        "file": "digest.component.html",
+        "line": 2,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "[innerHTML] binding renders a SafeHtml value that was produced through bypassSecurityTrustHtml, so Angular performs no sanitization and injects attacker-controlled HTML/event handlers into the DOM."
+      }
+    ],
+    "input_tokens": 1291,
+    "output_tokens": 527,
+    "reviewed_at": "2026-09-25T23:41:48+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 7,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "bypassSecurityTrustHtml() is applied to attacker-controllable markup, permanently marking it trusted and disabling Angular's automatic sanitization at binding time. The preceding sanitize() call is not a reliable guarantee: its output is a re-serialized string that is re-parsed by the browser, enabling mutation-XSS (mXSS) round-trip bypasses, and any future caller can pass already-'trusted' or differently-shaped input. The bypass API should not be used on untrusted data at all."
+      },
+      {
+        "file": "digest.component.ts",
+        "line": 21,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "Untrusted data taken directly from the 'digest' query parameter (line 20) is passed to a helper that returns a SafeHtml wrapper, so the value flows into the template without Angular's runtime sanitization. Reflected XSS is possible via a crafted URL if the sanitizer round-trip can be bypassed."
+      },
+      {
+        "file": "digest.component.html",
+        "line": 2,
+        "cwe": "CWE-79",
+        "severity": "medium",
+        "rationale": "[innerHTML] binding renders a SafeHtml value derived from a URL query parameter; because the value is marked trusted, Angular performs no sanitization on this sink, making it the injection point for the reflected HTML/script content."
+      }
+    ],
+    "input_tokens": 1281,
+    "output_tokens": 893,
+    "reviewed_at": "2026-09-25T23:42:05+00:00"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "summary.component.ts",
+        "line": 23,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The component sanitizes the attacker-controlled 'summary' query parameter into `clean` but then calls bypassSecurityTrustHtml(raw) on the original, unsanitized value. The sanitized result is only used as an emptiness check, so the raw URL parameter is bound to [innerHTML] with Angular's sanitizer disabled, allowing reflected XSS (e.g. <img src=x onerror=...>)."
+      },
+      {
+        "file": "summary.component.html",
+        "line": 2,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "[innerHTML] binding renders a SafeHtml value produced via bypassSecurityTrustHtml of untrusted query-string input, so Angular performs no sanitization at the binding site and injected markup/script executes."
+      }
+    ],
+    "input_tokens": 1127,
+    "output_tokens": 349,
+    "reviewed_at": "2026-09-25T23:42:10+00:00"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1127,
+    "output_tokens": 260,
+    "reviewed_at": "2026-09-25T23:42:15+00:00"
+  }
+]
