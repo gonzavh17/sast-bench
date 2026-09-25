@@ -23,14 +23,14 @@ def record(
     case_id: str,
     variant: str,
     f: Finding,
-    veredicto: str = "descartado",
+    verdict: str = "dismissed",
 ) -> DecisionRecord:
     return DecisionRecord(
         case_id=case_id,
         variant=variant,
         finding=f,
-        veredicto=veredicto,
-        motivo="test",
+        verdict=verdict,
+        reason="test",
         control="",
         model="test-model",
         input_tokens=1,
@@ -77,7 +77,7 @@ def test_dismissing_one_of_three_keeps_the_other_two():
 def test_confirmed_dismisses_nothing():
     f = finding()
     payload = results([{"case_id": "c", "variant": "vulnerable", "findings": [f.model_dump()]}])
-    out = apply_decisions(payload, [record("c", "vulnerable", f, veredicto="confirmado")])
+    out = apply_decisions(payload, [record("c", "vulnerable", f, verdict="confirmed")])
     assert len(out[0]["findings"]) == 1
 
 

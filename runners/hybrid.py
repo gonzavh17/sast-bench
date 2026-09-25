@@ -35,42 +35,45 @@ from scoring.models import Case, Finding, Strict, discover_cases
 
 DEFAULT_MODEL = "claude-opus-5"
 
+# The prompt was in Spanish until 2026-09-25. Runs before that date
+# (results/2026-09-23-*codeql-llm.json) used the Spanish version; see git
+# history for the exact text.
 SYSTEM = """\
-Sos un revisor de seguridad. Un analizador estatico marco un hallazgo en codigo \
-Angular y tenes que decidir si es una vulnerabilidad real o una falsa alarma.
+You are a security reviewer. A static analyzer flagged a finding in Angular \
+code and you have to decide whether it is a real vulnerability or a false alarm.
 
-Descartar un hallazgo real es MUCHO peor que dejar pasar una falsa alarma.
+Dismissing a real finding is MUCH worse than letting a false alarm through.
 
-Descartalo SOLO si podes senalar la linea exacta del control que lo hace \
-inexplotable, y copiala en el campo `control`. Si el dato entra desde fuera del \
-codigo que ves, o no podes rastrear su origen, confirmalo.
+Dismiss it ONLY if you can point to the exact line of the control that makes it \
+unexploitable, and copy that line into the `control` field. If the data comes \
+from outside the code you can see, or you cannot trace where it comes from, \
+confirm it.
 
-Un control que existe no alcanza: tiene que ser suficiente. Una validacion \
-parcial, una que se calcula y no se usa, o una que se aplica sobre un valor que \
-ya no es el que llega al sink, no hacen inexplotable a nada.\
+A control that exists is not enough: it has to be sufficient. A partial \
+validation, one that is computed and never used, or one applied to a value \
+that is no longer the one reaching the sink, makes nothing unexploitable.\
 """
 
 PROMPT = """\
-Hallazgo del analizador:
-  regla: {rule_id}
-  archivo: {path}
-  linea: {line}
-  severidad: {severity}
+Analyzer finding:
+  rule: {rule_id}
+  file: {path}
+  line: {line}
+  severity: {severity}
 
-Codigo completo de la unidad analizada. La linea del hallazgo esta marcada con \
-`>>>`:
+Full code of the analyzed unit. The finding's line is marked with `>>>`:
 
 {context}
 
-Decidi si este hallazgo es una vulnerabilidad real o una falsa alarma.\
+Decide whether this finding is a real vulnerability or a false alarm.\
 """
 
 
 class Decision(BaseModel):
-    """Structured output del modelo. Una decision por hallazgo."""
+    """The model's structured output. One decision per finding."""
 
-    veredicto: Literal["confirmado", "descartado"]
-    motivo: str
+    verdict: Literal["confirmed", "dismissed"]
+    reason: str
     control: str
 
 
@@ -80,8 +83,8 @@ class DecisionRecord(Strict):
     case_id: str
     variant: str
     finding: Finding
-    veredicto: str
-    motivo: str
+    verdict: str
+    reason: str
     control: str
     model: str
     input_tokens: int
@@ -135,12 +138,12 @@ def judge(
 
 
 def _one_line(decision: Decision) -> str:
-    """El motivo en una linea. Si descarta, lo que importa es el control citado."""
-    if decision.veredicto == "descartado" and decision.control.strip():
-        return f"[yellow]descarta[/yellow] · protegido por: {decision.control.strip()}"
-    if decision.veredicto == "descartado":
-        return f"[yellow]descarta[/yellow] · {decision.motivo}"
-    return f"[green]confirma[/green] · {decision.motivo}"
+    """The reason in one line. When dismissing, what matters is the quoted control."""
+    if decision.verdict == "dismissed" and decision.control.strip():
+        return f"[yellow]dismisses[/yellow] · protected by: {decision.control.strip()}"
+    if decision.verdict == "dismissed":
+        return f"[yellow]dismisses[/yellow] · {decision.reason}"
+    return f"[green]confirms[/green] · {decision.reason}"
 
 
 def review(
@@ -171,8 +174,8 @@ def review(
                     case_id=entry["case_id"],
                     variant=entry["variant"],
                     finding=finding,
-                    veredicto=decision.veredicto,
-                    motivo=decision.motivo,
+                    verdict=decision.verdict,
+                    reason=decision.reason,
                     control=decision.control,
                     model=model,
                     input_tokens=usage.input_tokens,
@@ -203,7 +206,7 @@ def apply_decisions(
     discarded = {
         (r.case_id, r.variant, r.finding.path, r.finding.line, r.finding.rule_id)
         for r in records
-        if r.veredicto == "descartado"
+        if r.verdict == "dismissed"
     }
     return [
         {
@@ -230,11 +233,11 @@ def filter_results(
     """Review each finding and build the filtered results, in the usual format."""
     records = review(results, cases, client, model, console)
 
-    confirmed = sum(r.veredicto == "confirmado" for r in records)
+    confirmed = sum(r.verdict == "confirmed" for r in records)
     log_event(
         console,
         "hybrid",
-        f"{confirmed} confirmados, {len(records) - confirmed} descartados",
+        f"{confirmed} confirmed, {len(records) - confirmed} dismissed",
     )
 
     filtered = {
