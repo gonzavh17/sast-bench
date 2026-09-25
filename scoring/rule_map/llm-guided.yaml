@@ -1,0 +1,17 @@
+# family -> family, for the guided LLM arm (runners/llm.py).
+#
+# The guided arm tags each finding with one of the three family ids, or
+# `other`. `other` is deliberately left unmapped: it shows up as noise, like an
+# unmapped rule of a rule-based tool, and does not count as a hit or a false
+# alarm.
+meta:
+  tool: llm-guided
+  rules_source: "family ids from the guided prompt"
+  mapped_at: "2026-09-25"
+
+rules:
+  xss-sanitizer-bypass: xss-sanitizer-bypass
+  client-side-secrets: client-side-secrets
+  broken-authorization: broken-authorization
+
+ignore: []

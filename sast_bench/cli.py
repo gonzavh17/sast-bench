@@ -33,7 +33,7 @@ from runners import semgrep as semgrep_runner
 from sast_bench import corpus as corpus_checks
 from sast_bench.diff import Change, cells, diff_scores
 from sast_bench.doctor import MISSING, OK, WARN, run_checks
-from sast_bench.estimate import count_findings, estimate
+from sast_bench.estimate import count_findings, estimate, estimate_llm
 from sast_bench.runs import (
     DECISIONS,
     MANIFEST,
@@ -44,6 +44,7 @@ from sast_bench.runs import (
     decision_records,
     latest_results_for,
     list_runs,
+    llm_records,
     new_run_id,
     repo_state,
     resolve,
@@ -75,7 +76,9 @@ from scripts import fetch_codeql, fetch_rules
 from scripts.fetch_codeql import REPO_ROOT
 
 DEFAULT_MODEL = "claude-opus-5"  # same as runners/hybrid.py
-ENGINES = ("semgrep", "codeql", "hybrid")
+ENGINES = ("semgrep", "codeql", "hybrid")  # what `--engine all` runs
+LLM_ARMS = ("blind", "guided")
+EFFORTS = ("low", "medium", "high", "xhigh", "max")
 EXT_SUITE = "runners/codeql-ext/security-extended-ext.qls"
 FAMILY_ALIASES = {
     "xss": Family.XSS_SANITIZER_BYPASS,
@@ -143,6 +146,9 @@ def rules_line(results: dict[str, Any]) -> str:
             return f"{rules['bundle']} · {rules['suite']}"
         case "custom":
             return f"custom: {rules['path']}"
+        case "prompt":
+            effort = f" effort={rules['effort']}" if rules.get("effort") else ""
+            return f"{rules['arm']} prompt{effort}"
     return "?"
 
 
@@ -176,13 +182,13 @@ def preflight(engines: list[str], args: argparse.Namespace) -> list[str]:
         problems.append("the CodeQL bundle is missing: uv run python -m scripts.fetch_codeql")
     if args.codeql_ext and not Path(EXT_SUITE).is_file():
         problems.append(f"the extension suite is missing: {EXT_SUITE}")
-    if "hybrid" in engines and not args.dry_run:
+    if ("hybrid" in engines or "llm" in engines) and not args.dry_run:
         from dotenv import load_dotenv
 
         load_dotenv(REPO_ROOT / ".env")
         key = os.environ.get("ANTHROPIC_API_KEY", "")
         if (not key or key.endswith("...")) and not os.environ.get("ANTHROPIC_AUTH_TOKEN"):
-            problems.append("the hybrid needs ANTHROPIC_API_KEY in .env (see .env.example)")
+            problems.append("the hybrid and llm engines need ANTHROPIC_API_KEY in .env (see .env.example)")
     return problems
 
 
@@ -247,6 +253,8 @@ def dry_run(
             console.print(f"{INDENT}suite {suite}", highlight=False)
         elif engine == "hybrid":
             print_hybrid_estimate(console, args, engines, codeql_tool, case_ids, runs)
+        elif engine == "llm":
+            print_llm_estimate(console, args, variants)
 
     problems = preflight(engines, args)
     for problem in problems:
@@ -306,6 +314,32 @@ def print_hybrid_estimate(
         else "reference tokens per call: no previous decisions for this model"
     )
     console.print(f"{INDENT}{basis} · {tokens}", highlight=False)
+
+
+def llm_arms(args: argparse.Namespace) -> tuple[str, ...]:
+    return LLM_ARMS if args.arm == "both" else (args.arm,)
+
+
+def print_llm_estimate(console: Console, args: argparse.Namespace, variants: list[Path]) -> None:
+    from runners.hybrid import build_context
+
+    contexts = [build_context(v) for v in variants]
+    history = llm_records()
+    for arm in llm_arms(args):
+        guess = estimate(0, args.model, []) if not contexts else estimate_llm(contexts, args.model, arm, history)
+        cost = f"~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else "unknown price for this model"
+        effort = f" effort={args.effort}" if args.effort else ""
+        console.print(
+            f"{engine_tag(f'llm-{arm}')} {guess.calls} calls to {args.model}{effort} · "
+            f"~{guess.input_tokens:,} input tokens + ~{guess.output_tokens:,} output · {cost}",
+            highlight=False,
+        )
+        tokens = (
+            f"average of {guess.sample} previous {args.model} {arm} responses"
+            if guess.sample
+            else f"input from code size, output a reference of {guess.output_per_call:,} tokens per call"
+        )
+        console.print(f"{INDENT}{tokens}", highlight=False)
 
 
 def filters_text(args: argparse.Namespace) -> str:
@@ -395,6 +429,8 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
             elif engine == "hybrid":
                 assert base is not None
                 run_hybrid(console, args, cases, base, directory, record)
+            elif engine == "llm":
+                run_llm(console, args, cases, directory, record)
         manifest["status"] = "ok"
     except BaseException as error:
         manifest["status"] = "failed"
@@ -444,6 +480,37 @@ def run_hybrid(
             "output_tokens": sum(r.output_tokens for r in records),
         },
     )
+
+
+def run_llm(
+    console: Console,
+    args: argparse.Namespace,
+    cases: list[Case],
+    directory: Path,
+    record: Any,
+) -> None:
+    import anthropic
+
+    from runners import llm
+
+    client = anthropic.Anthropic()
+    for arm in llm_arms(args):
+        results, records = llm.scan(cases, arm, args.model, args.effort, client, console)
+        responses = f"llm-{arm}-responses.json"
+        write_json(directory / responses, [r.model_dump() for r in records])
+        record(
+            results,
+            model=args.model,
+            arm=arm,
+            effort=args.effort,
+            responses=responses,
+            usage={
+                "calls": len(records),
+                "refusals": sum(r.stop_reason == "refusal" for r in records),
+                "input_tokens": sum(r.input_tokens for r in records),
+                "output_tokens": sum(r.output_tokens for r in records),
+            },
+        )
 
 
 # ---------------------------------------------------------------- show / history
@@ -726,13 +793,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = sub.add_parser("run", help="run engines over the corpus")
     run.add_argument("--corpus", type=Path, default=Path("corpus/angular"), help="default: corpus/angular")
-    run.add_argument("--engine", required=True, choices=[*ENGINES, "all"], help="all = semgrep, codeql and hybrid")
+    run.add_argument(
+        "--engine",
+        required=True,
+        choices=[*ENGINES, "llm", "all"],
+        help="all = semgrep, codeql and hybrid; llm (the model alone) only runs when asked for",
+    )
     run.add_argument("--family", type=family_arg, help="family id or alias: xss, secrets, authz")
     run.add_argument("--difficulty", choices=[d.value for d in Difficulty])
     run.add_argument("--case", dest="case_id", metavar="ID", help="a single case, e.g. ng-sec-002")
     run.add_argument("--codeql-ext", action="store_true", help="CodeQL with runners/codeql-ext (row codeql+ext)")
-    run.add_argument("--model", default=DEFAULT_MODEL, help=f"hybrid model (default {DEFAULT_MODEL})")
+    run.add_argument("--model", default=DEFAULT_MODEL, help=f"model for hybrid and llm (default {DEFAULT_MODEL})")
     run.add_argument("--from-run", metavar="RUN", help="hybrid without codeql: the run to take the base from")
+    run.add_argument("--arm", choices=[*LLM_ARMS, "both"], default="both", help="llm engine: which arm (default both)")
+    run.add_argument("--effort", choices=EFFORTS, help="llm engine: output_config.effort (default: the model's)")
     run.add_argument("--no-cache", action="store_true", help="rebuild the CodeQL databases")
     run.add_argument("--dry-run", action="store_true", help="show the plan and the estimated cost, without running")
     run.set_defaults(handler=cmd_run)

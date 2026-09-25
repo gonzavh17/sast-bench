@@ -19,6 +19,9 @@ def _origin(rules: dict) -> str:
             return f"{rules['repo']}@{rules['commit'][:12]} ({', '.join(rules['paths'])})"
         case "bundle":  # codeql: bundle + query suite
             return f"{rules['bundle']} ({rules['suite']})"
+        case "prompt":  # llm-only arm: prompt arm + model
+            effort = f", effort {rules['effort']}" if rules.get("effort") else ""
+            return f"{rules['arm']} prompt ({rules['model']}{effort})"
         case _:
             return f"custom: {rules['path']}"
 

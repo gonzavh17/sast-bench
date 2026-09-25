@@ -1,0 +1,55 @@
+# CWE -> family, for the blind LLM arm (runners/llm.py). Maintained by hand.
+#
+# The blind arm is never told the families, so it reports a CWE per finding.
+# This table was written before the first run, from the families' scope in
+# PROJECT.md. A CWE in neither `rules` nor `ignore` is reported as unmapped: it
+# counts as noise, stays out of TP/FP, and the report lists it.
+meta:
+  tool: llm-blind
+  rules_source: "CWE ids reported by the model"
+  mapped_at: "2026-09-25"
+
+rules:
+  # xss-sanitizer-bypass: injection into the page, and URLs whose scheme or
+  # origin is not validated (the family includes those).
+  CWE-79: xss-sanitizer-bypass
+  CWE-80: xss-sanitizer-bypass
+  CWE-83: xss-sanitizer-bypass
+  CWE-87: xss-sanitizer-bypass
+  CWE-116: xss-sanitizer-bypass
+  CWE-184: xss-sanitizer-bypass
+  CWE-601: xss-sanitizer-bypass
+  CWE-829: xss-sanitizer-bypass
+  CWE-1021: xss-sanitizer-bypass
+
+  # client-side-secrets: exposure and storage of sensitive data on the client.
+  CWE-200: client-side-secrets
+  CWE-312: client-side-secrets
+  CWE-315: client-side-secrets
+  CWE-319: client-side-secrets
+  CWE-359: client-side-secrets
+  CWE-522: client-side-secrets
+  CWE-524: client-side-secrets
+  CWE-525: client-side-secrets
+  CWE-532: client-side-secrets
+  CWE-538: client-side-secrets
+  CWE-540: client-side-secrets
+  CWE-598: client-side-secrets
+  CWE-798: client-side-secrets
+  CWE-922: client-side-secrets
+
+  # broken-authorization: authorization decided or asserted by the client.
+  CWE-284: broken-authorization
+  CWE-285: broken-authorization
+  CWE-290: broken-authorization
+  CWE-345: broken-authorization
+  CWE-347: broken-authorization
+  CWE-566: broken-authorization
+  CWE-602: broken-authorization
+  CWE-603: broken-authorization
+  CWE-639: broken-authorization
+  CWE-807: broken-authorization
+  CWE-862: broken-authorization
+  CWE-863: broken-authorization
+
+ignore: []

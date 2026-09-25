@@ -69,3 +69,32 @@ def estimate(calls: int, model: str, history: list[dict[str, Any]]) -> Estimate:
             sample=len(same),
         )
     return Estimate(calls, model, *FALLBACK_TOKENS, sample=0)
+
+
+# For the LLM-only arm, when there are no previous responses of the same model
+# and arm: code tokens are estimated from characters, output from a reference.
+CHARS_PER_TOKEN = 3.5
+PROMPT_OVERHEAD_TOKENS = 400  # system prompt + wrapper
+FALLBACK_LLM_OUTPUT = 1500
+
+
+def estimate_llm(contexts: list[str], model: str, arm: str, history: list[dict[str, Any]]) -> Estimate:
+    """One call per variant. Averages previous responses of the same model and arm if any."""
+    calls = len(contexts)
+    same = [r for r in history if r.get("model") == model and r.get("arm") == arm and "input_tokens" in r]
+    if same:
+        return Estimate(
+            calls=calls,
+            model=model,
+            input_per_call=round(sum(r["input_tokens"] for r in same) / len(same)),
+            output_per_call=round(sum(r["output_tokens"] for r in same) / len(same)),
+            sample=len(same),
+        )
+    chars = sum(len(c) for c in contexts) / max(calls, 1)
+    return Estimate(
+        calls=calls,
+        model=model,
+        input_per_call=round(chars / CHARS_PER_TOKEN) + PROMPT_OVERHEAD_TOKENS,
+        output_per_call=FALLBACK_LLM_OUTPUT,
+        sample=0,
+    )

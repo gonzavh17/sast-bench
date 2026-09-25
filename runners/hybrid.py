@@ -92,19 +92,26 @@ class DecisionRecord(Strict):
     decided_at: str
 
 
-def build_context(variant_dir: Path, finding: Finding) -> str:
-    """Every file of the variant, numbered, with the finding marked."""
+def build_context(variant_dir: Path, finding: Finding | None = None) -> str:
+    """Every file of the variant, numbered, with the finding marked if there is one.
+
+    Without a finding there is no marker column at all: the LLM-only arm must not
+    get any hint of where to look.
+    """
     blocks: list[str] = []
     for path in sorted(variant_dir.rglob("*")):
         if not path.is_file():
             continue
         relative = path.relative_to(variant_dir).as_posix()
         lines = path.read_text(encoding="utf-8").splitlines()
-        numbered = [
-            f"{'>>>' if relative == finding.path and n == finding.line else '   '} "
-            f"{n:3} | {text}"
-            for n, text in enumerate(lines, start=1)
-        ]
+        if finding is None:
+            numbered = [f"{n:3} | {text}" for n, text in enumerate(lines, start=1)]
+        else:
+            numbered = [
+                f"{'>>>' if relative == finding.path and n == finding.line else '   '} "
+                f"{n:3} | {text}"
+                for n, text in enumerate(lines, start=1)
+            ]
         blocks.append(f"--- {relative} ---\n" + "\n".join(numbered))
     return "\n\n".join(blocks)
 

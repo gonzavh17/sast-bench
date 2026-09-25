@@ -214,6 +214,18 @@ def latest_results_for(
     return None
 
 
+def llm_records(results_dir: Path = RESULTS_DIR) -> list[dict[str, Any]]:
+    """Every LLM-only response saved so far, for the cost estimate."""
+    records: list[dict[str, Any]] = []
+    runs_dir = results_dir / "runs"
+    if runs_dir.is_dir():
+        for path in runs_dir.glob("*/llm-*-responses.json"):
+            payload = _load_json(path)
+            if isinstance(payload, list):
+                records += [r for r in payload if isinstance(r, dict)]
+    return records
+
+
 def decision_records(results_dir: Path = RESULTS_DIR) -> list[dict[str, Any]]:
     """Every LLM filter decision saved so far, legacy and new."""
     paths = list(results_dir.glob("*hybrid-decisions.json"))
