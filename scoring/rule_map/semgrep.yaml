@@ -35,4 +35,8 @@ rules:
   jwt-decode-without-verify: broken-authorization
   react-jwt-decoded-property: broken-authorization
 
-ignore: []
+ignore:
+  # Correctness rule, not security. First seen on ng-authz-004 (2026-09-25):
+  # it reads Angular's {{ u.email }} inside a TS template literal as a JS
+  # template string missing its `$`.
+  - missing-template-string-indicator

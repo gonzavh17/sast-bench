@@ -1,0 +1,54 @@
+{
+  "run_id": "20260925-005652",
+  "status": "ok",
+  "started_at": "2026-09-25T03:56:52+00:00",
+  "finished_at": "2026-09-25T04:00:35+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": "broken-authorization",
+    "difficulty": null,
+    "case": null
+  },
+  "cases": [
+    "ng-authz-001",
+    "ng-authz-002",
+    "ng-authz-003",
+    "ng-authz-004",
+    "ng-authz-005",
+    "ng-authz-006",
+    "ng-authz-007",
+    "ng-authz-008",
+    "ng-authz-009",
+    "ng-authz-010",
+    "ng-authz-011",
+    "ng-authz-012"
+  ],
+  "repo": {
+    "commit": "1fc7e6bb2da63b30bf80d26839f12e3fc0b52b21",
+    "dirty": false
+  },
+  "engines": [
+    {
+      "tool": "semgrep",
+      "file": "semgrep.json",
+      "tool_version": "1.177.0",
+      "rules": {
+        "kind": "official",
+        "repo": "semgrep/semgrep-rules",
+        "commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+        "paths": [
+          "javascript",
+          "typescript"
+        ],
+        "fetched_at": "2026-09-21T23:30:41+00:00"
+      },
+      "model": null,
+      "summary": {
+        "solved": 0,
+        "pairs": 12,
+        "recall": 0.0,
+        "fpr": 0.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "tool": "semgrep",
+  "tool_version": "1.177.0",
+  "run_at": "2026-09-25T04:00:35+00:00",
+  "rules": {
+    "kind": "official",
+    "repo": "semgrep/semgrep-rules",
+    "commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+    "paths": [
+      "javascript",
+      "typescript"
+    ],
+    "fetched_at": "2026-09-21T23:30:41+00:00"
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-002",
+      "case_dir": "corpus/angular/broken-authorization/002-role-in-request-body",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-002",
+      "case_dir": "corpus/angular/broken-authorization/002-role-in-request-body",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-003",
+      "case_dir": "corpus/angular/broken-authorization/003-idor-route-user-id",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-003",
+      "case_dir": "corpus/angular/broken-authorization/003-idor-route-user-id",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-004",
+      "case_dir": "corpus/angular/broken-authorization/004-admin-query-flag",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "dashboard.component.ts",
+          "line": 12,
+          "rule_id": "missing-template-string-indicator",
+          "severity": "INFO"
+        },
+        {
+          "path": "dashboard.component.ts",
+          "line": 12,
+          "rule_id": "missing-template-string-indicator",
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-004",
+      "case_dir": "corpus/angular/broken-authorization/004-admin-query-flag",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "dashboard.component.ts",
+          "line": 13,
+          "rule_id": "missing-template-string-indicator",
+          "severity": "INFO"
+        },
+        {
+          "path": "dashboard.component.ts",
+          "line": 13,
+          "rule_id": "missing-template-string-indicator",
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-009",
+      "case_dir": "corpus/angular/broken-authorization/009-guard-cache-in-storage",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-009",
+      "case_dir": "corpus/angular/broken-authorization/009-guard-cache-in-storage",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-010",
+      "case_dir": "corpus/angular/broken-authorization/010-client-side-owner-check",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-010",
+      "case_dir": "corpus/angular/broken-authorization/010-client-side-owner-check",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-012",
+      "case_dir": "corpus/angular/broken-authorization/012-guarded-page-editable-user-id",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-012",
+      "case_dir": "corpus/angular/broken-authorization/012-guarded-page-editable-user-id",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}
