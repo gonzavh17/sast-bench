@@ -43,6 +43,14 @@ Adding an LLM that reviews each CodeQL finding gets to **12/12**. Keep this in
 proportion: the filter only had to dismiss one finding. Running it with the
 prompt in Spanish and in English gave the same 16 verdicts.
 
+**4. Authorization flaws are invisible to rule-based tools.** On the
+broken-authorization family, Semgrep and CodeQL both solve **0/12**. These
+tools track dangerous data flowing into a sink. Here the flaw is *where the
+authority lives*: a role read from `localStorage`, unverified JWT claims, an
+account id taken from the URL. None of that has a sink to track. The closest
+call: CodeQL's `js/client-side-request-forgery` flagged the exact line of one
+case, but for a different reason (see Results).
+
 ## Why this exists
 
 RealVuln covers Python and the OWASP Benchmark covers Java. There was nothing
@@ -88,7 +96,7 @@ The full design is in [PROJECT.md](PROJECT.md).
 
 ## Results
 
-36 pairs, 72 variants. One run per cell.
+36 pairs, 72 variants, three families. One run per cell.
 
 **xss-sanitizer-bypass** (manual trust, raw HTML in the DOM, DOM access that goes around the framework, unvalidated URLs)
 
@@ -113,9 +121,24 @@ or require the `jwt-decode` library, not idiomatic browser code.
 ![Client-side secrets results, case by case](docs/secrets.svg)
 
 **broken-authorization** (authority that lives on the client: roles in
-storage, unverified JWT claims, ids taken from the URL): **pending**. The 12
-pairs are written and the [prediction](results/prediccion-authz.md) is
-committed; the runs come next.
+storage, unverified JWT claims, ids taken from the URL)
+
+| tool | pair score | recall | FPR |
+|---|---|---|---|
+| Semgrep 1.177.0 | 0/12 | 0.00 | 0.00 |
+| CodeQL 2.27.1 | 0/12 | 0.00 | 0.00 |
+| CodeQL + extension | 0/12 | 0.00 | 0.00 |
+
+One near miss. `js/client-side-request-forgery` (CWE-918) fired on the
+vulnerable side of ng-authz-012, on the exact line: a `DELETE` whose account id
+comes from `?user=` in the URL. It stays out of the score because the rule is
+not mapped to this family, which is what the prediction said before the run.
+Mapping it now would mean moving the goalposts after seeing the result. It also
+only works by accident of source kind: the query ignores Angular route
+parameters (`/users/:id`) and only follows query-string ones, so the three
+cases that take the id from the route path go unseen.
+
+![Broken authorization results, case by case](docs/authz.svg)
 
 ## Predictions first
 
@@ -126,8 +149,11 @@ each tool should catch, and why. Then the run either confirms it or it doesn't.
   got **0/12**. Finding out why led to finding 1.
 - [CodeQL extension](results/prediccion-codeql-ext.md): predicted 3 detections,
   1 false alarm, 2/12 pairs. The run matched it case by case.
-- [Authorization](results/prediccion-authz.md): predicted ~0/12 for both tools.
-  Not run yet.
+- [Authorization](results/prediccion-authz.md): predicted 0/12 for both tools,
+  with `js/client-side-request-forgery` as the only query that might fire. The
+  score matched and so did the query, but the stated reason was wrong: the
+  prediction said a `/api/...` prefix would sanitize the URL, and what actually
+  decides is whether the id comes from the route path or the query string.
 
 These files, and the older reports in `results/`, are in Spanish. They are
 dated records and are kept unedited on purpose.
@@ -191,7 +217,6 @@ docs/                                 images used in this README
 
 ## Roadmap
 
-- Run the broken-authorization family and check it against its prediction.
 - Measure the extension's cost on real Angular projects: how many new alerts,
   and how many are real. That is the evidence an upstream issue to CodeQL needs.
 - Run the LLM alone, blind and guided, to see whether it finds what the
