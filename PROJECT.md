@@ -110,6 +110,11 @@ variants:
   arbitrary advantage and `indirect` cases are not comparable.
 - Cases are written by me or come from open source projects (`source: oss`,
   with attribution). **No code from work.**
+- **Comments never reveal the label.** A comment may say what the code does,
+  never whether it is safe, and where both twins have a comment in the same
+  place it reads the same. Rule-based tools ignore comments; an LLM reads them,
+  and a comment like "whoever reads it can act as the user" is the answer key.
+  The rationale for each side lives in `meta.yaml`, which no engine sees.
 - `tests/` validates every case's `meta.yaml`: required fields, family and
   difficulty inside the enum, existing `sink` paths, both variants present.
 

@@ -14,7 +14,7 @@ export class SessionService {
     return this.http.post<{ accessToken: string }>('/api/login', { email, password }).pipe(
       tap((response) => {
         this.accessToken = response.accessToken;
-        // Only the language preference goes to disk, not the credential.
+        // Remember the UI language.
         this.storage.save('locale', 'es-AR');
       }),
     );

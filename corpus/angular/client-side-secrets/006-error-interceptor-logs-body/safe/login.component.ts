@@ -12,7 +12,7 @@ export class LoginComponent {
   constructor(private http: HttpClient) {}
 
   submit(): void {
-    // The body goes through the error interceptor before reaching anything else.
+    // Submit the login form.
     this.http.post('/api/login', { email: this.email, password: this.password }).subscribe();
   }
 }

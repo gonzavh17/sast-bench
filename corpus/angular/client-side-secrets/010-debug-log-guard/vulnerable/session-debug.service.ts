@@ -8,8 +8,8 @@ export interface Session {
 @Injectable({ providedIn: 'root' })
 export class SessionDebugService {
   trace(session: Session): void {
-    // console.debug is not stripped from the production build: the level is
-    // decided by the browser console, not the compiler.
+    // Trace the active session
+    // while debugging.
     console.debug('sesion activa', session);
   }
 }

@@ -1,6 +1,6 @@
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-/** Wraps the markup so it can be bound with [innerHTML]. */
+/** Prepares the markup for an [innerHTML] binding. */
 export function toTrustedHtml(sanitizer: DomSanitizer, html: string): SafeHtml {
   return sanitizer.bypassSecurityTrustHtml(html);
 }

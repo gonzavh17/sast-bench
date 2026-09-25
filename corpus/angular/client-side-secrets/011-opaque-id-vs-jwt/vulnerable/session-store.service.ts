@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class SessionStoreService {
-  /** Stores the full JWT: whoever reads it can act as the user. */
+  /** Remembers the session so the UI can resume it. */
   remember(sessionToken: string): void {
     sessionStorage.setItem('session_token', sessionToken);
   }
