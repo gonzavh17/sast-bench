@@ -1,0 +1,261 @@
+{
+  "tool": "codeql+llm",
+  "rule_map": "codeql",
+  "tool_version": "codeql 2.27.1 + claude-opus-5",
+  "run_at": "2026-09-25T03:53:02+00:00",
+  "rules": {
+    "kind": "bundle",
+    "bundle": "github/codeql-action@codeql-bundle-v2.27.1",
+    "suite": "codeql/javascript-queries:codeql-suites/javascript-security-extended.qls",
+    "fetched_at": "2026-09-23T00:36:15+00:00"
+  },
+  "base_results": "results/2026-09-22-codeql.json",
+  "variants": [
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 19,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "note.component.ts",
+          "line": 15,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "banner.component.ts",
+          "line": 18,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 19,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 5,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "safe-html.pipe.ts",
+          "line": 9,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "snippet.component.ts",
+          "line": 16,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-008",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/008-insert-adjacent-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "changelog.component.ts",
+          "line": 15,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-008",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/008-insert-adjacent-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-009",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/009-url-prefix-check",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "preview.component.ts",
+          "line": 21,
+          "rule_id": "js/incomplete-url-substring-sanitization",
+          "severity": "WARNING"
+        },
+        {
+          "path": "preview.component.ts",
+          "line": 24,
+          "rule_id": "js/client-side-unvalidated-url-redirection",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-009",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/009-url-prefix-check",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 6,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-011",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/011-regex-strip-script",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 3,
+          "rule_id": "js/bad-tag-filter",
+          "severity": "WARNING"
+        },
+        {
+          "path": "trusted-html.ts",
+          "line": 7,
+          "rule_id": "js/incomplete-multi-character-sanitization",
+          "severity": "WARNING"
+        },
+        {
+          "path": "trusted-html.ts",
+          "line": 8,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-011",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/011-regex-strip-script",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-012",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/012-validated-one-rendered-another",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "summary.component.ts",
+          "line": 23,
+          "rule_id": "js/xss",
+          "severity": "ERROR"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-012",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/012-validated-one-rendered-another",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

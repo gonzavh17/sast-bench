@@ -1,0 +1,57 @@
+{
+  "run_id": "20260925-005125",
+  "status": "ok",
+  "started_at": "2026-09-25T03:51:25+00:00",
+  "finished_at": "2026-09-25T03:53:02+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": "xss-sanitizer-bypass",
+    "difficulty": null,
+    "case": null
+  },
+  "cases": [
+    "ng-xss-001",
+    "ng-xss-002",
+    "ng-xss-003",
+    "ng-xss-004",
+    "ng-xss-005",
+    "ng-xss-006",
+    "ng-xss-007",
+    "ng-xss-008",
+    "ng-xss-009",
+    "ng-xss-010",
+    "ng-xss-011",
+    "ng-xss-012"
+  ],
+  "repo": {
+    "commit": "188198d8e8ba9610b95fa756dc452044bc78ab13",
+    "dirty": false
+  },
+  "engines": [
+    {
+      "tool": "codeql+llm",
+      "file": "codeql+llm.json",
+      "tool_version": "codeql 2.27.1 + claude-opus-5",
+      "rules": {
+        "kind": "bundle",
+        "bundle": "github/codeql-action@codeql-bundle-v2.27.1",
+        "suite": "codeql/javascript-queries:codeql-suites/javascript-security-extended.qls",
+        "fetched_at": "2026-09-23T00:36:15+00:00"
+      },
+      "model": "claude-opus-5",
+      "base": "results/2026-09-22-codeql.json",
+      "decisions": "hybrid-decisions.json",
+      "usage": {
+        "calls": 16,
+        "input_tokens": 19495,
+        "output_tokens": 4633
+      },
+      "summary": {
+        "solved": 12,
+        "pairs": 12,
+        "recall": 1.0,
+        "fpr": 0.0
+      }
+    }
+  ]
+}
