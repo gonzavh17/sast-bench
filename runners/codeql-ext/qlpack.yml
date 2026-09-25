@@ -1,0 +1,9 @@
+# Extension de CodeQL para client-side-secrets. Ver TokenHeuristics.qll.
+# Las versiones son las que trae el bundle fijado en scripts/fetch_codeql.py:
+# no se baja nada del registry.
+name: sast-bench/codeql-ext
+version: 0.1.0
+extractor: javascript
+dependencies:
+  codeql/javascript-all: 2.10.2
+  codeql/javascript-queries: 2.4.6

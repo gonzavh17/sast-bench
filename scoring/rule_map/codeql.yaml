@@ -37,5 +37,9 @@ rules:
   js/build-artifact-leak: client-side-secrets
   js/password-in-configuration-file: client-side-secrets
   js/empty-password-in-configuration-file: client-side-secrets
+  # Versiones extendidas de runners/codeql-ext/ (suman accessToken, jwt,
+  # bearer, etc. a la heuristica de nombres). Solo aparecen en codeql+ext.
+  sast-bench/clear-text-storage-ext: client-side-secrets
+  sast-bench/clear-text-logging-ext: client-side-secrets
 
 ignore: []

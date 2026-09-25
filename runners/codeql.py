@@ -95,7 +95,9 @@ def codeql_version(binary: Path) -> str:
     return completed.stdout.strip() or "unknown"
 
 
-def scan(cases: list[Case], bundle: Path, suite: str, console: Console) -> dict[str, Any]:
+def scan(
+    cases: list[Case], bundle: Path, suite: str, console: Console, tool: str = "codeql"
+) -> dict[str, Any]:
     binary = bundle / "codeql"
     variants: list[dict[str, Any]] = []
     todo = [(case, label) for case in cases for label in VARIANT_LABELS]
@@ -117,13 +119,17 @@ def scan(cases: list[Case], bundle: Path, suite: str, console: Console) -> dict[
                     "findings": findings,
                 }
             )
-    return {
-        "tool": "codeql",
+    report: dict[str, Any] = {
+        "tool": tool,
         "tool_version": codeql_version(binary),
         "run_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         "rules": bundle_provenance(bundle, suite),
         "variants": variants,
     }
+    if tool != "codeql":
+        # Misma herramienta con otra suite: los rule_id siguen siendo de CodeQL.
+        report["rule_map"] = "codeql"
+    return report
 
 
 def main() -> None:
@@ -136,6 +142,11 @@ def main() -> None:
         help="carpeta del bundle; apuntala a otra para correr otra version",
     )
     parser.add_argument("--suite", default=SUITE, help="suite de queries a correr")
+    parser.add_argument(
+        "--tool",
+        default="codeql",
+        help="nombre de la fila en los reportes; p. ej. codeql+ext con la suite extendida",
+    )
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
@@ -148,7 +159,7 @@ def main() -> None:
     console = make_console()
     log_event(console, "codeql", f"{len(cases)} casos en {args.corpus}")
 
-    report = scan(cases, args.bundle, args.suite, console)
+    report = scan(cases, args.bundle, args.suite, console, args.tool)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     log_event(console, "codeql", f"escrito {args.out}")
