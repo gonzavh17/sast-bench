@@ -5,9 +5,10 @@ import { of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { readClaims } from './jwt';
+import { TokenStore } from './token-store';
 
 export const adminGuard: CanActivateFn = () => {
-  const token = localStorage.getItem('id_token');
+  const token = inject(TokenStore).get();
   if (token === null) {
     return false;
   }

@@ -7,7 +7,7 @@ source: authored
 variants:
   vulnerable:
     label: vulnerable
-    sink: {file: vulnerable/admin.guard.ts, line: 12}
+    sink: {file: vulnerable/admin.guard.ts, line: 14}
     rationale: >
       It looks like full validation: it checks there is a token, that it has not
       expired and that the role is admin. But it never verifies the signature. A

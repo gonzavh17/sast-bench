@@ -7,7 +7,7 @@ source: authored
 variants:
   vulnerable:
     label: vulnerable
-    sink: {file: vulnerable/auth.service.ts, line: 9}
+    sink: {file: vulnerable/auth.service.ts, line: 12}
     rationale: >
       readClaims decodes the JWT payload with atob, without verifying the
       signature (a browser cannot). AuthService uses that 'role' claim to decide

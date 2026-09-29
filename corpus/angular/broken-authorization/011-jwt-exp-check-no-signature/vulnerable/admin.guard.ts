@@ -1,9 +1,11 @@
+import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
 
 import { readClaims } from './jwt';
+import { TokenStore } from './token-store';
 
 export const adminGuard: CanActivateFn = () => {
-  const token = localStorage.getItem('id_token');
+  const token = inject(TokenStore).get();
   if (token === null) {
     return false;
   }
