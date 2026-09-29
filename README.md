@@ -7,7 +7,15 @@ Every vulnerable case has a safe twin: the same pattern, done right. A tool only
 gets credit for a pair if it flags the vulnerable one **and** stays quiet on the
 safe one.
 
-![XSS results: Semgrep, CodeQL and CodeQL + LLM, case by case](docs/xss.svg)
+| | XSS | secrets | authorization | **total** |
+|---|---|---|---|---|
+| Semgrep | 5 | 0 | 0 | **5/36** |
+| CodeQL | 11 | 0 | 0 | **11/36** |
+| LLM alone, blind | 8 | 7 | 4 | **19/36** |
+| LLM alone, guided | 8 | 9 | 9 | **26/36** |
+
+Pairs solved, out of 12 per family. The LLM is `claude-opus-5`. Details,
+extensions and per-case tables are below.
 
 ## Key findings
 
@@ -50,6 +58,22 @@ authority lives*: a role read from `localStorage`, unverified JWT claims, an
 account id taken from the URL. None of that has a sink to track. The closest
 call: CodeQL's `js/client-side-request-forgery` flagged the exact line of one
 case, but for a different reason (see Results).
+
+**5. An LLM alone finds everything, and flags half of what is safe.** Reviewing
+each variant on its own, with no rule-based tool and without being told what to
+look for, the model catches **all 36** vulnerable variants and flags **17 of
+the 36** safe twins: 19/36 pairs. On authorization it is 4/12, because "a guard
+in the browser can be bypassed" is also true of a guard that asks the server.
+Told what each family means (the guided arm), it drops to 9 flagged safe twins
+and reaches **26/36**; authorization goes from 4/12 to 9/12. The model does not
+lack the ability to tell the twins apart, it lacks the criterion. Two caveats:
+the guided prompt contains the benchmark's own definition of the family, and
+this is one run per cell.
+
+The LLM also found two defects in the corpus: two "safe" authorization twins
+still read the JWT from `localStorage`, which the secrets family itself counts
+as a vulnerability. They were fixed and re-run, and the fix is declared in the
+[commit history](https://github.com/gonzavh17/sast-bench/commits/main).
 
 ## Why this exists
 
@@ -105,6 +129,10 @@ The full design is in [PROJECT.md](PROJECT.md).
 | Semgrep 1.177.0 | 5/12 | 0.42 | 0.00 |
 | CodeQL 2.27.1 | 11/12 | 1.00 | 0.08 |
 | CodeQL + claude-opus-5 filter | 12/12 | 1.00 | 0.00 |
+| LLM alone, blind | 8/12 | 1.00 | 0.33 |
+| LLM alone, guided | 8/12 | 1.00 | 0.33 |
+
+![XSS results, case by case](docs/xss.svg)
 
 **client-side-secrets** (secrets in config, tokens in browser storage, sensitive data in logs and caches)
 
@@ -113,6 +141,8 @@ The full design is in [PROJECT.md](PROJECT.md).
 | Semgrep 1.177.0 | 0/12 | 0.00 | 0.00 |
 | CodeQL 2.27.1 | 0/12 | 0.00 | 0.00 |
 | CodeQL + extension | 2/12 | 0.25 | 0.08 |
+| LLM alone, blind | 7/12 | 1.00 | 0.42 |
+| LLM alone, guided | 9/12 | 1.00 | 0.25 |
 
 Semgrep's zero here is a property of its rule set, not of the engine: the
 secrets rules in the pinned set target Express, passport or `jsonwebtoken`,
@@ -128,8 +158,14 @@ storage, unverified JWT claims, ids taken from the URL)
 | Semgrep 1.177.0 | 0/12 | 0.00 | 0.00 |
 | CodeQL 2.27.1 | 0/12 | 0.00 | 0.00 |
 | CodeQL + extension | 0/12 | 0.00 | 0.00 |
+| LLM alone, blind | 4/12 | 1.00 | 0.67 |
+| LLM alone, guided | 9/12 | 0.92 | 0.17 |
 
-One near miss. `js/client-side-request-forgery` (CWE-918) fired on the
+These numbers include the corpus fix: ng-authz-006 and ng-authz-011 come from
+a re-run after it, the other ten cases from the original run
+([`results/merged/`](results/merged/), with the sources of each file).
+
+One near miss for CodeQL. `js/client-side-request-forgery` (CWE-918) fired on the
 vulnerable side of ng-authz-012, on the exact line: a `DELETE` whose account id
 comes from `?user=` in the URL. It stays out of the score because the rule is
 not mapped to this family, which is what the prediction said before the run.
@@ -154,8 +190,12 @@ each tool should catch, and why. Then the run either confirms it or it doesn't.
   score matched and so did the query, but the stated reason was wrong: the
   prediction said a `/api/...` prefix would sanitize the URL, and what actually
   decides is whether the id comes from the route path or the query string.
+- [LLM alone](results/prediction-llm.md): predicted ~19/36 for the blind arm,
+  with authorization as the family where false alarms eat most of the gain.
+  It got 19/36, and authorization was the worst family. The guided arm was
+  predicted at about the same or lower; it got 26/36. That one was wrong.
 
-These files, and the older reports in `results/`, are in Spanish. They are
+The first three files, and the older reports in `results/`, are in Spanish. They are
 dated records and are kept unedited on purpose.
 
 ## Limitations
@@ -172,6 +212,11 @@ dated records and are kept unedited on purpose.
   controls. An Angular guard can always be bypassed, in the safe twin too.
 - **The LLM filter only removes findings, it never adds them.** It cannot
   recover what CodeQL missed, which is why it did nothing on secrets.
+- **The guided LLM arm is told the family definitions**, which are the
+  benchmark's own criteria. Its score is a ceiling, not what a developer gets
+  by asking "is this code secure?"; the blind arm is closer to that.
+- **Two authorization cases were fixed after the LLM runs.** The fix follows
+  the corpus's written rules and is declared, but it came after seeing results.
 
 ## Usage
 
@@ -179,7 +224,7 @@ dated records and are kept unedited on purpose.
 uv sync
 uv run python -m scripts.fetch_rules    # Semgrep rules (not redistributable)
 uv run python -m scripts.fetch_codeql   # CodeQL bundle (not redistributable)
-cp .env.example .env                    # only for the LLM filter
+cp .env.example .env                    # only for the LLM engines
 uv run sast-bench doctor                # what is missing and how to fix it
 ```
 
@@ -188,6 +233,8 @@ sast-bench run --engine semgrep                        # whole corpus
 sast-bench run --engine codeql --family secrets        # one family: xss, secrets, authz
 sast-bench run --engine codeql --codeql-ext            # CodeQL + the extension
 sast-bench run --engine hybrid --family xss --dry-run  # calls and estimated cost, nothing runs
+sast-bench run --engine llm --arm blind                # the LLM alone (asks the API)
+sast-bench run --engine codeql --case ng-sec-002 --case ng-sec-011   # specific cases
 
 sast-bench history                                     # every run
 sast-bench show latest                                 # the case table of a run
@@ -208,21 +255,35 @@ the analysis.
 
 ```
 corpus/angular/<family>/<NNN-case>/   meta.yaml + vulnerable/ + safe/
-runners/                              semgrep.py, codeql.py, hybrid.py, codeql-ext/
+runners/                              semgrep.py, codeql.py, hybrid.py, llm.py, codeql-ext/
 scoring/                              normalization, metrics, rule maps, tables
 sast_bench/                           the sast-bench CLI
-results/                              runs, predictions, comparisons
+results/                              runs, merged tables, predictions, comparisons
 docs/                                 images used in this README
 ```
 
 ## Roadmap
 
+**v1, this repo: a benchmark for Angular.** Still open:
+
 - Measure the extension's cost on real Angular projects: how many new alerts,
   and how many are real. That is the evidence an upstream issue to CodeQL needs.
-- Run the LLM alone, blind and guided, to see whether it finds what the
-  rule-based tools miss, and how many safe twins it flags.
+- Bring your own scanner: score any tool's SARIF output against the corpus.
 - Add ESLint (`@angular-eslint` + `eslint-plugin-security`) as the floor: what
   teams already catch without installing anything.
+- More than one run per cell, and other models and effort levels for the LLM.
+
+**v2: an analyzer for Node/TypeScript backends.** What v1 measured, turned into
+something you run on your own project: deterministic rules for the first pass
+(taint tracking where it works) and an LLM for what rules cannot see, like
+where authorization lives. v1 showed each half fails alone in a different way:
+rules miss whole families, the LLM flags half of what is safe. The corpus
+format already supports a second ecosystem (`corpus/<ecosystem>/`), so the
+backend gets its own benchmark first, and the analyzer is measured against it.
+
+One thing to plan for: the CodeQL CLI is free only on open source code. Running
+it on a private codebase needs a GitHub Advanced Security license, so a tool
+meant for any project cannot depend on it alone.
 
 ## License
 
