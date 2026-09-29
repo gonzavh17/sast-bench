@@ -1,0 +1,41 @@
+{
+  "tool": "semgrep",
+  "tool_version": "1.177.0",
+  "run_at": "2026-09-29T01:15:17+00:00",
+  "rules": {
+    "kind": "official",
+    "repo": "semgrep/semgrep-rules",
+    "commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+    "paths": [
+      "javascript",
+      "typescript"
+    ],
+    "fetched_at": "2026-09-21T23:30:41+00:00"
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

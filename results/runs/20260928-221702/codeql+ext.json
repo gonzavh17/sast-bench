@@ -1,0 +1,38 @@
+{
+  "tool": "codeql+ext",
+  "tool_version": "2.27.1",
+  "run_at": "2026-09-29T01:17:41+00:00",
+  "rules": {
+    "kind": "bundle",
+    "bundle": "github/codeql-action@codeql-bundle-v2.27.1",
+    "suite": "runners/codeql-ext/security-extended-ext.qls",
+    "fetched_at": "2026-09-23T00:36:15+00:00"
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "safe",
+      "findings": []
+    }
+  ],
+  "rule_map": "codeql"
+}

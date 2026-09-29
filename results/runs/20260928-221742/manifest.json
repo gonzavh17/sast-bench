@@ -1,0 +1,76 @@
+{
+  "run_id": "20260928-221742",
+  "status": "ok",
+  "started_at": "2026-09-29T01:17:42+00:00",
+  "finished_at": "2026-09-29T01:19:02+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": null,
+    "difficulty": null,
+    "case": "ng-authz-006,ng-authz-011"
+  },
+  "cases": [
+    "ng-authz-006",
+    "ng-authz-011"
+  ],
+  "repo": {
+    "commit": "29a1398222a31a74b1a018148b91b359330851de",
+    "dirty": true
+  },
+  "engines": [
+    {
+      "tool": "llm-blind",
+      "file": "llm-blind.json",
+      "tool_version": "claude-opus-5",
+      "rules": {
+        "kind": "prompt",
+        "arm": "blind",
+        "model": "claude-opus-5",
+        "effort": null
+      },
+      "model": "claude-opus-5",
+      "arm": "blind",
+      "effort": null,
+      "responses": "llm-blind-responses.json",
+      "usage": {
+        "calls": 4,
+        "refusals": 0,
+        "input_tokens": 5499,
+        "output_tokens": 2748
+      },
+      "summary": {
+        "solved": 1,
+        "pairs": 2,
+        "recall": 1.0,
+        "fpr": 0.5
+      }
+    },
+    {
+      "tool": "llm-guided",
+      "file": "llm-guided.json",
+      "tool_version": "claude-opus-5",
+      "rules": {
+        "kind": "prompt",
+        "arm": "guided",
+        "model": "claude-opus-5",
+        "effort": null
+      },
+      "model": "claude-opus-5",
+      "arm": "guided",
+      "effort": null,
+      "responses": "llm-guided-responses.json",
+      "usage": {
+        "calls": 4,
+        "refusals": 0,
+        "input_tokens": 6547,
+        "output_tokens": 1872
+      },
+      "summary": {
+        "solved": 1,
+        "pairs": 2,
+        "recall": 1.0,
+        "fpr": 0.5
+      }
+    }
+  ]
+}

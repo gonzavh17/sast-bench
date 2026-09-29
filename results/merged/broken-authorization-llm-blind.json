@@ -1,0 +1,551 @@
+{
+  "tool": "llm-blind",
+  "tool_version": "claude-opus-5",
+  "run_at": "2026-09-29T01:18:28+00:00",
+  "rules": {
+    "kind": "prompt",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "admin-panel.component.ts",
+          "line": 14,
+          "rule_id": "CWE-359",
+          "severity": "LOW"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 8,
+          "rule_id": "CWE-602",
+          "severity": "HIGH"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 10,
+          "rule_id": "CWE-754",
+          "severity": "LOW"
+        },
+        {
+          "path": "admin.routes.ts",
+          "line": 7,
+          "rule_id": "CWE-284",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin-panel.component.ts",
+          "line": 14,
+          "rule_id": "CWE-639",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 4,
+          "rule_id": "CWE-807",
+          "severity": "HIGH"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 5,
+          "rule_id": "CWE-602",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-002",
+      "case_dir": "corpus/angular/broken-authorization/002-role-in-request-body",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "refund.service.ts",
+          "line": 9,
+          "rule_id": "CWE-352",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-002",
+      "case_dir": "corpus/angular/broken-authorization/002-role-in-request-body",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "refund.service.ts",
+          "line": 9,
+          "rule_id": "CWE-807",
+          "severity": "HIGH"
+        },
+        {
+          "path": "refund.service.ts",
+          "line": 9,
+          "rule_id": "CWE-922",
+          "severity": "LOW"
+        },
+        {
+          "path": "refund.service.ts",
+          "line": 10,
+          "rule_id": "CWE-602",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-003",
+      "case_dir": "corpus/angular/broken-authorization/003-idor-route-user-id",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-003",
+      "case_dir": "corpus/angular/broken-authorization/003-idor-route-user-id",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "invoices.component.ts",
+          "line": 20,
+          "rule_id": "CWE-20",
+          "severity": "LOW"
+        },
+        {
+          "path": "invoices.component.ts",
+          "line": 21,
+          "rule_id": "CWE-639",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-004",
+      "case_dir": "corpus/angular/broken-authorization/004-admin-query-flag",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "dashboard.component.ts",
+          "line": 27,
+          "rule_id": "CWE-602",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "dashboard.component.ts",
+          "line": 29,
+          "rule_id": "CWE-285",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "dashboard.component.ts",
+          "line": 35,
+          "rule_id": "CWE-352",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-004",
+      "case_dir": "corpus/angular/broken-authorization/004-admin-query-flag",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "dashboard.component.ts",
+          "line": 25,
+          "rule_id": "CWE-602",
+          "severity": "HIGH"
+        },
+        {
+          "path": "dashboard.component.ts",
+          "line": 26,
+          "rule_id": "CWE-285",
+          "severity": "HIGH"
+        },
+        {
+          "path": "dashboard.component.ts",
+          "line": 32,
+          "rule_id": "CWE-639",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "reports.component.ts",
+          "line": 14,
+          "rule_id": "CWE-862",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "role.guard.ts",
+          "line": 7,
+          "rule_id": "CWE-602",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "role.guard.ts",
+          "line": 9,
+          "rule_id": "CWE-754",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "reports.component.ts",
+          "line": 14,
+          "rule_id": "CWE-639",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "role.guard.ts",
+          "line": 7,
+          "rule_id": "CWE-602",
+          "severity": "HIGH"
+        },
+        {
+          "path": "role.service.ts",
+          "line": 7,
+          "rule_id": "CWE-807",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 6,
+          "rule_id": "CWE-602",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "CWE-613",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "CWE-863",
+          "severity": "HIGH"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 8,
+          "rule_id": "CWE-754",
+          "severity": "LOW"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 9,
+          "rule_id": "CWE-347",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "identity.interceptor.ts",
+          "line": 8,
+          "rule_id": "CWE-346",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "identity.interceptor.ts",
+          "line": 8,
+          "rule_id": "CWE-352",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "identity.interceptor.ts",
+          "line": 8,
+          "rule_id": "CWE-807",
+          "severity": "HIGH"
+        },
+        {
+          "path": "identity.interceptor.ts",
+          "line": 8,
+          "rule_id": "CWE-922",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "identity.interceptor.ts",
+          "line": 12,
+          "rule_id": "CWE-200",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "identity.interceptor.ts",
+          "line": 12,
+          "rule_id": "CWE-290",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "account.routes.ts",
+          "line": 7,
+          "rule_id": "CWE-862",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "account.routes.ts",
+          "line": 7,
+          "rule_id": "CWE-639",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "account.service.ts",
+          "line": 14,
+          "rule_id": "CWE-23",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-009",
+      "case_dir": "corpus/angular/broken-authorization/009-guard-cache-in-storage",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 11,
+          "rule_id": "CWE-613",
+          "severity": "HIGH"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 12,
+          "rule_id": "CWE-863",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 17,
+          "rule_id": "CWE-524",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-009",
+      "case_dir": "corpus/angular/broken-authorization/009-guard-cache-in-storage",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 9,
+          "rule_id": "CWE-602",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 11,
+          "rule_id": "CWE-807",
+          "severity": "HIGH"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 16,
+          "rule_id": "CWE-613",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-010",
+      "case_dir": "corpus/angular/broken-authorization/010-client-side-owner-check",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "invoice-detail.component.ts",
+          "line": 25,
+          "rule_id": "CWE-639",
+          "severity": "LOW"
+        },
+        {
+          "path": "invoice-detail.component.ts",
+          "line": 26,
+          "rule_id": "CWE-116",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-010",
+      "case_dir": "corpus/angular/broken-authorization/010-client-side-owner-check",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "invoice-detail.component.ts",
+          "line": 33,
+          "rule_id": "CWE-602",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 16,
+          "rule_id": "CWE-20",
+          "severity": "LOW"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 16,
+          "rule_id": "CWE-807",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 8,
+          "rule_id": "CWE-248",
+          "severity": "LOW"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 9,
+          "rule_id": "CWE-347",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 14,
+          "rule_id": "CWE-863",
+          "severity": "HIGH"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 8,
+          "rule_id": "CWE-20",
+          "severity": "LOW"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 9,
+          "rule_id": "CWE-347",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-012",
+      "case_dir": "corpus/angular/broken-authorization/012-guarded-page-editable-user-id",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "auth.guard.ts",
+          "line": 11,
+          "rule_id": "CWE-862",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "settings.component.ts",
+          "line": 20,
+          "rule_id": "CWE-20",
+          "severity": "LOW"
+        },
+        {
+          "path": "settings.component.ts",
+          "line": 20,
+          "rule_id": "CWE-639",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "settings.routes.ts",
+          "line": 7,
+          "rule_id": "CWE-602",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-012",
+      "case_dir": "corpus/angular/broken-authorization/012-guarded-page-editable-user-id",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "auth.guard.ts",
+          "line": 9,
+          "rule_id": "CWE-862",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "settings.component.ts",
+          "line": 15,
+          "rule_id": "CWE-20",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "settings.component.ts",
+          "line": 19,
+          "rule_id": "CWE-639",
+          "severity": "HIGH"
+        }
+      ]
+    }
+  ]
+}

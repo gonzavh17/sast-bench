@@ -1,0 +1,44 @@
+{
+  "run_id": "20260928-221702",
+  "status": "ok",
+  "started_at": "2026-09-29T01:17:02+00:00",
+  "finished_at": "2026-09-29T01:17:41+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": null,
+    "difficulty": null,
+    "case": "ng-authz-006,ng-authz-011"
+  },
+  "cases": [
+    "ng-authz-006",
+    "ng-authz-011"
+  ],
+  "repo": {
+    "commit": "29a1398222a31a74b1a018148b91b359330851de",
+    "dirty": true
+  },
+  "engines": [
+    {
+      "tool": "codeql+ext",
+      "file": "codeql+ext.json",
+      "tool_version": "2.27.1",
+      "rules": {
+        "kind": "bundle",
+        "bundle": "github/codeql-action@codeql-bundle-v2.27.1",
+        "suite": "runners/codeql-ext/security-extended-ext.qls",
+        "fetched_at": "2026-09-23T00:36:15+00:00"
+      },
+      "model": null,
+      "cache": {
+        "hits": 4,
+        "misses": 0
+      },
+      "summary": {
+        "solved": 0,
+        "pairs": 2,
+        "recall": 0.0,
+        "fpr": 0.0
+      }
+    }
+  ]
+}

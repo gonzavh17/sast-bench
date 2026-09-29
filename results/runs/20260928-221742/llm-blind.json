@@ -1,0 +1,112 @@
+{
+  "tool": "llm-blind",
+  "tool_version": "claude-opus-5",
+  "run_at": "2026-09-29T01:18:28+00:00",
+  "rules": {
+    "kind": "prompt",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 6,
+          "rule_id": "CWE-602",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "CWE-613",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "CWE-863",
+          "severity": "HIGH"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 8,
+          "rule_id": "CWE-754",
+          "severity": "LOW"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 9,
+          "rule_id": "CWE-347",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 14,
+          "rule_id": "CWE-863",
+          "severity": "HIGH"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 8,
+          "rule_id": "CWE-20",
+          "severity": "LOW"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 9,
+          "rule_id": "CWE-347",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 16,
+          "rule_id": "CWE-20",
+          "severity": "LOW"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 16,
+          "rule_id": "CWE-807",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 8,
+          "rule_id": "CWE-248",
+          "severity": "LOW"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 9,
+          "rule_id": "CWE-347",
+          "severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}

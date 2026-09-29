@@ -155,7 +155,7 @@ def rules_line(results: dict[str, Any]) -> str:
 # ---------------------------------------------------------------- run
 
 
-def select_cases(corpus: Path, family: Family | None, difficulty: str | None, case_id: str | None) -> list[Case]:
+def select_cases(corpus: Path, family: Family | None, difficulty: str | None, case_ids: list[str] | None) -> list[Case]:
     cases = discover_cases(corpus)
     if not cases:
         raise CliError(f"no meta.yaml under {corpus}")
@@ -163,8 +163,8 @@ def select_cases(corpus: Path, family: Family | None, difficulty: str | None, ca
         cases = [c for c in cases if c.meta.family == family]
     if difficulty:
         cases = [c for c in cases if c.meta.difficulty.value == difficulty]
-    if case_id:
-        cases = [c for c in cases if c.meta.id == case_id]
+    if case_ids:
+        cases = [c for c in cases if c.meta.id in case_ids]
     if not cases:
         raise CliError("no case matches the filters; `sast-bench corpus stats` shows what there is")
     return cases
@@ -351,7 +351,7 @@ def run_filters(args: argparse.Namespace) -> dict[str, Any]:
     return {
         "family": args.family.value if args.family else None,
         "difficulty": args.difficulty,
-        "case": args.case_id,
+        "case": ",".join(args.case_id) if args.case_id else None,
     }
 
 
@@ -801,7 +801,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--family", type=family_arg, help="family id or alias: xss, secrets, authz")
     run.add_argument("--difficulty", choices=[d.value for d in Difficulty])
-    run.add_argument("--case", dest="case_id", metavar="ID", help="a single case, e.g. ng-sec-002")
+    run.add_argument("--case", dest="case_id", metavar="ID", action="append", help="one case, e.g. ng-sec-002; repeat for several")
     run.add_argument("--codeql-ext", action="store_true", help="CodeQL with runners/codeql-ext (row codeql+ext)")
     run.add_argument("--model", default=DEFAULT_MODEL, help=f"model for hybrid and llm (default {DEFAULT_MODEL})")
     run.add_argument("--from-run", metavar="RUN", help="hybrid without codeql: the run to take the base from")

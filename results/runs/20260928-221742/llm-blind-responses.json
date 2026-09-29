@@ -1,0 +1,137 @@
+[
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-347",
+        "severity": "high",
+        "rationale": "readClaims() base64-decodes and JSON.parses the JWT payload without ever verifying the token signature. Any attacker who can influence the stored token can craft an unsigned/forged payload (e.g. {\"role\":\"admin\"}) and have it accepted as authentic claims."
+      },
+      {
+        "file": "auth.service.ts",
+        "line": 12,
+        "cwe": "CWE-863",
+        "severity": "high",
+        "rationale": "The admin authorization decision is made purely from self-asserted, unverified JWT claims (role field). No signature check, no issuer/audience check, so role escalation is trivial if the token can be tampered with."
+      },
+      {
+        "file": "auth.service.ts",
+        "line": 12,
+        "cwe": "CWE-613",
+        "severity": "medium",
+        "rationale": "The exp claim is parsed but never validated, so an expired token still grants admin access — sessions effectively never expire for authorization checks."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 8,
+        "cwe": "CWE-754",
+        "severity": "low",
+        "rationale": "No validation that the token actually contains three dot-separated segments or valid base64/JSON; a malformed token causes an unhandled exception in the route guard, which can break navigation (DoS of the app) rather than failing closed cleanly."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 6,
+        "cwe": "CWE-602",
+        "severity": "medium",
+        "rationale": "Access control is enforced only client-side in the route guard based on a locally decoded token; without corresponding server-side authorization this check can be bypassed by manipulating client state."
+      }
+    ],
+    "input_tokens": 1319,
+    "output_tokens": 729,
+    "reviewed_at": "2026-09-29T01:17:54+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [],
+    "input_tokens": 1541,
+    "output_tokens": 473,
+    "reviewed_at": "2026-09-29T01:18:03+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-347",
+        "severity": "high",
+        "rationale": "readClaims() base64-decodes and JSON.parses the JWT payload without ever verifying the token's signature or issuer/audience. Any attacker-crafted or tampered token (e.g. one whose payload was re-encoded with \"role\":\"admin\") is accepted as authentic, so all claims used downstream are untrusted attacker-controlled data."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 14,
+        "cwe": "CWE-863",
+        "severity": "high",
+        "rationale": "The route guard makes the admin authorization decision solely from unverified client-side claims (claims.role === 'admin' and claims.exp). A user can set an arbitrary token in TokenStore or modify the unsigned payload to gain admin routes; authorization must be re-enforced and signature-validated server-side."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 8,
+        "cwe": "CWE-20",
+        "severity": "low",
+        "rationale": "No validation that the token contains three dot-separated segments or that the payload is valid base64/JSON; a malformed token causes an uncaught TypeError/SyntaxError that propagates out of the CanActivate guard, breaking navigation (availability/error-handling issue)."
+      }
+    ],
+    "input_tokens": 1226,
+    "output_tokens": 571,
+    "reviewed_at": "2026-09-29T01:18:13+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "claude-opus-5",
+    "effort": null,
+    "stop_reason": "end_turn",
+    "findings": [
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "cwe": "CWE-347",
+        "severity": "medium",
+        "rationale": "readClaims() base64-decodes and JSON.parses the JWT payload without ever verifying the token signature. Any claim read this way (role, sub, exp) is attacker-controlled, since the token is only stored client-side and can be replaced with a hand-crafted unsigned token. It must not be used for any trust decision."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 16,
+        "cwe": "CWE-807",
+        "severity": "medium",
+        "rationale": "The guard makes its expiry/authorization pre-check from unverified, user-controllable JWT claims (claims.exp). A forged token with a far-future exp bypasses this check; if the backend /api/session ever trusts the presented bearer token loosely, the client-side decode provides no security. Expiry/role must be validated server-side against a signature-verified token."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 8,
+        "cwe": "CWE-248",
+        "severity": "low",
+        "rationale": "A malformed token (no '.' segment, non-base64 payload, or non-JSON payload) makes token.split('.')[1] undefined or atob/JSON.parse throw. The exception propagates out of readClaims into adminGuard (line 15), which has no try/catch, causing an unhandled error in the router activation path instead of a clean deny."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 16,
+        "cwe": "CWE-20",
+        "severity": "low",
+        "rationale": "claims.exp is used without validating that it is a number; if the claim is missing, NaN*1000 < Date.now() evaluates to false, so the token is treated as non-expired and the guard continues rather than denying access."
+      }
+    ],
+    "input_tokens": 1413,
+    "output_tokens": 975,
+    "reviewed_at": "2026-09-29T01:18:28+00:00"
+  }
+]
