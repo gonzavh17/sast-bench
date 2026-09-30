@@ -33,7 +33,9 @@ from runners import semgrep as semgrep_runner
 from sast_bench import corpus as corpus_checks
 from sast_bench.diff import Change, cells, diff_scores
 from sast_bench.doctor import MISSING, OK, WARN, run_checks
-from sast_bench.estimate import count_findings, estimate, estimate_llm
+from runners.providers import DEFAULT_MODEL as PROVIDER_DEFAULTS
+from runners.providers import NIM_KEY_ENV, PROVIDERS, ProviderError, make_provider
+from sast_bench.estimate import Estimate, count_findings, estimate, estimate_llm, usage_costs
 from sast_bench.runs import (
     DECISIONS,
     MANIFEST,
@@ -75,7 +77,7 @@ from scoring.models import Case, Difficulty, Family, discover_cases
 from scripts import fetch_codeql, fetch_rules
 from scripts.fetch_codeql import REPO_ROOT
 
-DEFAULT_MODEL = "claude-opus-5"  # same as runners/hybrid.py
+DEFAULT_MODEL = PROVIDER_DEFAULTS["anthropic"]
 ENGINES = ("semgrep", "codeql", "hybrid")  # what `--engine all` runs
 LLM_ARMS = ("blind", "guided")
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
@@ -182,14 +184,41 @@ def preflight(engines: list[str], args: argparse.Namespace) -> list[str]:
         problems.append("the CodeQL bundle is missing: uv run python -m scripts.fetch_codeql")
     if args.codeql_ext and not Path(EXT_SUITE).is_file():
         problems.append(f"the extension suite is missing: {EXT_SUITE}")
-    if ("hybrid" in engines or "llm" in engines) and not args.dry_run:
-        from dotenv import load_dotenv
+    if uses_model(engines):
+        if not args.model:
+            problems.append(f"--model is required with --provider {args.provider} (or SAST_BENCH_MODEL)")
+        if not args.dry_run:
+            from dotenv import load_dotenv
 
-        load_dotenv(REPO_ROOT / ".env")
-        key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if (not key or key.endswith("...")) and not os.environ.get("ANTHROPIC_AUTH_TOKEN"):
-            problems.append("the hybrid and llm engines need ANTHROPIC_API_KEY in .env (see .env.example)")
+            load_dotenv(REPO_ROOT / ".env")
+            if args.provider == "nim":
+                if not os.environ.get(NIM_KEY_ENV):
+                    problems.append(f"the nim provider needs {NIM_KEY_ENV} in .env (see .env.example)")
+            else:
+                key = os.environ.get("ANTHROPIC_API_KEY", "")
+                if (not key or key.endswith("...")) and not os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+                    problems.append("the hybrid and llm engines need ANTHROPIC_API_KEY in .env (see .env.example)")
     return problems
+
+
+def uses_model(engines: list[str]) -> bool:
+    return "hybrid" in engines or "llm" in engines
+
+
+def is_debug(args: argparse.Namespace, engines: list[str]) -> bool:
+    """A run that calls a debug provider is a debug run, whatever else it runs."""
+    return uses_model(engines) and args.provider != "anthropic"
+
+
+def cost_text(guess: Estimate, provider: str) -> str:
+    if provider != "anthropic":
+        opus = guess.opus_equivalent_usd
+        return "US$ 0 (debug)" + (f" · ~US$ {opus:.2f} with Opus" if opus is not None else "")
+    return f"~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else "unknown price for this model"
+
+
+def model_label(args: argparse.Namespace) -> str:
+    return args.model if args.provider == "anthropic" else f"{args.provider}:{args.model}"
 
 
 def hybrid_base(
@@ -302,9 +331,9 @@ def print_hybrid_estimate(
 
     calls = count_findings(found[1].results, case_ids)
     guess = estimate(calls, args.model, decision_records())
-    cost = f"~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else "unknown price for this model"
+    cost = cost_text(guess, args.provider)
     console.print(
-        f"{label} {calls} calls to {args.model} · ~{guess.input_tokens:,} input tokens"
+        f"{label} {calls} calls to {model_label(args)} · ~{guess.input_tokens:,} input tokens"
         f" + ~{guess.output_tokens:,} output · {cost}",
         highlight=False,
     )
@@ -327,10 +356,10 @@ def print_llm_estimate(console: Console, args: argparse.Namespace, variants: lis
     history = llm_records()
     for arm in llm_arms(args):
         guess = estimate(0, args.model, []) if not contexts else estimate_llm(contexts, args.model, arm, history)
-        cost = f"~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else "unknown price for this model"
+        cost = cost_text(guess, args.provider)
         effort = f" effort={args.effort}" if args.effort else ""
         console.print(
-            f"{engine_tag(f'llm-{arm}')} {guess.calls} calls to {args.model}{effort} · "
+            f"{engine_tag(f'llm-{arm}')} {guess.calls} calls to {model_label(args)}{effort} · "
             f"~{guess.input_tokens:,} input tokens + ~{guess.output_tokens:,} output · {cost}",
             highlight=False,
         )
@@ -387,6 +416,8 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
         "filters": run_filters(args),
         "cases": sorted(case_ids),
         "repo": repo_state(),
+        "provider": args.provider if uses_model(engines) else None,
+        "debug": is_debug(args, engines),
         "engines": [],
     }
     write_json(directory / MANIFEST, manifest)
@@ -441,7 +472,7 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
         write_json(directory / MANIFEST, manifest)
 
     console.print()
-    run = resolve(run_id, list_runs())
+    run = resolve(run_id, list_runs(include_debug=True))
     render_run(console, run)
     console.print(f"\nwrote {directory.relative_to(REPO_ROOT)}/", highlight=False)
     return 0
@@ -455,31 +486,43 @@ def run_hybrid(
     directory: Path,
     record: Any,
 ) -> None:
-    import anthropic
-
     from runners import hybrid
 
+    provider = make_provider(args.provider, args.model)
     results, base_path = base
     calls = count_findings(results)
     guess = estimate(calls, args.model, decision_records())
-    cost = f" · ~US$ {guess.cost_usd:.2f}" if guess.cost_usd is not None else ""
-    log_event(console, "hybrid", f"{calls} findings from {base_path} to review with {args.model}{cost}")
-
-    filtered, records = hybrid.filter_results(
-        results, base_path, {c.meta.id: c for c in cases}, anthropic.Anthropic(), args.model, console
+    log_event(
+        console,
+        "hybrid",
+        f"{calls} findings from {base_path} to review with {model_label(args)} · {cost_text(guess, args.provider)}",
     )
+
+    filtered, records = hybrid.filter_results(results, base_path, {c.meta.id: c for c in cases}, provider, console)
     (directory / DECISIONS).write_text(hybrid.dump_decisions(records), encoding="utf-8")
     record(
         filtered,
         model=args.model,
+        provider=args.provider,
         base=base_path,
         decisions=DECISIONS,
-        usage={
-            "calls": len(records),
-            "input_tokens": sum(r.input_tokens for r in records),
-            "output_tokens": sum(r.output_tokens for r in records),
-        },
+        usage=usage_block(args, records),
     )
+
+
+def usage_block(args: argparse.Namespace, records: list[Any]) -> dict[str, Any]:
+    """Tokens, stop reasons and cost, for the manifest."""
+    tokens_in = sum(r.input_tokens for r in records)
+    tokens_out = sum(r.output_tokens for r in records)
+    reasons = [getattr(r, "stop_reason", None) for r in records]
+    return {
+        "calls": len(records),
+        "refusals": reasons.count("refusal"),
+        "format_errors": reasons.count("format_error"),
+        "input_tokens": tokens_in,
+        "output_tokens": tokens_out,
+        **usage_costs(args.provider, args.model, tokens_in, tokens_out),
+    }
 
 
 def run_llm(
@@ -489,27 +532,21 @@ def run_llm(
     directory: Path,
     record: Any,
 ) -> None:
-    import anthropic
-
     from runners import llm
 
-    client = anthropic.Anthropic()
+    provider = make_provider(args.provider, args.model)
     for arm in llm_arms(args):
-        results, records = llm.scan(cases, arm, args.model, args.effort, client, console)
+        results, records = llm.scan(cases, arm, provider, args.effort, console)
         responses = f"llm-{arm}-responses.json"
         write_json(directory / responses, [r.model_dump() for r in records])
         record(
             results,
             model=args.model,
+            provider=args.provider,
             arm=arm,
             effort=args.effort,
             responses=responses,
-            usage={
-                "calls": len(records),
-                "refusals": sum(r.stop_reason == "refusal" for r in records),
-                "input_tokens": sum(r.input_tokens for r in records),
-                "output_tokens": sum(r.output_tokens for r in records),
-            },
+            usage=usage_block(args, records),
         )
 
 
@@ -542,9 +579,23 @@ def render_run(console: Console, run: Run, engines: list[EngineRun] | None = Non
     console.print(metrics_table(console, rows))
 
 
+def resolve_run(selector: str, include_debug: bool) -> Run:
+    """Resolve a run, and say so when the one asked for is a hidden debug run."""
+    try:
+        return resolve(selector, list_runs(include_debug=include_debug))
+    except LookupError:
+        if include_debug:
+            raise
+        try:
+            hidden = resolve(selector, list_runs(include_debug=True))
+        except LookupError:
+            raise
+        raise CliError(f"{hidden.run_id} is a debug run; add --include-debug to use it") from None
+
+
 def cmd_show(args: argparse.Namespace, console: Console) -> int:
     run_id, tool = split_selector(args.run)
-    run = resolve(run_id, list_runs())
+    run = resolve_run(run_id, args.include_debug)
     render_run(console, run, [run.engine(tool)] if tool else None)
     return 0
 
@@ -562,7 +613,7 @@ def engine_summary(run: Run, engine: EngineRun) -> str:
 
 
 def cmd_history(args: argparse.Namespace, console: Console) -> int:
-    runs = list_runs()
+    runs = list_runs(include_debug=args.include_debug)
     if args.family:
         runs = [
             r
@@ -642,10 +693,10 @@ def changes_table(console: Console, changes: list[Change], difficulties: dict[st
 
 
 def cmd_compare(args: argparse.Namespace, console: Console) -> int:
-    runs = list_runs()
+    runs = list_runs(include_debug=args.include_debug)
     id_a, tool_a = split_selector(args.run_a)
     id_b, tool_b = split_selector(args.run_b)
-    a, b = resolve(id_a, runs), resolve(id_b, runs)
+    a, b = resolve_run(id_a, args.include_debug), resolve_run(id_b, args.include_debug)
 
     for left, right in pick_pairs(a, tool_a, b, tool_b):
         score_a, score_b = left.score(), right.score()
@@ -683,7 +734,7 @@ def cmd_compare(args: argparse.Namespace, console: Console) -> int:
 
 
 def cmd_report(args: argparse.Namespace, console: Console) -> int:
-    run = resolve(args.run, list_runs())
+    run = resolve_run(args.run, args.include_debug)
     if not run.engines:
         raise CliError(f"{run.run_id} has no results to report")
     out_dir = args.out_dir or run.directory or RESULTS_DIR / "reports" / run.run_id
@@ -803,7 +854,17 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--difficulty", choices=[d.value for d in Difficulty])
     run.add_argument("--case", dest="case_id", metavar="ID", action="append", help="one case, e.g. ng-sec-002; repeat for several")
     run.add_argument("--codeql-ext", action="store_true", help="CodeQL with runners/codeql-ext (row codeql+ext)")
-    run.add_argument("--model", default=DEFAULT_MODEL, help=f"model for hybrid and llm (default {DEFAULT_MODEL})")
+    run.add_argument(
+        "--provider",
+        choices=PROVIDERS,
+        default=os.environ.get("SAST_BENCH_PROVIDER", "anthropic"),
+        help="LLM provider for hybrid and llm (default anthropic, or SAST_BENCH_PROVIDER); nim runs are debug runs",
+    )
+    run.add_argument(
+        "--model",
+        default=os.environ.get("SAST_BENCH_MODEL"),
+        help=f"model for hybrid and llm (default {DEFAULT_MODEL} with anthropic, or SAST_BENCH_MODEL; required with nim)",
+    )
     run.add_argument("--from-run", metavar="RUN", help="hybrid without codeql: the run to take the base from")
     run.add_argument("--arm", choices=[*LLM_ARMS, "both"], default="both", help="llm engine: which arm (default both)")
     run.add_argument("--effort", choices=EFFORTS, help="llm engine: output_config.effort (default: the model's)")
@@ -815,20 +876,24 @@ def build_parser() -> argparse.ArgumentParser:
     history.add_argument("--family", type=family_arg)
     history.add_argument("--engine", help="only runs with this engine, e.g. codeql+ext")
     history.add_argument("--limit", type=int, default=30)
+    history.add_argument("--include-debug", action="store_true", help="also list debug runs (nim)")
     history.set_defaults(handler=cmd_history)
 
     show = sub.add_parser("show", help="print the table of a run")
     show.add_argument("run", nargs="?", default="latest", help="run-id, prefix, latest, or <run-id>:<engine>")
+    show.add_argument("--include-debug", action="store_true", help="allow debug runs (nim)")
     show.set_defaults(handler=cmd_show)
 
     compare = sub.add_parser("compare", help="which cases changed between two runs")
     compare.add_argument("run_a", metavar="RUN_A", help="run-id or <run-id>:<engine>")
     compare.add_argument("run_b", metavar="RUN_B", help="run-id or <run-id>:<engine>")
+    compare.add_argument("--include-debug", action="store_true", help="allow debug runs (nim)")
     compare.set_defaults(handler=cmd_compare)
 
     report = sub.add_parser("report", help="write report.md and the SVG of a run")
     report.add_argument("run", help="run-id, prefix or latest")
     report.add_argument("--out-dir", type=Path, help="default: the run directory")
+    report.add_argument("--include-debug", action="store_true", help="allow debug runs (nim)")
     report.set_defaults(handler=cmd_report)
 
     doctor = sub.add_parser("doctor", help="check the environment and say what is missing")
@@ -849,6 +914,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if getattr(args, "provider", None) and not args.model:
+        args.model = PROVIDER_DEFAULTS.get(args.provider)
     for name in ("corpus", "out_dir"):
         if isinstance(getattr(args, name, None), Path):
             setattr(args, name, repo_relative(getattr(args, name)))
@@ -861,7 +928,7 @@ def main(argv: list[str] | None = None) -> int:
     console = make_console()
     try:
         return args.handler(args, console)
-    except (CliError, LookupError, FileNotFoundError) as error:
+    except (CliError, LookupError, FileNotFoundError, ProviderError) as error:
         console.print(f"[red]error:[/red] {error}", highlight=False)
         return 1
 

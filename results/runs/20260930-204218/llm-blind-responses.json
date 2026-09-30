@@ -1,0 +1,111 @@
+[
+  {
+    "case_id": "ng-authz-001",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 4,
+        "cwe": "CWE-285",
+        "severity": "high",
+        "rationale": "Authorization is performed solely on client-side by checking a value stored in localStorage, which can be easily tampered with by an attacker, allowing unauthorized access to admin routes."
+      }
+    ],
+    "input_tokens": 709,
+    "output_tokens": 759,
+    "reviewed_at": "2026-09-30T23:42:25+00:00"
+  },
+  {
+    "case_id": "ng-authz-001",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 809,
+    "output_tokens": 2442,
+    "reviewed_at": "2026-09-30T23:42:49+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 492,
+    "output_tokens": 269,
+    "reviewed_at": "2026-09-30T23:42:52+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "cwe": "CWE-200",
+        "severity": "medium",
+        "rationale": "The session token is stored in sessionStorage, which is accessible to any JavaScript running on the page, exposing it to potential XSS attacks."
+      },
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "cwe": "CWE-311",
+        "severity": "medium",
+        "rationale": "The session token is stored in plain text without encryption, making it vulnerable if sessionStorage is compromised."
+      }
+    ],
+    "input_tokens": 512,
+    "output_tokens": 883,
+    "reviewed_at": "2026-09-30T23:43:04+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "arm": "blind",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 6,
+        "cwe": "CWE-79",
+        "severity": "high",
+        "rationale": "The function calls DomSanitizer.bypassSecurityTrustHtml before sanitizing, which causes the subsequent sanitize call to be ineffective because it receives a SafeHtml object that bypasses sanitization. This allows arbitrary HTML from the query parameter to be rendered, leading to potential XSS."
+      }
+    ],
+    "input_tokens": 787,
+    "output_tokens": 927,
+    "reviewed_at": "2026-09-30T23:43:17+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "safe",
+    "arm": "blind",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 771,
+    "output_tokens": 1589,
+    "reviewed_at": "2026-09-30T23:43:28+00:00"
+  }
+]

@@ -17,6 +17,8 @@ Design decisions that define what is measured:
   nothing pointing at a line.
 - **No fallback model.** A refusal is recorded as such, with no findings. Silently
   switching models would mix two engines in one row.
+- **Any provider** from runners/providers.py. Claude is the one for serious
+  measurements; NIM runs are debug runs.
 
 The results file has the same format as every other runner. The model's
 rationales and token usage go to a separate responses trail.
@@ -29,15 +31,14 @@ import re
 from pathlib import Path
 from typing import Any, Literal
 
-import anthropic
 from pydantic import BaseModel
 from rich.console import Console
 
-from runners.hybrid import build_context
+from runners.hybrid import build_context, model_name
+from runners.providers import Reply
 from scoring.console import log_event, progress_bar
 from scoring.models import VARIANT_LABELS, Case, Finding, Strict
 
-DEFAULT_MODEL = "claude-opus-5"
 ARMS = ("blind", "guided")
 
 BLIND_SYSTEM = """\
@@ -112,6 +113,7 @@ class ResponseRecord(Strict):
     variant: str
     arm: str
     model: str
+    provider: str = "anthropic"
     effort: str | None
     stop_reason: str | None
     findings: list[dict[str, Any]]
@@ -160,22 +162,10 @@ def to_findings(arm: str, report: BaseModel, files: list[str]) -> list[Finding]:
     return sorted(findings, key=lambda f: (f.path, f.line, f.rule_id))
 
 
-def review_variant(
-    client: anthropic.Anthropic, variant_dir: Path, arm: str, model: str, effort: str | None
-) -> tuple[BaseModel | None, Any, str | None]:
+def review_variant(provider: Any, variant_dir: Path, arm: str, effort: str | None) -> Reply:
     system, schema = ARM_SPEC[arm]
-    extra: dict[str, Any] = {"output_config": {"effort": effort}} if effort else {}
-    response = client.messages.parse(
-        model=model,
-        max_tokens=16000,
-        system=system,
-        thinking={"type": "adaptive"},
-        messages=[{"role": "user", "content": USER_PROMPT.format(context=build_context(variant_dir))}],
-        output_format=schema,
-        **extra,
-    )
-    parsed = response.parsed_output if response.stop_reason != "refusal" else None
-    return parsed, response.usage, response.stop_reason
+    user = USER_PROMPT.format(context=build_context(variant_dir))
+    return provider.structured(system, user, schema, effort)
 
 
 def variant_files(variant_dir: Path) -> list[str]:
@@ -185,9 +175,8 @@ def variant_files(variant_dir: Path) -> list[str]:
 def scan(
     cases: list[Case],
     arm: str,
-    model: str,
+    provider: Any,
     effort: str | None,
-    client: anthropic.Anthropic,
     console: Console,
 ) -> tuple[dict[str, Any], list[ResponseRecord]]:
     """Review every variant with one arm. Returns the results and the responses trail."""
@@ -201,9 +190,12 @@ def scan(
         for case, label in todo:
             variant_dir = case.variant_dir(label)
             bar.update(task, description=f"{case.meta.id} {label}")
-            parsed, usage, stop_reason = review_variant(client, variant_dir, arm, model, effort)
+            reply = review_variant(provider, variant_dir, arm, effort)
+            parsed, usage, stop_reason = reply.parsed, reply.usage, reply.stop_reason
             findings = to_findings(arm, parsed, variant_files(variant_dir)) if parsed else []
-            refused = " [red](refused)[/red]" if stop_reason == "refusal" else ""
+            refused = {"refusal": " [red](refused)[/red]", "format_error": " [red](unreadable answer)[/red]"}.get(
+                stop_reason or "", ""
+            )
             rules = ", ".join(sorted({f.rule_id for f in findings})) or "—"
             log_event(console, tool, f"{case.meta.id} {label:10} {len(findings)} findings · {rules}{refused}")
             variants.append(
@@ -219,7 +211,8 @@ def scan(
                     case_id=case.meta.id,
                     variant=label,
                     arm=arm,
-                    model=model,
+                    model=provider.model,
+                    provider=provider.name,
                     effort=effort,
                     stop_reason=stop_reason,
                     findings=[item.model_dump() for item in parsed.findings] if parsed else [],  # type: ignore[attr-defined]
@@ -232,9 +225,9 @@ def scan(
 
     results = {
         "tool": tool,
-        "tool_version": f"{model}" + (f" effort={effort}" if effort else ""),
+        "tool_version": model_name(provider) + (f" effort={effort}" if effort else ""),
         "run_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-        "rules": {"kind": "prompt", "arm": arm, "model": model, "effort": effort},
+        "rules": {"kind": "prompt", "arm": arm, "model": provider.model, "provider": provider.name, "effort": effort},
         "variants": variants,
     }
     return results, records

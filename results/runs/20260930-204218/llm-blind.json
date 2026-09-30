@@ -1,0 +1,77 @@
+{
+  "tool": "llm-blind",
+  "tool_version": "nim:openai/gpt-oss-20b",
+  "run_at": "2026-09-30T23:43:28+00:00",
+  "rules": {
+    "kind": "prompt",
+    "arm": "blind",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 4,
+          "rule_id": "CWE-285",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 8,
+          "rule_id": "CWE-200",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "session-store.service.ts",
+          "line": 8,
+          "rule_id": "CWE-311",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 6,
+          "rule_id": "CWE-79",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

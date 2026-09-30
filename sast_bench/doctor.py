@@ -108,6 +108,20 @@ def check_api_key() -> Check:
     return Check("API key", WARN, f"{detail}; the hybrid will not run", fix)
 
 
+def check_nim_key() -> Check:
+    """Only presence is checked. The key itself is never shown."""
+    load_dotenv(REPO_ROOT / ".env")
+    key = os.environ.get("NVIDIA_API_KEY", "")
+    if key and not key.endswith("..."):
+        return Check("NIM key", OK, "NVIDIA_API_KEY loaded; only --provider nim (debug runs) uses it")
+    return Check(
+        "NIM key",
+        WARN,
+        "no NVIDIA_API_KEY; --provider nim will not run",
+        "add NVIDIA_API_KEY to .env (free key from build.nvidia.com)",
+    )
+
+
 def check_corpus(corpus: Path) -> Check:
     cases, problems = validate(corpus)
     if problems:
@@ -125,5 +139,6 @@ def run_checks(corpus: Path) -> list[Check]:
         check_codeql_ext(),
         check_cache(),
         check_api_key(),
+        check_nim_key(),
         check_corpus(corpus),
     ]

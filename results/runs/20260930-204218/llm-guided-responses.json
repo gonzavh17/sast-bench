@@ -1,0 +1,112 @@
+[
+  {
+    "case_id": "ng-authz-001",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 4,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Authorization is decided on the client side by reading a role from localStorage, which can be tampered with by the user, allowing unauthorized access to admin routes."
+      }
+    ],
+    "input_tokens": 869,
+    "output_tokens": 372,
+    "reviewed_at": "2026-09-30T23:43:47+00:00"
+  },
+  {
+    "case_id": "ng-authz-001",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 969,
+    "output_tokens": 639,
+    "reviewed_at": "2026-09-30T23:43:51+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 7,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The service stores a session token in sessionStorage, which is accessible to JavaScript and can be read by malicious scripts if XSS occurs. Session tokens are sensitive credentials that should not be stored in client-side storage."
+      }
+    ],
+    "input_tokens": 652,
+    "output_tokens": 318,
+    "reviewed_at": "2026-09-30T23:43:54+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The service stores a truncated session token in sessionStorage, exposing a sensitive authentication secret to client-side scripts and potential XSS attacks."
+      }
+    ],
+    "input_tokens": 672,
+    "output_tokens": 519,
+    "reviewed_at": "2026-09-30T23:44:14+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 6,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The function calls sanitizer.bypassSecurityTrustHtml on user-supplied query parameter content, then sanitizes a SafeHtml object which simply returns the original string, and finally bypasses again. This effectively disables Angular’s sanitization, allowing arbitrary HTML from the URL to be injected into the DOM via [innerHTML], leading to a high‑severity XSS vulnerability."
+      }
+    ],
+    "input_tokens": 947,
+    "output_tokens": 559,
+    "reviewed_at": "2026-09-30T23:44:31+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "openai/gpt-oss-20b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 931,
+    "output_tokens": 428,
+    "reviewed_at": "2026-09-30T23:44:35+00:00"
+  }
+]

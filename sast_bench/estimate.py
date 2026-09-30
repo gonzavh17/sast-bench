@@ -21,6 +21,29 @@ PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-fable-5-1": (10.00, 50.00),
 }
 
+# What serious measurements run on. Debug runs (free providers) report what the
+# same tokens would have cost with it.
+OPUS_REFERENCE = "claude-opus-5"
+
+
+def price(model: str, input_tokens: int, output_tokens: int) -> float | None:
+    """USD for these tokens with `model`, or None if its price is unknown."""
+    prices = PRICES_PER_MTOK.get(model)
+    if prices is None:
+        return None
+    return (input_tokens * prices[0] + output_tokens * prices[1]) / 1_000_000
+
+
+def usage_costs(provider: str, model: str, input_tokens: int, output_tokens: int) -> dict[str, float | None]:
+    """What goes in the manifest: real cost, and the Opus equivalent."""
+    real = 0.0 if provider != "anthropic" else price(model, input_tokens, output_tokens)
+    opus = price(OPUS_REFERENCE, input_tokens, output_tokens)
+    return {
+        "cost_usd": None if real is None else round(real, 4),
+        "opus_equivalent_usd": None if opus is None else round(opus, 4),
+    }
+
+
 # When there are no previous decisions: the order of the first XSS run.
 FALLBACK_TOKENS = (1200, 400)
 
@@ -43,10 +66,11 @@ class Estimate:
 
     @property
     def cost_usd(self) -> float | None:
-        prices = PRICES_PER_MTOK.get(self.model)
-        if prices is None:
-            return None
-        return (self.input_tokens * prices[0] + self.output_tokens * prices[1]) / 1_000_000
+        return price(self.model, self.input_tokens, self.output_tokens)
+
+    @property
+    def opus_equivalent_usd(self) -> float | None:
+        return price(OPUS_REFERENCE, self.input_tokens, self.output_tokens)
 
 
 def count_findings(results: dict[str, Any], case_ids: set[str] | None = None) -> int:

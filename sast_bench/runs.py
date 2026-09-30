@@ -67,6 +67,11 @@ class Run:
         return self.manifest.get("status", "ok")
 
     @property
+    def debug(self) -> bool:
+        """Runs made with a debug provider (NIM): hidden unless asked for."""
+        return bool(self.manifest.get("debug", False))
+
+    @property
     def corpus_label(self) -> str:
         if self.manifest:
             label = self.manifest.get("corpus", "?")
@@ -163,8 +168,8 @@ def load_legacy(path: Path) -> Run | None:
     )
 
 
-def list_runs(results_dir: Path = RESULTS_DIR) -> list[Run]:
-    """Every run, newest first."""
+def list_runs(results_dir: Path = RESULTS_DIR, *, include_debug: bool = False) -> list[Run]:
+    """Every run, newest first. Debug runs only with `include_debug`."""
     runs: list[Run] = []
     runs_dir = results_dir / "runs"
     if runs_dir.is_dir():
@@ -174,6 +179,8 @@ def list_runs(results_dir: Path = RESULTS_DIR) -> list[Run]:
     for path in sorted(results_dir.glob("*.json")):
         if run := load_legacy(path):
             runs.append(run)
+    if not include_debug:
+        runs = [r for r in runs if not r.debug]
     return sorted(runs, key=lambda r: r.started_at, reverse=True)
 
 

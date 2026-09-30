@@ -25,15 +25,16 @@ import json
 from pathlib import Path
 from typing import Any, Literal
 
-import anthropic
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from rich.console import Console
 
+from runners.providers import DEFAULT_MODEL as PROVIDER_DEFAULTS
+from runners.providers import AnthropicProvider, Reply
 from scoring.console import log_event, make_console, progress_bar
 from scoring.models import Case, Finding, Strict, discover_cases
 
-DEFAULT_MODEL = "claude-opus-5"
+DEFAULT_MODEL = PROVIDER_DEFAULTS["anthropic"]
 
 # The prompt was in Spanish until 2026-09-25. Runs before that date
 # (results/2026-09-23-*codeql-llm.json) used the Spanish version; see git
@@ -87,6 +88,8 @@ class DecisionRecord(Strict):
     reason: str
     control: str
     model: str
+    provider: str = "anthropic"
+    stop_reason: str | None = None
     input_tokens: int
     output_tokens: int
     decided_at: str
@@ -116,32 +119,22 @@ def build_context(variant_dir: Path, finding: Finding | None = None) -> str:
     return "\n\n".join(blocks)
 
 
-def judge(
-    client: anthropic.Anthropic,
-    variant_dir: Path,
-    finding: Finding,
-    model: str,
-) -> tuple[Decision, Any]:
-    response = client.messages.parse(
-        model=model,
-        max_tokens=16000,
-        system=SYSTEM,
-        thinking={"type": "adaptive"},
-        messages=[
-            {
-                "role": "user",
-                "content": PROMPT.format(
-                    rule_id=finding.rule_id,
-                    path=finding.path,
-                    line=finding.line,
-                    severity=finding.severity,
-                    context=build_context(variant_dir, finding),
-                ),
-            }
-        ],
-        output_format=Decision,
+# When the model's answer cannot be read, the finding stays: dismissing needs a
+# quoted control, and an unreadable answer quotes nothing.
+UNREADABLE = Decision(verdict="confirmed", reason="unreadable answer; kept by default", control="")
+
+
+def judge(provider: Any, variant_dir: Path, finding: Finding) -> tuple[Decision, Reply]:
+    user = PROMPT.format(
+        rule_id=finding.rule_id,
+        path=finding.path,
+        line=finding.line,
+        severity=finding.severity,
+        context=build_context(variant_dir, finding),
     )
-    return response.parsed_output, response.usage
+    reply = provider.structured(SYSTEM, user, Decision)
+    decision = reply.parsed if isinstance(reply.parsed, Decision) else UNREADABLE
+    return decision, reply
 
 
 def _one_line(decision: Decision) -> str:
@@ -156,8 +149,7 @@ def _one_line(decision: Decision) -> str:
 def review(
     results: dict[str, Any],
     cases: dict[str, Case],
-    client: anthropic.Anthropic,
-    model: str,
+    provider: Any,
     console: Console,
 ) -> list[DecisionRecord]:
     """One request per finding, in order, never batched."""
@@ -173,9 +165,7 @@ def review(
         for entry, finding in pending:
             case = cases[entry["case_id"]]
             bar.update(task, description=f"{entry['case_id']} {entry['variant']}")
-            decision, usage = judge(
-                client, case.variant_dir(entry["variant"]), finding, model
-            )
+            decision, reply = judge(provider, case.variant_dir(entry["variant"]), finding)
             records.append(
                 DecisionRecord(
                     case_id=entry["case_id"],
@@ -184,9 +174,11 @@ def review(
                     verdict=decision.verdict,
                     reason=decision.reason,
                     control=decision.control,
-                    model=model,
-                    input_tokens=usage.input_tokens,
-                    output_tokens=usage.output_tokens,
+                    model=provider.model,
+                    provider=provider.name,
+                    stop_reason=reply.stop_reason,
+                    input_tokens=reply.usage.input_tokens,
+                    output_tokens=reply.usage.output_tokens,
                     decided_at=dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
                 )
             )
@@ -233,12 +225,11 @@ def filter_results(
     results: dict[str, Any],
     base_results: str,
     cases: dict[str, Case],
-    client: anthropic.Anthropic,
-    model: str,
+    provider: Any,
     console: Console,
 ) -> tuple[dict[str, Any], list[DecisionRecord]]:
     """Review each finding and build the filtered results, in the usual format."""
-    records = review(results, cases, client, model, console)
+    records = review(results, cases, provider, console)
 
     confirmed = sum(r.verdict == "confirmed" for r in records)
     log_event(
@@ -250,13 +241,18 @@ def filter_results(
     filtered = {
         "tool": f"{results['tool']}+llm",
         "rule_map": results.get("rule_map", results["tool"]),
-        "tool_version": f"{results['tool']} {results['tool_version']} + {model}",
+        "tool_version": f"{results['tool']} {results['tool_version']} + {model_name(provider)}",
         "run_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         "rules": results["rules"],
         "base_results": base_results,
         "variants": apply_decisions(results, records),
     }
     return filtered, records
+
+
+def model_name(provider: Any) -> str:
+    """`claude-opus-5`, or `nim:<model>` so a debug row never passes for Claude."""
+    return provider.model if provider.name == "anthropic" else f"{provider.name}:{provider.model}"
 
 
 def dump_decisions(records: list[DecisionRecord]) -> str:
@@ -287,7 +283,7 @@ def main() -> None:
     )
 
     filtered, records = filter_results(
-        results, str(args.results), cases, anthropic.Anthropic(), args.model, console
+        results, str(args.results), cases, AnthropicProvider(args.model), console
     )
 
     args.out.parent.mkdir(parents=True, exist_ok=True)

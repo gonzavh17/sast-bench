@@ -234,6 +234,7 @@ sast-bench run --engine codeql --family secrets        # one family: xss, secret
 sast-bench run --engine codeql --codeql-ext            # CodeQL + the extension
 sast-bench run --engine hybrid --family xss --dry-run  # calls and estimated cost, nothing runs
 sast-bench run --engine llm --arm blind                # the LLM alone (asks the API)
+sast-bench run --engine llm --provider nim --model openai/gpt-oss-20b   # free debug run (NVIDIA NIM)
 sast-bench run --engine codeql --case ng-sec-002 --case ng-sec-011   # specific cases
 
 sast-bench history                                     # every run
@@ -244,6 +245,11 @@ sast-bench report <run-id>                             # report.md + report.svg
 sast-bench corpus validate                             # meta.yaml checks
 sast-bench corpus stats                                # pairs per family and difficulty
 ```
+
+Runs with `--provider nim` are for debugging prompts and the pipeline for
+free: they are marked as debug, hidden from `history` and `compare` unless you
+pass `--include-debug`, and report what the same tokens would have cost with
+Opus. Every number in this README comes from Claude runs.
 
 Prefix with `uv run` if the venv is not active. Each run is stored in
 `results/runs/<run-id>/` with a `manifest.json` that records the repo commit,
