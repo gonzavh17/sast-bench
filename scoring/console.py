@@ -174,22 +174,31 @@ def cases_table(
     return table
 
 
-def metrics_table(console: Console, runs: list[tuple[str, dict, Score]]) -> Table:
-    """Plain names instead of acronyms. The acronyms and the rest live in the JSON and report.md."""
+def metrics_table(
+    console: Console,
+    runs: list[tuple[str, dict, Score]],
+    costs: list[tuple[str, str]] | None = None,
+) -> Table:
+    """Plain names instead of acronyms. The acronyms and the rest live in the JSON and report.md.
+
+    `costs`, if given, is one already formatted (cost, pairs per dollar) pair
+    per run: this file formats, it does not price.
+    """
     table = Table(box=table_box(console), pad_edge=False)
     table.add_column("engine", no_wrap=True)
     table.add_column("pairs", justify="right", no_wrap=True)
     table.add_column("finds", justify="right", no_wrap=True)
     table.add_column("false alarms", justify="right", no_wrap=True)
+    if costs is not None:
+        table.add_column("cost", justify="right", no_wrap=True)
+        table.add_column("pairs per US$", justify="right", no_wrap=True)
 
-    for tool, _, score in runs:
+    for i, (tool, _, score) in enumerate(runs):
         solved = sum(p.solved for p in score.pairs)
-        table.add_row(
-            tool,
-            f"{solved}/{len(score.pairs)}",
-            f"{score.recall:.0%}",
-            f"{score.fpr:.0%}",
-        )
+        row = [tool, f"{solved}/{len(score.pairs)}", f"{score.recall:.0%}", f"{score.fpr:.0%}"]
+        if costs is not None:
+            row += list(costs[i])
+        table.add_row(*row)
     return table
 
 

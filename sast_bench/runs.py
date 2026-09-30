@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from sast_bench.estimate import price
 from scoring.metrics import Score, tally
 from scoring.models import Case, load_case, load_rule_map
 from scripts.fetch_codeql import REPO_ROOT
@@ -87,6 +88,39 @@ class Run:
                 return engine
         available = ", ".join(e.tool for e in self.engines) or "none"
         raise LookupError(f"run {self.run_id} has no {tool} (it has: {available})")
+
+
+# ---------------------------------------------------------------- cost
+
+# Engines that run locally and never call a paid API.
+FREE_ENGINES = {"semgrep", "codeql", "codeql+ext"}
+
+
+@dataclass(frozen=True)
+class Cost:
+    usd: float | None  # what the run cost; None when it was not recorded
+    opus_equivalent: float | None = None  # for debug runs: the same tokens on Opus
+    debug: bool = False
+
+
+def engine_cost(run: Run, engine: EngineRun) -> Cost:
+    """What one engine of a run cost, from its manifest entry.
+
+    Runs from before the cost fields existed still have tokens and model, so
+    the cost is recomputed from them. Loose legacy results have neither.
+    """
+    if engine.tool in FREE_ENGINES:
+        return Cost(0.0)
+    entry = next((e for e in run.manifest.get("engines", []) if e.get("tool") == engine.tool), None)
+    usage = (entry or {}).get("usage")
+    if not usage:
+        return Cost(None)
+    provider = entry.get("provider", "anthropic")
+    if provider != "anthropic":
+        return Cost(0.0, usage.get("opus_equivalent_usd"), debug=True)
+    if usage.get("cost_usd") is not None:
+        return Cost(usage["cost_usd"])
+    return Cost(price(entry.get("model", ""), usage.get("input_tokens", 0), usage.get("output_tokens", 0)))
 
 
 # ---------------------------------------------------------------- reading

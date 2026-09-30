@@ -7,15 +7,16 @@ Every vulnerable case has a safe twin: the same pattern, done right. A tool only
 gets credit for a pair if it flags the vulnerable one **and** stays quiet on the
 safe one.
 
-| | XSS | secrets | authorization | **total** |
-|---|---|---|---|---|
-| Semgrep | 5 | 0 | 0 | **5/36** |
-| CodeQL | 11 | 0 | 0 | **11/36** |
-| LLM alone, blind | 8 | 7 | 4 | **19/36** |
-| LLM alone, guided | 8 | 9 | 9 | **26/36** |
+| | XSS | secrets | authorization | **total** | cost of a full run |
+|---|---|---|---|---|---|
+| Semgrep | 5 | 0 | 0 | **5/36** | US$ 0 |
+| CodeQL | 11 | 0 | 0 | **11/36** | US$ 0 |
+| LLM alone, blind | 8 | 7 | 4 | **19/36** | US$ 1.29 |
+| LLM alone, guided | 8 | 9 | 9 | **26/36** | US$ 1.12 |
 
-Pairs solved, out of 12 per family. The LLM is `claude-opus-5`. Details,
-extensions and per-case tables are below.
+Pairs solved, out of 12 per family. The LLM is `claude-opus-5`; its cost is
+the API bill for one pass over the 72 variants. Details, extensions and
+per-case tables are below.
 
 ## Key findings
 
@@ -253,7 +254,9 @@ Opus. Every number in this README comes from Claude runs.
 
 Prefix with `uv run` if the venv is not active. Each run is stored in
 `results/runs/<run-id>/` with a `manifest.json` that records the repo commit,
-filters, engine versions, rules commit, model and token usage. CodeQL databases
+filters, engine versions, rules commit, model, token usage and cost. `show`
+and `compare` print the cost and the pairs solved per dollar next to the
+scores. CodeQL databases
 are cached by variant content, so a run where nothing changed only pays for
 the analysis.
 

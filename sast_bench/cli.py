@@ -41,8 +41,10 @@ from sast_bench.runs import (
     MANIFEST,
     RESULTS_DIR,
     RUNS_DIR,
+    Cost,
     EngineRun,
     Run,
+    engine_cost,
     decision_records,
     latest_results_for,
     list_runs,
@@ -576,7 +578,7 @@ def render_run(console: Console, run: Run, engines: list[EngineRun] | None = Non
     glossary(console)
     console.print()
     console.print(cases_table(console, rows, cases))
-    console.print(metrics_table(console, rows))
+    console.print(metrics_table(console, rows, costs_for(run, engines, rows)))
 
 
 def resolve_run(selector: str, include_debug: bool) -> Run:
@@ -593,6 +595,31 @@ def resolve_run(selector: str, include_debug: bool) -> Run:
         raise CliError(f"{hidden.run_id} is a debug run; add --include-debug to use it") from None
 
 
+def cost_cells(cost: Cost, solved: int) -> tuple[str, str]:
+    """(cost, pairs per dollar) for the metrics table."""
+    if cost.usd is None:
+        return "—", "—"
+    if cost.debug:
+        opus = f" (~US$ {cost.opus_equivalent:.2f} Opus)" if cost.opus_equivalent is not None else ""
+        return f"US$ 0{opus}", "debug"
+    if cost.usd == 0:
+        return "US$ 0", "free"
+    return f"US$ {cost.usd:.2f}", f"{solved / cost.usd:.1f}"
+
+
+def cost_short(cost: Cost) -> str:
+    if cost.usd is None or cost.usd == 0 and not cost.debug:
+        return ""
+    return " · debug" if cost.debug else f" · US$ {cost.usd:.2f}"
+
+
+def costs_for(run: Run, engines: list[EngineRun], rows: list[tuple[str, dict, Any]]) -> list[tuple[str, str]]:
+    return [
+        cost_cells(engine_cost(run, engine), sum(p.solved for p in score.pairs))
+        for engine, (_, _, score) in zip(engines, rows)
+    ]
+
+
 def cmd_show(args: argparse.Namespace, console: Console) -> int:
     run_id, tool = split_selector(args.run)
     run = resolve_run(run_id, args.include_debug)
@@ -604,12 +631,13 @@ def engine_summary(run: Run, engine: EngineRun) -> str:
     for entry in run.manifest.get("engines", []):
         if entry.get("tool") == engine.tool and "summary" in entry:
             summary = entry["summary"]
-            return f"{engine.tool} {summary['solved']}/{summary['pairs']}"
+            return f"{engine.tool} {summary['solved']}/{summary['pairs']}{cost_short(engine_cost(run, engine))}"
     try:
         score = engine.score()
     except FileNotFoundError:
         return f"{engine.tool} ?"
-    return f"{engine.tool} {sum(p.solved for p in score.pairs)}/{len(score.pairs)}"
+    solved = sum(p.solved for p in score.pairs)
+    return f"{engine.tool} {solved}/{len(score.pairs)}{cost_short(engine_cost(run, engine))}"
 
 
 def cmd_history(args: argparse.Namespace, console: Console) -> int:
@@ -709,8 +737,16 @@ def cmd_compare(args: argparse.Namespace, console: Console) -> int:
             metrics_table(
                 console,
                 [(f"A {left.tool}", left.results, score_a), (f"B {right.tool}", right.results, score_b)],
+                [
+                    cost_cells(engine_cost(a, left), sum(p.solved for p in score_a.pairs)),
+                    cost_cells(engine_cost(b, right), sum(p.solved for p in score_b.pairs)),
+                ],
             )
         )
+        cost_a, cost_b = engine_cost(a, left), engine_cost(b, right)
+        if cost_a.usd and cost_b.usd and not (cost_a.debug or cost_b.debug):
+            change = (cost_b.usd - cost_a.usd) / cost_a.usd
+            console.print(f"cost: US$ {cost_a.usd:.2f} → US$ {cost_b.usd:.2f} ({change:+.0%})", highlight=False)
         diff = diff_scores(score_a, score_b)
         sections = (
             ("newly solved", "green", diff.fixed),

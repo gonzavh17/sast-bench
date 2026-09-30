@@ -263,3 +263,46 @@ def test_run_requires_engine():
 def test_corpus_stats_end_to_end(capsys):
     assert cli.main(["corpus", "stats"]) == 0
     assert "36 pairs" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------- cost
+
+
+def _run_with(engine_entry: dict, tool: str = "llm-blind"):
+    from sast_bench.runs import EngineRun, Run
+
+    engine = EngineRun(tool=tool, path=Path("x.json"), results={"tool": tool, "variants": []})
+    return Run("r", "", False, [engine], manifest={"engines": [engine_entry]}), engine
+
+
+def test_rule_based_engines_are_free():
+    from sast_bench.runs import engine_cost
+
+    run, engine = _run_with({}, tool="codeql")
+    assert engine_cost(run, engine).usd == 0.0
+
+
+def test_cost_is_recomputed_from_tokens_when_it_was_not_recorded():
+    from sast_bench.runs import engine_cost
+
+    entry = {"tool": "llm-blind", "model": "claude-opus-5", "usage": {"input_tokens": 1_000_000, "output_tokens": 0}}
+    run, engine = _run_with(entry)
+    assert engine_cost(run, engine).usd == pytest.approx(5.0)
+
+
+def test_debug_runs_cost_zero_and_keep_the_opus_equivalent():
+    from sast_bench.runs import engine_cost
+
+    entry = {"tool": "llm-blind", "provider": "nim", "usage": {"cost_usd": 0.0, "opus_equivalent_usd": 0.19}}
+    run, engine = _run_with(entry)
+    cost = engine_cost(run, engine)
+    assert (cost.usd, cost.opus_equivalent, cost.debug) == (0.0, 0.19, True)
+    assert cli.cost_cells(cost, 2) == ("US$ 0 (~US$ 0.19 Opus)", "debug")
+
+
+def test_cost_cells_formats_pairs_per_dollar_and_unknowns():
+    from sast_bench.runs import Cost
+
+    assert cli.cost_cells(Cost(2.0), 10) == ("US$ 2.00", "5.0")
+    assert cli.cost_cells(Cost(0.0), 10) == ("US$ 0", "free")
+    assert cli.cost_cells(Cost(None), 10) == ("—", "—")
