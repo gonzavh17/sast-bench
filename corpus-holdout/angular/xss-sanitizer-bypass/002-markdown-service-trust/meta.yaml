@@ -1,0 +1,21 @@
+id: ngh-xss-002
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/markdown.service.ts, line: 11}
+    rationale: >
+      Comments are written by other users and come back from the API.
+      MarkdownService turns them into HTML and marks the result as trusted, so any
+      raw HTML inside a comment reaches the page: stored XSS. The source is in the
+      component, the trust decision in the service, and they meet in the template.
+  safe:
+    label: safe
+    rationale: >
+      Same service, same component, same template. The service sanitizes the
+      rendered HTML instead of trusting it, so scripts and event handlers inside a
+      comment are stripped.

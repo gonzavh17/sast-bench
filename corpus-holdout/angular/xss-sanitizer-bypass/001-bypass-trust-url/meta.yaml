@@ -1,0 +1,19 @@
+id: ngh-xss-001
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/link-card.component.ts, line: 19}
+    rationale: >
+      The website link comes from the query string and is marked as a trusted URL,
+      so a javascript: URL survives into the href and runs when the link is
+      clicked.
+  safe:
+    label: safe
+    rationale: >
+      Same link and same binding, with the plain string. Angular's URL sanitizer
+      neutralizes unsafe schemes in [href] on its own.

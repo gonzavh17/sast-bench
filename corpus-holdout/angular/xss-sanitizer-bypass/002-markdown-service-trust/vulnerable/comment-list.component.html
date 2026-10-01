@@ -1,0 +1,4 @@
+<article *ngFor="let comment of comments">
+  <h4>{{ comment.author }}</h4>
+  <div [innerHTML]="markdown.render(comment.body)"></div>
+</article>

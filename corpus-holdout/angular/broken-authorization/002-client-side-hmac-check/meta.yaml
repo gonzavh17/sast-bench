@@ -1,0 +1,20 @@
+id: ngh-authz-002
+ecosystem: angular
+family: broken-authorization
+cwe: CWE-602
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/share-link.guard.ts, line: 10}
+    rationale: >
+      The share link is checked with a real HMAC, which looks like solid
+      validation. But the signing key ships in the browser bundle, so anyone can
+      compute a valid signature for any document id and open documents nobody
+      shared with them.
+  safe:
+    label: safe
+    rationale: >
+      Same route, same parameters, same guard. The signature is checked by the
+      server, which is the only place that holds the key.

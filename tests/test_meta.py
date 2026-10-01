@@ -21,7 +21,8 @@ from sast_bench.corpus import (
 from scoring.models import Case, discover_cases
 
 CORPUS = Path(__file__).resolve().parent.parent / "corpus"
-CASES = discover_cases(CORPUS)
+HOLDOUT = Path(__file__).resolve().parent.parent / "corpus-holdout"
+CASES = discover_cases(CORPUS) + discover_cases(HOLDOUT)
 
 
 def test_corpus_is_not_empty():
@@ -35,9 +36,16 @@ def test_ids_are_unique():
 
 
 def test_validate_finds_no_problems():
-    """What `sast-bench corpus validate` runs, over the whole corpus."""
-    _, problems = validate(CORPUS)
-    assert not problems, problems
+    """What `sast-bench corpus validate` runs, over the corpus and the holdout."""
+    for root in (CORPUS, HOLDOUT):
+        _, problems = validate(root)
+        assert not problems, problems
+
+
+def test_the_holdout_is_not_discovered_with_the_main_corpus():
+    """Nothing may tune on the holdout by accident."""
+    main_ids = {c.meta.id for c in discover_cases(CORPUS)}
+    assert not any(case_id.startswith("ngh-") for case_id in main_ids)
 
 
 @pytest.fixture(params=CASES, ids=lambda c: c.meta.id)

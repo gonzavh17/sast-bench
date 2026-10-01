@@ -1,0 +1,21 @@
+id: ngh-sec-001
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-1004
+difficulty: obvious
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/session.service.ts, line: 20}
+    rationale: >
+      The refresh token, valid for 30 days, is written to a cookie from
+      JavaScript. A cookie set through document.cookie cannot be HttpOnly, so any
+      script on the page, including one injected through XSS, can read it and keep
+      the session alive long after the access token expires.
+  safe:
+    label: safe
+    rationale: >
+      Same login, same in-memory access token. The refresh token never reaches
+      JavaScript: the server sets it as an HttpOnly cookie and the request is sent
+      with credentials.

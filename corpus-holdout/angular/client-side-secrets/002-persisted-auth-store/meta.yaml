@@ -1,0 +1,20 @@
+id: ngh-sec-002
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-922
+difficulty: indirect
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/auth.store.ts, line: 18}
+    rationale: >
+      The store persists its whole state on every update, and the state includes
+      the access token. The persist helper is a generic localStorage writer and
+      the store never mentions storage directly, so neither file looks wrong on
+      its own.
+  safe:
+    label: safe
+    rationale: >
+      Same store, same helper, same call on every update. Only the UI theme is
+      persisted; the token stays in memory.

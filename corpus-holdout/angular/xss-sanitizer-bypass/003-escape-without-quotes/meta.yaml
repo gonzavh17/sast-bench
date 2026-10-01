@@ -1,0 +1,20 @@
+id: ngh-xss-003
+ecosystem: angular
+family: xss-sanitizer-bypass
+cwe: CWE-79
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/avatar.component.ts, line: 17}
+    rationale: >
+      The value is escaped before it goes into innerHTML, but the escaper only
+      handles < and >. The value lands inside a double-quoted attribute, so a name
+      like `x" onerror="alert(1)` closes the attribute and adds an event handler
+      without using a single angle bracket.
+  safe:
+    label: safe
+    rationale: >
+      Same component and same innerHTML. The escaper also handles &, double and
+      single quotes, so the value cannot leave the alt attribute.

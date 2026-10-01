@@ -1,0 +1,19 @@
+id: ngh-sec-003
+ecosystem: angular
+family: client-side-secrets
+cwe: CWE-532
+difficulty: decoy
+source: authored
+variants:
+  vulnerable:
+    label: vulnerable
+    sink: {file: vulnerable/signup.service.ts, line: 19}
+    rationale: >
+      The form is redacted before it is logged, and the key list covers the email, the password and the recovery code. But
+      redaction only looks at the top level, and the password and recovery code
+      are nested under `credentials`, so both are printed in clear text.
+  safe:
+    label: safe
+    rationale: >
+      Same keys, same call, same log line. Redaction walks nested objects, so the
+      credentials are replaced wherever they sit.
