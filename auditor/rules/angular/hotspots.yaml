@@ -1,0 +1,127 @@
+# Hotspots for Angular: places worth showing to the LLM, not verdicts.
+#
+# These rules over-match on purpose. A miss here is a miss for the whole
+# auditor; a false hit only costs a slice, and slices are grouped and
+# filtered later. Each id starts with hot-<family>- so the family hint can be
+# read from the id. Tuned on corpus/ only, never on corpus-holdout/.
+rules:
+  # ---------------------------------------------------------------- xss
+  - id: hot-xss-bypass-trust
+    languages: [typescript]
+    severity: INFO
+    message: Value marked as trusted, skipping Angular's sanitizer
+    pattern-either:
+      - pattern: $S.bypassSecurityTrustHtml(...)
+      - pattern: $S.bypassSecurityTrustUrl(...)
+      - pattern: $S.bypassSecurityTrustResourceUrl(...)
+      - pattern: $S.bypassSecurityTrustScript(...)
+      - pattern: $S.bypassSecurityTrustStyle(...)
+
+  - id: hot-xss-dom-write
+    languages: [typescript]
+    severity: INFO
+    message: Markup written straight into the DOM
+    pattern-either:
+      - pattern: $E.innerHTML = $X
+      - pattern: $E.outerHTML = $X
+      - pattern: $E.insertAdjacentHTML(...)
+      - pattern: document.write(...)
+      - pattern: $R.setProperty($EL, "innerHTML", $X)
+      - pattern: $R.setProperty($EL, "outerHTML", $X)
+
+  - id: hot-xss-inline-template-binding
+    languages: [typescript]
+    severity: INFO
+    message: Inline template binds HTML or a URL
+    pattern-regex: \[(innerHTML|outerHTML|src|href|srcdoc)\]\s*=
+
+  - id: hot-xss-template-binding
+    languages: [generic]
+    paths:
+      include: ["*.html"]
+    severity: INFO
+    message: Template binds HTML or a URL
+    pattern-regex: \[(innerHTML|outerHTML|src|href|srcdoc)\]\s*=
+
+  # ---------------------------------------------------------------- secrets
+  - id: hot-sec-browser-storage
+    languages: [typescript]
+    severity: INFO
+    message: Browser storage or a JavaScript-set cookie
+    pattern-either:
+      - pattern: localStorage.$M(...)
+      - pattern: sessionStorage.$M(...)
+      - pattern: document.cookie = $X
+
+  - id: hot-sec-console
+    languages: [typescript]
+    severity: INFO
+    message: Something is logged to the console
+    pattern: console.$M(...)
+
+  - id: hot-sec-config-literal
+    languages: [typescript]
+    severity: INFO
+    message: A key, secret or token as a literal in configuration
+    pattern-regex: (?i)\b\w*(secret|key|token|password|credential)\w*\s*:\s*['"][^'"]{8,}['"]
+
+  - id: hot-sec-interceptor
+    languages: [typescript]
+    severity: INFO
+    message: HTTP interceptor, sees every request and response
+    pattern-regex: implements\s+HttpInterceptor|HttpInterceptorFn
+
+  - id: hot-sec-in-memory-cache
+    languages: [typescript]
+    severity: INFO
+    message: Responses kept in an in-memory cache
+    pattern-regex: new\s+Map<[^>]*Http(Response|Event)
+
+  - id: hot-sec-serialized
+    languages: [typescript]
+    severity: INFO
+    message: An object is serialized, it may carry more than intended
+    pattern: JSON.stringify(...)
+
+  # ---------------------------------------------------------------- authz
+  - id: hot-authz-guard
+    languages: [typescript]
+    severity: INFO
+    message: Route guard or resolver, a client-side access decision
+    pattern-regex: \b(CanActivateFn|CanMatchFn|CanActivateChildFn|ResolveFn)\b|implements\s+(CanActivate|CanMatch|Resolve)\b
+
+  - id: hot-authz-route-input
+    languages: [typescript]
+    severity: INFO
+    message: Value read from the URL, the user controls it
+    pattern-regex: \b(paramMap|queryParamMap)\.get\(|\.(params|queryParams)\b
+
+  - id: hot-authz-role-check
+    languages: [typescript]
+    severity: INFO
+    message: A role or permission is compared in the browser
+    pattern-regex: (?i)\b(role|roles|isadmin|permission|permissions|ownerid)\b\s*(===|!==|==|!=|\.includes\()|['"]admin['"]
+
+  - id: hot-authz-token-decode
+    languages: [typescript]
+    severity: INFO
+    message: A token is decoded in the browser
+    pattern-regex: \batob\(|jwt_?decode|jwtDecode|\.split\(['"]\.['"]\)
+
+  - id: hot-authz-identity-header
+    languages: [typescript]
+    severity: INFO
+    message: The client sets a header on outgoing requests
+    pattern-regex: setHeaders\s*:|headers\.set\(|['"]X-[A-Za-z-]+['"]
+
+  - id: hot-authz-mutating-request
+    languages: [typescript]
+    severity: INFO
+    message: A request that changes data, what decides who may send it
+    pattern-regex: \.(post|put|patch|delete)\s*(<[^(]*>)?\(
+
+  - id: hot-authz-built-url
+    languages: [typescript]
+    severity: INFO
+    message: A request URL built from a variable
+    pattern-regex: \.(get|post|put|patch|delete)\s*(<[^(]*>)?\(\s*`[^`]*\$\{

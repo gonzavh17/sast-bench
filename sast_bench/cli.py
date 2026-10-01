@@ -688,6 +688,9 @@ def cmd_history(args: argparse.Namespace, console: Console) -> int:
     for run in runs[: args.limit]:
         style = "dim" if run.legacy else ""
         result = " · ".join(engine_summary(run, e) for e in run.engines)
+        if not result and run.manifest.get("funnel"):
+            f = run.manifest["funnel"]
+            result = f"funnel: slice shows sink {f['slice_has_sink']}/{f['vulnerable']} · {f['slice_tokens']:,} tokens"
         if run.status != "ok":
             result = f"[red]{run.status}[/red] {result}".strip()
         table.add_row(
@@ -823,6 +826,80 @@ def cmd_report(args: argparse.Namespace, console: Console) -> int:
 
 
 # ---------------------------------------------------------------- doctor / corpus
+
+
+# ---------------------------------------------------------------- funnel
+
+
+def cmd_funnel(args: argparse.Namespace, console: Console) -> int:
+    """Rules + slices over the corpus, no model: where each vulnerable line survives or is lost."""
+    from auditor.funnel import measure, to_json
+
+    cases = select_cases(args.corpus, args.family, args.difficulty, args.case_id)
+    rows = measure(cases)
+    vulnerable = [r for r in rows if r.variant == "vulnerable"]
+
+    table = Table(box=table_box(console), pad_edge=False)
+    for column in ("case", "difficulty", "candidates", "rules at sink", "slice has sink", "slices", "tokens"):
+        table.add_column(column, no_wrap=True, justify="left" if column in ("case", "difficulty") else "right")
+    mark = {True: "[green]yes[/green]", False: "[red]no[/red]", None: "—"}
+    by_case: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        by_case.setdefault(row.case_id, {})[row.variant] = row
+    for case_id, pair in sorted(by_case.items()):
+        v, s = pair["vulnerable"], pair["safe"]
+        table.add_row(
+            case_id,
+            v.difficulty,
+            f"{v.candidates} / {s.candidates}",
+            mark[v.rules_hit],
+            mark[v.slice_hit],
+            f"{v.slices} / {s.slices}",
+            f"{v.slice_tokens + s.slice_tokens:,} of {v.full_tokens + s.full_tokens:,}",
+        )
+    console.print(table)
+    slice_tokens = sum(r.slice_tokens for r in rows)
+    full_tokens = sum(r.full_tokens for r in rows)
+    summary = {
+        "rules_at_sink": sum(bool(r.rules_hit) for r in vulnerable),
+        "slice_has_sink": sum(bool(r.slice_hit) for r in vulnerable),
+        "vulnerable": len(vulnerable),
+        "slices": sum(r.slices for r in rows),
+        "variants": len(rows),
+        "slice_tokens": slice_tokens,
+        "full_tokens": full_tokens,
+    }
+    console.print(
+        f"rules at the sink: {summary['rules_at_sink']}/{len(vulnerable)} · "
+        f"a slice shows the sink: {summary['slice_has_sink']}/{len(vulnerable)} · "
+        f"{summary['slices']} slices for {len(rows)} variants · "
+        f"{slice_tokens:,} tokens in slices vs {full_tokens:,} reading every variant whole",
+        highlight=False,
+    )
+    console.print("[dim]candidates, slices and tokens are vulnerable / safe; no model was called[/dim]", highlight=False)
+
+    now = dt.datetime.now(dt.UTC)
+    run_id = new_run_id(now.astimezone())
+    directory = RUNS_DIR / run_id
+    write_json(directory / "funnel.json", to_json(rows))
+    write_json(
+        directory / MANIFEST,
+        {
+            "run_id": run_id,
+            "status": "ok",
+            "kind": "funnel",
+            "started_at": now.isoformat(timespec="seconds"),
+            "corpus": str(args.corpus),
+            "filters": run_filters(args),
+            "repo": repo_state(),
+            "provider": None,
+            "debug": False,
+            "funnel": summary,
+            "engines": [],
+        },
+    )
+    console.print(f"wrote {directory.relative_to(REPO_ROOT)}/", highlight=False)
+    return 0
 
 
 def cmd_doctor(args: argparse.Namespace, console: Console) -> int:
@@ -961,6 +1038,13 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("--out-dir", type=Path, help="default: the run directory")
     report.add_argument("--include-debug", action="store_true", help="allow debug runs (nim)")
     report.set_defaults(handler=cmd_report)
+
+    funnel = sub.add_parser("funnel", help="measure rules + slices on the corpus, without any model")
+    funnel.add_argument("--corpus", type=Path, default=Path("corpus/angular"))
+    funnel.add_argument("--family", type=family_arg)
+    funnel.add_argument("--difficulty", choices=[d.value for d in Difficulty])
+    funnel.add_argument("--case", dest="case_id", metavar="ID", action="append")
+    funnel.set_defaults(handler=cmd_funnel)
 
     doctor = sub.add_parser("doctor", help="check the environment and say what is missing")
     doctor.add_argument("--corpus", type=Path, default=Path("corpus"))

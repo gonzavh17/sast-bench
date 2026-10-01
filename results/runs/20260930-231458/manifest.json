@@ -1,0 +1,28 @@
+{
+  "run_id": "20260930-231458",
+  "status": "ok",
+  "kind": "funnel",
+  "started_at": "2026-10-01T02:14:58+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": null,
+    "difficulty": null,
+    "case": null
+  },
+  "repo": {
+    "commit": "3583405bb097825317aca70f570c3764eeed4be6",
+    "dirty": true
+  },
+  "provider": null,
+  "debug": false,
+  "funnel": {
+    "rules_at_sink": 33,
+    "slice_has_sink": 36,
+    "vulnerable": 36,
+    "slices": 75,
+    "variants": 72,
+    "slice_tokens": 16495,
+    "full_tokens": 22552
+  },
+  "engines": []
+}
