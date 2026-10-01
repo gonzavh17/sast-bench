@@ -1,0 +1,66 @@
+{
+  "run_id": "20260930-234308",
+  "status": "ok",
+  "started_at": "2026-10-01T02:43:08+00:00",
+  "finished_at": "2026-10-01T02:55:16+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": "xss-sanitizer-bypass",
+    "difficulty": null,
+    "case": null
+  },
+  "cases": [
+    "ng-xss-001",
+    "ng-xss-002",
+    "ng-xss-003",
+    "ng-xss-004",
+    "ng-xss-005",
+    "ng-xss-006",
+    "ng-xss-007",
+    "ng-xss-008",
+    "ng-xss-009",
+    "ng-xss-010",
+    "ng-xss-011",
+    "ng-xss-012"
+  ],
+  "repo": {
+    "commit": "1a4be4ec5f480f3969ac8f972e2ee036c2b0a569",
+    "dirty": false
+  },
+  "provider": "nim",
+  "debug": true,
+  "engines": [
+    {
+      "tool": "llm-guided",
+      "file": "llm-guided.json",
+      "tool_version": "nim:nvidia/nemotron-3-ultra-550b-a55b",
+      "rules": {
+        "kind": "prompt",
+        "arm": "guided",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b",
+        "provider": "nim",
+        "effort": null
+      },
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nim",
+      "arm": "guided",
+      "effort": null,
+      "responses": "llm-guided-responses.json",
+      "usage": {
+        "calls": 24,
+        "refusals": 0,
+        "format_errors": 0,
+        "input_tokens": 19685,
+        "output_tokens": 18747,
+        "cost_usd": 0.0,
+        "opus_equivalent_usd": 0.5671
+      },
+      "summary": {
+        "solved": 9,
+        "pairs": 12,
+        "recall": 1.0,
+        "fpr": 0.25
+      }
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "case_id": "ng-authz-001",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 4,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The adminGuard only checks localStorage for the 'role' value, which is fully controlled by the client. A user can bypass this authorization by setting localStorage.setItem('role', 'admin') in the browser console. This is a client-side authorization check that provides no real security; proper authorization must be enforced server-side on the '/api/admin/users' endpoint.",
+    "control": "const role = localStorage.getItem('role');",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-001",
+    "variant": "safe",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 11,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The admin guard performs authorization entirely on the client side by checking the role from /api/me. This check can be bypassed by an attacker who modifies the client-side code or directly calls the protected API endpoint (/api/admin/users). No server-side authorization enforcement is visible in the provided code, making the client-side guard insufficient as a security control.",
+    "control": "No server-side authorization control present in provided code.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "refund.service.ts",
+      "line": 9,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The service reads the user's role from localStorage, which is fully controlled by the client, and sends it to the backend as part of the refund request. If the backend uses this client-supplied role for authorization decisions, a user can escalate privileges by modifying localStorage. No server-side validation or control is visible in this code.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "invoices.component.ts",
+      "line": 20,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The component reads a userId directly from the route parameter (user-controlled input) and uses it to fetch invoices via an API call without any authorization check. There is no validation that the current authenticated user is allowed to access the requested user's invoices, making this an Insecure Direct Object Reference (IDOR) / Broken Access Control vulnerability.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "dashboard.component.ts",
+      "line": 25,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The adminMode flag is set solely based on a user-controlled query parameter ('admin=1') without any server-side authorization check. This allows any user to elevate privileges by manipulating the URL, gaining access to admin-only UI and API endpoints (user listing and ban functionality).",
+    "control": "none",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "dashboard.component.ts",
+      "line": 32,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The adminMode flag is derived from a user-controllable query parameter ('admin=1'), providing only client-side authorization. This can be bypassed by manipulating the URL, allowing unauthorized users to trigger the ban() function and send sensitive POST requests to /api/admin/users/${id}/ban. No server-side authorization check is visible in this code.",
+    "control": "this.adminMode = this.route.snapshot.queryParamMap.get('admin') === '1';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "safe",
+    "finding": {
+      "path": "dashboard.component.ts",
+      "line": 27,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The authorization check at line 27 is performed client-side based on the `me.role` value received from the `/api/me` endpoint. This value originates from an external API response that could be manipulated by an attacker (e.g., via response tampering or MITM). The admin functionality (fetching users and banning them) is only gated by this client-side `adminMode` flag; the actual HTTP calls to `/api/admin/users` and `/api/admin/users/${id}/ban` have no visible client-side authorization guards. Since server-side enforcement of these admin endpoints cannot be verified from the provided code, the client-side check is insufficient and the finding represents a real broken authorization risk.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "safe",
+    "finding": {
+      "path": "dashboard.component.ts",
+      "line": 35,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The ban() function at line 35 makes a privileged API call to /api/admin/users/${id}/ban without verifying the caller's admin status. The component only hides the UI button via *ngIf=\"adminMode\" (line 14), but the ban method itself is publicly accessible on the component instance and can be invoked directly (e.g., via browser console) by any authenticated user regardless of role. The adminMode flag is set from the /api/me response (line 27), but that value is never checked inside ban(). Since the backend authorization cannot be verified from the provided frontend code, this constitutes a client-side broken authorization vulnerability.",
+    "control": "None - missing authorization guard in ban() function",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

@@ -1,0 +1,120 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T03:07:31+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-sec-005",
+      "case_dir": "corpus/angular/client-side-secrets/005-storage-service-token",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session.service.ts",
+          "line": 13,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "storage.service.ts",
+          "line": 7,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-005",
+      "case_dir": "corpus/angular/client-side-secrets/005-storage-service-token",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-006",
+      "case_dir": "corpus/angular/client-side-secrets/006-error-interceptor-logs-body",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "error.interceptor.ts",
+          "line": 11,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-006",
+      "case_dir": "corpus/angular/client-side-secrets/006-error-interceptor-logs-body",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "error.interceptor.ts",
+          "line": 11,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-007",
+      "case_dir": "corpus/angular/client-side-secrets/007-api-key-in-get-query",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 4,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-007",
+      "case_dir": "corpus/angular/client-side-secrets/007-api-key-in-get-query",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-008",
+      "case_dir": "corpus/angular/client-side-secrets/008-logger-helper-pii",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "checkout.service.ts",
+          "line": 14,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "logger.ts",
+          "line": 3,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-008",
+      "case_dir": "corpus/angular/client-side-secrets/008-logger-helper-pii",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "checkout.service.ts",
+          "line": 8,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "logger.ts",
+          "line": 3,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}

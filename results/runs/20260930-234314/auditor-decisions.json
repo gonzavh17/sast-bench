@@ -1,0 +1,62 @@
+[
+  {
+    "case_id": "ng-xss-001",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.component.ts",
+      "line": 19,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The 'bio' query parameter is user-controlled input that is passed directly to DomSanitizer.bypassSecurityTrustHtml() without any sanitization or validation. This method explicitly marks the string as safe HTML, bypassing Angular's built-in XSS protections. The resulting SafeHtml is then rendered via [innerHTML] in the template, allowing arbitrary HTML/JavaScript execution in the victim's browser.",
+    "control": "this.safeBio = this.sanitizer.bypassSecurityTrustHtml(bio);",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "note.component.ts",
+      "line": 15,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The 'note' query parameter is directly assigned to innerHTML via ElementRef without any sanitization, allowing arbitrary HTML/JS execution. Angular's built-in sanitization only applies to template bindings, not direct DOM manipulation.",
+    "control": "No sanitization control present.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "banner.component.ts",
+      "line": 18,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The message variable is sourced directly from a query parameter (user-controlled input) and passed to Renderer2.setProperty with 'innerHTML', which bypasses Angular's built-in sanitization. No sanitization or validation is performed on the message before assignment.",
+    "control": "No sanitization applied; user input directly assigned to innerHTML via Renderer2.setProperty at line 18",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "changelog.component.ts",
+      "line": 15,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The code reads a user-controlled query parameter 'entry' from the URL and passes it directly to insertAdjacentHTML on a native DOM element. This bypasses Angular's built-in sanitization (which only applies to template bindings like [innerHTML]), allowing arbitrary HTML/JS injection. No sanitization or validation is performed on the 'entry' value before it reaches the sink.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

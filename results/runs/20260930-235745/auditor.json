@@ -1,0 +1,81 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T03:07:33+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-sec-009",
+      "case_dir": "corpus/angular/client-side-secrets/009-publishable-vs-secret-key",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 5,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-009",
+      "case_dir": "corpus/angular/client-side-secrets/009-publishable-vs-secret-key",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-010",
+      "case_dir": "corpus/angular/client-side-secrets/010-debug-log-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session-debug.service.ts",
+          "line": 13,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-010",
+      "case_dir": "corpus/angular/client-side-secrets/010-debug-log-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 7,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-012",
+      "case_dir": "corpus/angular/client-side-secrets/012-cache-allowlist-broken",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-012",
+      "case_dir": "corpus/angular/client-side-secrets/012-cache-allowlist-broken",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

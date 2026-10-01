@@ -1,0 +1,99 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T02:55:57+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-xss-009",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/009-url-prefix-check",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "preview.component.ts",
+          "line": 21,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "preview.component.ts",
+          "line": 24,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-009",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/009-url-prefix-check",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-011",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/011-regex-strip-script",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "digest.component.html",
+          "line": 2,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "digest.component.ts",
+          "line": 21,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "trusted-html.ts",
+          "line": 8,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-011",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/011-regex-strip-script",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-012",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/012-validated-one-rendered-another",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "summary.component.ts",
+          "line": 23,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-012",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/012-validated-one-rendered-another",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

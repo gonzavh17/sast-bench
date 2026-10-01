@@ -1,0 +1,776 @@
+{
+  "tool": "llm-guided",
+  "tool_version": "nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T02:55:16+00:00",
+  "rules": {
+    "kind": "prompt",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-001",
+      "case_dir": "corpus/angular/broken-authorization/001-role-in-localstorage-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 4,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-002",
+      "case_dir": "corpus/angular/broken-authorization/002-role-in-request-body",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-002",
+      "case_dir": "corpus/angular/broken-authorization/002-role-in-request-body",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "refund.service.ts",
+          "line": 9,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-003",
+      "case_dir": "corpus/angular/broken-authorization/003-idor-route-user-id",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-003",
+      "case_dir": "corpus/angular/broken-authorization/003-idor-route-user-id",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "invoices.component.ts",
+          "line": 20,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-004",
+      "case_dir": "corpus/angular/broken-authorization/004-admin-query-flag",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-004",
+      "case_dir": "corpus/angular/broken-authorization/004-admin-query-flag",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "dashboard.component.ts",
+          "line": 25,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "role.guard.ts",
+          "line": 7,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "role.guard.ts",
+          "line": 7,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 9,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "identity.interceptor.ts",
+          "line": 8,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-009",
+      "case_dir": "corpus/angular/broken-authorization/009-guard-cache-in-storage",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 8,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-009",
+      "case_dir": "corpus/angular/broken-authorization/009-guard-cache-in-storage",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 9,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        },
+        {
+          "path": "admin.guard.ts",
+          "line": 11,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-010",
+      "case_dir": "corpus/angular/broken-authorization/010-client-side-owner-check",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-010",
+      "case_dir": "corpus/angular/broken-authorization/010-client-side-owner-check",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "invoice-detail.component.ts",
+          "line": 33,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-011",
+      "case_dir": "corpus/angular/broken-authorization/011-jwt-exp-check-no-signature",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 12,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 7,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-012",
+      "case_dir": "corpus/angular/broken-authorization/012-guarded-page-editable-user-id",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-012",
+      "case_dir": "corpus/angular/broken-authorization/012-guarded-page-editable-user-id",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "settings.component.ts",
+          "line": 15,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-001",
+      "case_dir": "corpus/angular/client-side-secrets/001-environment-secret-key",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-001",
+      "case_dir": "corpus/angular/client-side-secrets/001-environment-secret-key",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 5,
+          "rule_id": "client-side-secrets",
+          "severity": "CRITICAL"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-002",
+      "case_dir": "corpus/angular/client-side-secrets/002-token-in-localstorage",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-002",
+      "case_dir": "corpus/angular/client-side-secrets/002-token-in-localstorage",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-003",
+      "case_dir": "corpus/angular/client-side-secrets/003-console-log-pii",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "profile.service.ts",
+          "line": 17,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-003",
+      "case_dir": "corpus/angular/client-side-secrets/003-console-log-pii",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 16,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "profile.component.ts",
+          "line": 17,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        },
+        {
+          "path": "profile.service.ts",
+          "line": 9,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-004",
+      "case_dir": "corpus/angular/client-side-secrets/004-http-cache-sensitive",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-004",
+      "case_dir": "corpus/angular/client-side-secrets/004-http-cache-sensitive",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-005",
+      "case_dir": "corpus/angular/client-side-secrets/005-storage-service-token",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-005",
+      "case_dir": "corpus/angular/client-side-secrets/005-storage-service-token",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session.service.ts",
+          "line": 13,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "storage.service.ts",
+          "line": 7,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-006",
+      "case_dir": "corpus/angular/client-side-secrets/006-error-interceptor-logs-body",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "error.interceptor.ts",
+          "line": 11,
+          "rule_id": "client-side-secrets",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-006",
+      "case_dir": "corpus/angular/client-side-secrets/006-error-interceptor-logs-body",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "error.interceptor.ts",
+          "line": 11,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-007",
+      "case_dir": "corpus/angular/client-side-secrets/007-api-key-in-get-query",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-007",
+      "case_dir": "corpus/angular/client-side-secrets/007-api-key-in-get-query",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 4,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-008",
+      "case_dir": "corpus/angular/client-side-secrets/008-logger-helper-pii",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "checkout.service.ts",
+          "line": 8,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-008",
+      "case_dir": "corpus/angular/client-side-secrets/008-logger-helper-pii",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "checkout.service.ts",
+          "line": 14,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-009",
+      "case_dir": "corpus/angular/client-side-secrets/009-publishable-vs-secret-key",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-009",
+      "case_dir": "corpus/angular/client-side-secrets/009-publishable-vs-secret-key",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 5,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-010",
+      "case_dir": "corpus/angular/client-side-secrets/010-debug-log-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-010",
+      "case_dir": "corpus/angular/client-side-secrets/010-debug-log-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session-debug.service.ts",
+          "line": 13,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 8,
+          "rule_id": "client-side-secrets",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 7,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-012",
+      "case_dir": "corpus/angular/client-side-secrets/012-cache-allowlist-broken",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-012",
+      "case_dir": "corpus/angular/client-side-secrets/012-cache-allowlist-broken",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 19,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "note.component.ts",
+          "line": 15,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "banner.component.ts",
+          "line": 18,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 19,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 5,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "safe-html.pipe.ts",
+          "line": 9,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "snippet.component.ts",
+          "line": 16,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-008",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/008-insert-adjacent-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-008",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/008-insert-adjacent-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "changelog.component.ts",
+          "line": 15,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-009",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/009-url-prefix-check",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-009",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/009-url-prefix-check",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "preview.component.ts",
+          "line": 24,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 7,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 6,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-011",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/011-regex-strip-script",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 7,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-011",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/011-regex-strip-script",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 8,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-012",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/012-validated-one-rendered-another",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "summary.component.ts",
+          "line": 23,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-012",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/012-validated-one-rendered-another",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "summary.component.ts",
+          "line": 23,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "CRITICAL"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T03:16:27+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "role.guard.ts",
+          "line": 10,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "role.service.ts",
+          "line": 7,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-005",
+      "case_dir": "corpus/angular/broken-authorization/005-role-service-guard-chain",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "admin.guard.ts",
+          "line": 6,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "jwt.ts",
+          "line": 8,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-006",
+      "case_dir": "corpus/angular/broken-authorization/006-jwt-claims-helper-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "identity.interceptor.ts",
+          "line": 12,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-007",
+      "case_dir": "corpus/angular/broken-authorization/007-interceptor-user-id-header",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "account.resolver.ts",
+          "line": 7,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-authz-008",
+      "case_dir": "corpus/angular/broken-authorization/008-resolver-account-id",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

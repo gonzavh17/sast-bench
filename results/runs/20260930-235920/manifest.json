@@ -1,0 +1,65 @@
+{
+  "run_id": "20260930-235920",
+  "status": "ok",
+  "started_at": "2026-10-01T02:59:20+00:00",
+  "finished_at": "2026-10-01T03:09:10+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": "client-side-secrets",
+    "difficulty": null,
+    "case": null
+  },
+  "cases": [
+    "ng-sec-001",
+    "ng-sec-002",
+    "ng-sec-003",
+    "ng-sec-004",
+    "ng-sec-005",
+    "ng-sec-006",
+    "ng-sec-007",
+    "ng-sec-008",
+    "ng-sec-009",
+    "ng-sec-010",
+    "ng-sec-011",
+    "ng-sec-012"
+  ],
+  "repo": {
+    "commit": "1a4be4ec5f480f3969ac8f972e2ee036c2b0a569",
+    "dirty": true
+  },
+  "provider": "nim",
+  "debug": true,
+  "engines": [
+    {
+      "tool": "llm-guided+llm",
+      "file": "llm-guided+llm.json",
+      "tool_version": "llm-guided nim:nvidia/nemotron-3-ultra-550b-a55b + nim:nvidia/nemotron-3-ultra-550b-a55b",
+      "rules": {
+        "kind": "prompt",
+        "arm": "guided",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b",
+        "provider": "nim",
+        "effort": null
+      },
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nim",
+      "base": "results/runs/20260930-234310/llm-guided.json",
+      "decisions": "hybrid-decisions.json",
+      "usage": {
+        "calls": 17,
+        "refusals": 0,
+        "format_errors": 0,
+        "input_tokens": 11356,
+        "output_tokens": 12920,
+        "cost_usd": 0.0,
+        "opus_equivalent_usd": 0.3798
+      },
+      "summary": {
+        "solved": 7,
+        "pairs": 12,
+        "recall": 0.75,
+        "fpr": 0.1667
+      }
+    }
+  ]
+}

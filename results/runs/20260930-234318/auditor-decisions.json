@@ -1,0 +1,122 @@
+[
+  {
+    "case_id": "ng-xss-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "preview.component.ts",
+      "line": 21,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The startsWith check only validates the URL prefix, allowing bypass via subdomain or path manipulation (e.g., 'https://cdn.example.com.attacker.com'). The sanitizer bypass then trusts the malicious URL, leading to XSS via iframe.",
+    "control": "if (!src.startsWith(ALLOWED_ORIGIN)) {",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "preview.component.ts",
+      "line": 24,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The validation uses `startsWith(ALLOWED_ORIGIN)` which can be bypassed by a URL like `https://cdn.example.com.attacker.com/malicious` because it starts with the allowed origin string. This allows an attacker to load arbitrary content in the iframe, bypassing the intended origin restriction.",
+    "control": "if (!src.startsWith(ALLOWED_ORIGIN)) {",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "safe",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 7,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The code correctly sanitizes untrusted input using Angular's DomSanitizer.sanitize() with SecurityContext.HTML before marking the result as trusted. The sanitized output is then passed to bypassSecurityTrustHtml(), which is the recommended pattern for safely rendering HTML in Angular. The sanitization at line 6 removes dangerous content, making the subsequent bypass safe.",
+    "control": "const cleaned = sanitizer.sanitize(SecurityContext.HTML, html) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "digest.component.html",
+      "line": 2,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The custom toSafeHtml function only strips <script> tags using a regex, which is insufficient to prevent XSS. Attackers can inject malicious HTML with event handlers (e.g., onload, onerror), javascript: URLs, or other executable contexts. The subsequent call to bypassSecurityTrustHtml marks the unsanitized HTML as safe, leading to XSS when bound to innerHTML.",
+    "control": "const stripped = html.replace(SCRIPT_TAG, '');",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "digest.component.ts",
+      "line": 21,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The toSafeHtml function only strips <script> tags via regex, which is insufficient to prevent XSS. Attackers can inject event handlers (e.g., onload, onerror) or javascript: URLs in other tags. The sanitizer.bypassSecurityTrustHtml then marks the unsanitized HTML as safe, leading to XSS when rendered via [innerHTML].",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 8,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The regex only removes <script> tags, leaving other XSS vectors (event handlers, javascript: URLs, etc.) intact. The call to bypassSecurityTrustHtml then marks the unsanitized HTML as safe, leading to XSS when rendered via innerHTML.",
+    "control": "return sanitizer.bypassSecurityTrustHtml(stripped);",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "safe",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 7,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The HTML input is sanitized by Angular's DomSanitizer with SecurityContext.HTML before being passed to bypassSecurityTrustHtml. The sanitization removes any dangerous content, and the bypass is only used to satisfy Angular's type system for the [innerHTML] binding. This is a safe pattern.",
+    "control": "const stripped = sanitizer.sanitize(SecurityContext.HTML, html) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "summary.component.ts",
+      "line": 23,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The code sanitizes the user input on line 19 but then ignores the sanitized result. On line 23, it passes the raw unsanitized input to bypassSecurityTrustHtml(), which marks it as trusted HTML. The template then renders this via [innerHTML], executing any malicious scripts in the query parameter.",
+    "control": "const clean = this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

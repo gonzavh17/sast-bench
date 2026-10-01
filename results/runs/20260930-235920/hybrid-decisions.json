@@ -1,0 +1,325 @@
+[
+  {
+    "case_id": "ng-sec-001",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "environment.ts",
+      "line": 5,
+      "rule_id": "client-side-secrets",
+      "severity": "CRITICAL"
+    },
+    "verdict": "confirmed",
+    "reason": "The Stripe secret key (sk_live_...) is hardcoded in environment.ts and used client-side in PaymentService to authorize HTTP requests. Since Angular bundles environment.ts into the client application served to browsers, this server-side secret is exposed to all users and sent from the browser to the API endpoint. No mitigation exists; the key is directly interpolated into the Authorization header on line 12 of payment.service.ts.",
+    "control": "payment.service.ts:12",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 635,
+    "output_tokens": 604,
+    "decided_at": "2026-10-01T03:00:21+00:00"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "auth.service.ts",
+      "line": 12,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The access token is stored in localStorage, which is accessible to any JavaScript running on the page. This makes the token vulnerable to theft via cross-site scripting (XSS) attacks. No mitigating control (such as HttpOnly cookies, secure storage, or token encryption) is present in the code.",
+    "control": "No mitigating control present; token stored in localStorage without XSS protection.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 560,
+    "output_tokens": 1196,
+    "decided_at": "2026-10-01T03:01:00+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.component.ts",
+      "line": 16,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The component receives the full UserProfile from the API, which includes sensitive fields (password, nationalId). It assigns the entire object to a component property and logs it to the console, exposing secrets client-side. The template only uses fullName, but the sensitive data remains accessible in memory and console logs.",
+    "control": "None",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 778,
+    "output_tokens": 674,
+    "decided_at": "2026-10-01T03:01:18+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.component.ts",
+      "line": 17,
+      "rule_id": "client-side-secrets",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The profile object returned from the API includes sensitive fields (password and nationalId) which are logged to the console via console.log, exposing them in client-side logs accessible via browser developer tools.",
+    "control": "No control present; the console.log directly outputs the sensitive data without sanitization.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 776,
+    "output_tokens": 511,
+    "decided_at": "2026-10-01T03:01:38+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.service.ts",
+      "line": 9,
+      "rule_id": "client-side-secrets",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The UserProfile interface includes a password field, and the ProfileComponent logs the entire profile object (including the password) to the console, exposing sensitive data client-side.",
+    "control": "console.log('perfil cargado', profile);",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 775,
+    "output_tokens": 1497,
+    "decided_at": "2026-10-01T03:02:16+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "safe",
+    "finding": {
+      "path": "profile.service.ts",
+      "line": 17,
+      "rule_id": "client-side-secrets",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The ProfileService returns the full UserProfile object including sensitive fields (password, nationalId) to the client-side. The component receives and stores the entire object, exposing secrets in the browser. No server-side filtering or client-side sanitization is implemented to remove these fields.",
+    "control": "No control present",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 777,
+    "output_tokens": 492,
+    "decided_at": "2026-10-01T03:02:31+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "session.service.ts",
+      "line": 13,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The access token returned from the login endpoint is stored in localStorage via StorageService.save. localStorage is accessible to any JavaScript running in the same origin, making the token vulnerable to theft via cross-site scripting (XSS) attacks. No mitigating controls such as HttpOnly cookies, encryption, or secure storage mechanisms are present in the provided code.",
+    "control": "No control mitigating client-side storage of access token",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 719,
+    "output_tokens": 710,
+    "decided_at": "2026-10-01T03:03:05+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "storage.service.ts",
+      "line": 7,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The access token returned from the login endpoint is stored directly in localStorage via StorageService.save(). localStorage is accessible to any JavaScript running in the same origin, making the token vulnerable to theft via cross-site scripting (XSS) attacks. No encryption, secure storage alternative (e.g., HttpOnly cookies), or other mitigation is applied before persistence.",
+    "control": "No control mitigates localStorage storage of access token",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 718,
+    "output_tokens": 573,
+    "decided_at": "2026-10-01T03:03:24+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "error.interceptor.ts",
+      "line": 11,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The interceptor logs the full request body (including password) to console.error on error, exposing credentials in client-side logs.",
+    "control": "No sanitization or filtering of sensitive fields before logging.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 776,
+    "output_tokens": 522,
+    "decided_at": "2026-10-01T03:04:14+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "safe",
+    "finding": {
+      "path": "error.interceptor.ts",
+      "line": 11,
+      "rule_id": "client-side-secrets",
+      "severity": "LOW"
+    },
+    "verdict": "confirmed",
+    "reason": "The interceptor logs the full request URL (req.url) via console.error. URLs can contain sensitive data such as API keys, access tokens, session IDs, or other secrets passed as query parameters. Since the interceptor is application-wide and no sanitization or redaction is applied to the URL before logging, this constitutes a potential client-side secret leak.",
+    "control": "None",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 771,
+    "output_tokens": 1479,
+    "decided_at": "2026-10-01T03:05:06+00:00"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "environment.ts",
+      "line": 4,
+      "rule_id": "client-side-secrets",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The API key 'rk_live_EXAMPLE_NOT_A_REAL_KEY_00000000' is hardcoded in environment.ts, which is bundled into the client-side Angular application. This exposes the secret to anyone who can view the frontend source code. The key is then used directly in reports.service.ts to construct request URLs, meaning the secret is transmitted in query parameters and visible in network logs. There is no server-side proxy, token exchange, or other mitigation to prevent client-side exposure.",
+    "control": "No mitigating control present",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 723,
+    "output_tokens": 537,
+    "decided_at": "2026-10-01T03:05:23+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "checkout.service.ts",
+      "line": 14,
+      "rule_id": "client-side-secrets",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The CheckoutService.confirm method logs the entire Customer object, which includes a creditCardNumber field, directly to the console via logEvent. This exposes sensitive payment data in client-side logs, constituting a client-side secret leak.",
+    "control": "No control present; creditCardNumber is logged without sanitization or masking.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 589,
+    "output_tokens": 474,
+    "decided_at": "2026-10-01T03:06:05+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "safe",
+    "finding": {
+      "path": "checkout.service.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "HIGH"
+    },
+    "verdict": "dismissed",
+    "reason": "The flagged line is a TypeScript interface definition for a Customer type that includes a creditCardNumber field. This is a type declaration only — no actual secret value is present in the code. The only usage of Customer in the visible code passes customer.id and amountCents to logEvent, explicitly omitting creditCardNumber. Therefore, no client-side secret is exposed.",
+    "control": "logEvent('checkout_confirmado', { customerId: customer.id, amountCents });",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 592,
+    "output_tokens": 543,
+    "decided_at": "2026-10-01T03:06:23+00:00"
+  },
+  {
+    "case_id": "ng-sec-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "environment.ts",
+      "line": 5,
+      "rule_id": "client-side-secrets",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The Stripe secret key (sk_live_) is hardcoded in environment.ts and included in the client-side bundle, exposing it to anyone who inspects the code. This is a client-side secret leakage.",
+    "control": "No mitigating control found; the key is directly used in checkout.component.ts:13.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 604,
+    "output_tokens": 643,
+    "decided_at": "2026-10-01T03:06:41+00:00"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "session-debug.service.ts",
+      "line": 13,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The service logs the session object containing an access token to console.debug, exposing sensitive credentials client-side.",
+    "control": "No control present; line 13 logs session.accessToken directly.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 518,
+    "output_tokens": 394,
+    "decided_at": "2026-10-01T03:07:34+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "session-store.service.ts",
+      "line": 7,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "Storing a session token in sessionStorage is standard practice for client-side session management in single-page applications. The session token is not a secret that must be kept from the client; it is a credential the client must possess and present to the server to maintain authenticated state. This is the intended use case for sessionStorage and does not constitute a vulnerability.",
+    "control": "sessionStorage.setItem('session_token', sessionToken);",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 512,
+    "output_tokens": 550,
+    "decided_at": "2026-10-01T03:07:46+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "finding": {
+      "path": "session-store.service.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "LOW"
+    },
+    "verdict": "dismissed",
+    "reason": "The code stores only the first 8 characters of the session token as a reference identifier, not the full secret. The comment explicitly states that the backend resumes the session from this reference, indicating the truncated value is a non‑secret session handle. Therefore, no sensitive secret is persisted in client‑side storage.",
+    "control": "sessionStorage.setItem('session_token', sessionToken.slice(0, 8));",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 533,
+    "output_tokens": 1521,
+    "decided_at": "2026-10-01T03:09:10+00:00"
+  }
+]

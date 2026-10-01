@@ -1,0 +1,137 @@
+[
+  {
+    "case_id": "ng-sec-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "session.service.ts",
+      "line": 13,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The access token is stored in localStorage via StorageService.save(), which is accessible to any JavaScript running on the page. This exposes the token to theft via cross-site scripting (XSS) attacks. No mitigating controls (e.g., HttpOnly cookies, encryption, or secure storage) are present in the provided code.",
+    "control": "No mitigating control present.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "storage.service.ts",
+      "line": 7,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The access token from the login response is stored directly in localStorage via StorageService.save(), which is accessible to any JavaScript running on the page. This makes the token vulnerable to theft via XSS attacks. No encryption, httpOnly cookie alternative, or other mitigation is present.",
+    "control": "localStorage.setItem(key, value);",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "error.interceptor.ts",
+      "line": 11,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The interceptor logs the full request body (req.body) to the console without any sanitization or filtering. Request bodies often contain sensitive data such as passwords, authentication tokens, credit card numbers, or other PII. Logging this data client-side exposes it to anyone with access to the browser console (e.g., via XSS, physical access, or log aggregation).",
+    "control": "No control present; req.body is logged directly on line 11",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "safe",
+    "finding": {
+      "path": "error.interceptor.ts",
+      "line": 11,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The error interceptor logs the full request URL (req.url) to console.error without any sanitization. Request URLs frequently contain sensitive data in query parameters such as API keys, access tokens, or PII. This data would be exposed in the browser console and potentially captured by client-side logging/monitoring services, constituting a client-side secret leak.",
+    "control": "No sanitization or filtering of req.url before logging to console",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "environment.ts",
+      "line": 4,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The API key is hardcoded in environment.ts and included in the client-side bundle, making it publicly accessible to anyone who inspects the built application.",
+    "control": "No mitigating control; secret directly used in client-side code.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "checkout.service.ts",
+      "line": 14,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The checkout service logs the entire customer object, which includes a creditCardNumber field, directly to the console via logEvent. This exposes sensitive payment information in client-side logs, constituting a client-side secret leak.",
+    "control": "no control present",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "logger.ts",
+      "line": 3,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The logger.ts line 3 logs the entire payload, which includes a creditCardNumber from the Customer object, directly to the console. This exposes sensitive payment information client-side, where it can be accessed via browser dev tools or captured by logging services.",
+    "control": "No sanitization or filtering of sensitive fields before logging.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "safe",
+    "finding": {
+      "path": "checkout.service.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The Customer interface defines a creditCardNumber field, meaning the client-side code handles raw credit card data. This violates PCI DSS and security best practices, as sensitive payment data should never exist in plain text in the browser. Although the confirm method does not log the credit card number, the interface is exported and could be used elsewhere (e.g., in forms, network requests, or other logging), making exposure likely.",
+    "control": "No control present; creditCardNumber field exists in client-side interface.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "safe",
+    "finding": {
+      "path": "logger.ts",
+      "line": 3,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The logEvent function directly stringifies and logs any payload without sanitization, creating a risk of logging sensitive data such as credit card numbers if called with such data. The function is exported and could be used elsewhere in the codebase with sensitive payloads.",
+    "control": "No sanitization or validation in logEvent",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

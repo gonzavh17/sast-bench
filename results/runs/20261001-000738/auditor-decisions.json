@@ -1,0 +1,182 @@
+[
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 9,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The authorization guard trusts client-side localStorage data ('me_role') without server-side revalidation. A user can manually set localStorage.setItem('me_role', 'admin') in the browser console and bypass the guard entirely, since the cached value is checked first (lines 10-12) and the server call is only made when no cached value exists. The server-side check at '/api/me' is not a sufficient control because it is skipped when cached data is present.",
+    "control": "const cached = localStorage.getItem('me_role');",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 11,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The guard trusts a client-side localStorage value ('me_role') for authorization decisions without server-side validation. An attacker can set localStorage.setItem('me_role', 'admin') to bypass the admin check. The fallback to /api/me only triggers when the cached value is null, not when it's present but tampered.",
+    "control": "No sufficient control exists; line 11 returns cached === 'admin' based solely on mutable localStorage",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 16,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The guard relies on client-side localStorage caching for authorization decisions without server-side revalidation. An attacker can manipulate localStorage to set 'me_role' to 'admin' (line 11) or the cached role can become stale after server-side role revocation. Client-side guards are not security boundaries; real authorization must be enforced by the backend API. This implementation allows client-side authorization bypass.",
+    "control": ">>>   16 |       tap((me) => localStorage.setItem('me_role', me.role)),",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 17,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The guard caches the user role in localStorage (line 16) and trusts it for subsequent navigation decisions (line 11), allowing a user to bypass admin checks by modifying localStorage. Authorization decisions must be enforced server-side; client-side guards are only UX conveniences.",
+    "control": "No server-side validation; localStorage is user-controllable and the guard lacks re-validation on each navigation.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "safe",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 10,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The guard uses a module-level mutable variable `cachedRole` to cache authorization state. In a server-side rendering (SSR) context (Angular Universal), this variable is shared across all user sessions, allowing a non-admin user to gain admin access after any admin user has previously accessed the route. The code contains no mechanism to isolate the cache per request or invalidate it, making the authorization check bypassable in SSR deployments.",
+    "control": "let cachedRole: string | null = null;",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "invoice-detail.component.ts",
+      "line": 33,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The code contains an explicit authorization check at line 33 that compares the invoice's ownerId with the current user's id (from /api/me). If they don't match, the user is redirected to '/forbidden' and the invoice is not assigned to the component property, preventing display. This client-side ownership check is a valid authorization guard for the component.",
+    "control": "if (invoice.ownerId !== me.id) {",
+    "control_rejected": true,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 14,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The admin guard trusts JWT claims without verifying the token signature. The readClaims function only base64-decodes the payload, allowing anyone to forge a token with role='admin' and a future exp. TokenStore merely stores the token without validation. No cryptographic verification exists in the provided code.",
+    "control": "None - JWT signature verification is missing",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "jwt.ts",
+      "line": 8,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The readClaims function in jwt.ts decodes the JWT payload (base64url decode + JSON.parse) but performs no signature verification. The adminGuard trusts the decoded claims (role and exp) directly, allowing an attacker to forge a token with role='admin' and a future expiration. TokenStore merely stores the raw string without validation. No cryptographic verification exists anywhere in the provided code.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "settings.component.ts",
+      "line": 15,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The component uses a user-controlled query parameter 'user' to determine which account to delete, but the authGuard only checks authentication (via /api/me) and does not verify that the logged-in user matches the requested user ID. This allows an authenticated user to delete any user's account (IDOR).",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "settings.component.ts",
+      "line": 19,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The authGuard only ensures the user is authenticated (calls /api/me) but does not verify that the userId from the query parameter matches the authenticated user's identity. The component directly uses the userId from the query string to delete an account, allowing an authenticated user to delete any account by manipulating the 'user' query parameter (IDOR).",
+    "control": "No authorization check on userId parameter",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "safe",
+    "finding": {
+      "path": "auth.guard.ts",
+      "line": 9,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The authGuard only performs authentication (verifying that /api/me succeeds) but does not enforce any authorization policies such as role-based access control. It returns true for any authenticated user, ignoring the role field present in the Me interface. If this guard is reused for routes requiring specific permissions, unauthorized access could occur.",
+    "control": "No authorization control present in authGuard; only authentication check at line 9-15.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "safe",
+    "finding": {
+      "path": "settings.component.ts",
+      "line": 20,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The component only allows deletion of the current authenticated user's own account. The userId used in the DELETE request is sourced directly from the /api/me response (line 16), which returns the identity tied to the active session. This binds the action to the authenticated principal, preventing IDOR or unauthorized deletion of other accounts. The authGuard ensures the user is authenticated, and the component uses that authenticated identity for the self-service deletion, which is the intended authorization model for account deletion.",
+    "control": "this.http.get<Me>('/api/me').subscribe((me) => (this.userId = me.id));",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

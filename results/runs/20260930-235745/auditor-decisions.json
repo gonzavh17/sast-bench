@@ -1,0 +1,77 @@
+[
+  {
+    "case_id": "ng-sec-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "environment.ts",
+      "line": 5,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The Stripe secret key (sk_live) is hardcoded in the client-side environment configuration and used directly in the browser. Secret keys must never be exposed in client-side code as they allow full API access to the Stripe account.",
+    "control": "environment.ts:5",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "session-debug.service.ts",
+      "line": 13,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The session object contains an accessToken field which is a sensitive secret. Logging the entire session object via console.debug exposes the access token in client-side logs, creating a client-side secret leakage vulnerability.",
+    "control": "console.debug('sesion activa', session);",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "session-store.service.ts",
+      "line": 7,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The session token is stored in sessionStorage, which is accessible to any JavaScript running on the same origin. This makes the token vulnerable to theft via cross-site scripting (XSS) attacks. No mitigating control (such as HttpOnly cookies, encryption, or token validation) is present in the provided code.",
+    "control": "No mitigating control found in the provided code.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "finding": {
+      "path": "session-store.service.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The code stores only the first 8 characters of the session token (sessionToken.slice(0, 8)), which is a non-sensitive reference/identifier for backend session resumption, not the full secret. The truncation is the control that prevents secret exposure.",
+    "control": "sessionStorage.setItem('session_token', sessionToken.slice(0, 8));",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-012",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "public-cache.interceptor.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The flagged Map caches only HTTP responses from public GET endpoints (URLs containing '/public/'). It does not store client-side secrets such as API keys, tokens, or credentials. The interceptor explicitly filters for public URLs and GET requests only, so the cached data is public server responses, not sensitive client-side information.",
+    "control": "return url.includes('/public/');",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

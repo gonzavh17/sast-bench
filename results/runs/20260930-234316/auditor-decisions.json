@@ -1,0 +1,137 @@
+[
+  {
+    "case_id": "ng-xss-004",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.component.ts",
+      "line": 19,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "User-controlled query parameter 'bio' is directly passed to bypassSecurityTrustHtml without sanitization, then rendered via innerHTML, leading to XSS.",
+    "control": "this.safeBio = this.sanitizer.bypassSecurityTrustHtml(this.bios.currentBio());",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 5,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "User-controlled input from the 'body' query parameter is directly passed to DomSanitizer.bypassSecurityTrustHtml without any sanitization, and the result is rendered via [innerHTML], creating a cross-site scripting vulnerability.",
+    "control": "None",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "comment.component.html",
+      "line": 2,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The component reads user-controlled input from the query parameter 'body' and passes it directly to [innerHTML] through a 'safeHtml' pipe. This pipe likely calls DomSanitizer.bypassSecurityTrustHtml, which disables Angular's built-in XSS protection. An attacker can inject arbitrary HTML/JavaScript via the URL query string, leading to a stored/reflected XSS vulnerability.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "safe-html.pipe.ts",
+      "line": 9,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The pipe directly passes unsanitized user input to bypassSecurityTrustHtml(), which explicitly tells Angular to trust the HTML without any sanitization. This is a classic XSS vulnerability when the input comes from untrusted sources. No validation or sanitization is performed in this code.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "safe",
+    "finding": {
+      "path": "comment.component.html",
+      "line": 2,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The component reads untrusted user input directly from the URL query parameter 'body' and passes it through a 'safeHtml' pipe that bypasses Angular's built-in sanitization before rendering via [innerHTML]. This allows arbitrary HTML/JS execution (XSS). No validation, sanitization, or safe encoding is applied to the 'body' value before it reaches the sink.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "feed.component.ts",
+      "line": 14,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "User-controlled input from the query parameter 'snippet' flows directly into an [html] binding on app-snippet component without any visible sanitization in the provided code. The app-snippet component implementation is not shown, so we cannot verify it sanitizes the input. Angular's [innerHTML] binding (which [html] likely uses) requires trusted values or explicit sanitization to prevent XSS.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "snippet.component.ts",
+      "line": 16,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The component uses bypassSecurityTrustHtml on an @Input() value without any sanitization or validation, making it vulnerable to XSS if the input originates from an untrusted source.",
+    "control": "No sanitization or validation before bypassSecurityTrustHtml; input from @Input() with unknown origin.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "safe",
+    "finding": {
+      "path": "feed.component.ts",
+      "line": 14,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "User-controlled input from the URL query parameter 'snippet' flows directly into the `raw` property and is passed to `<app-snippet [html]=\"raw\">`. The `app-snippet` component is not provided, so no sanitization control can be verified. The input reaches an HTML-rendering sink without visible sanitization in the shown code.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "safe",
+    "finding": {
+      "path": "snippet.component.html",
+      "line": 1,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "Angular's [innerHTML] property binding automatically sanitizes the input using the built-in DomSanitizer, stripping unsafe content such as scripts and event handlers. The binding itself is the control that ensures safe rendering.",
+    "control": "<div class=\"snippet\" [innerHTML]=\"html\"></div>",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

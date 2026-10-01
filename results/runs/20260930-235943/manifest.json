@@ -1,0 +1,84 @@
+{
+  "run_id": "20260930-235943",
+  "status": "ok",
+  "started_at": "2026-10-01T02:59:43+00:00",
+  "finished_at": "2026-10-01T03:12:40+00:00",
+  "corpus": "corpus/angular",
+  "filters": {
+    "family": "broken-authorization",
+    "difficulty": "obvious",
+    "case": null
+  },
+  "cases": [
+    "ng-authz-001",
+    "ng-authz-002",
+    "ng-authz-003",
+    "ng-authz-004"
+  ],
+  "repo": {
+    "commit": "1a4be4ec5f480f3969ac8f972e2ee036c2b0a569",
+    "dirty": true
+  },
+  "provider": "nim",
+  "debug": true,
+  "engines": [
+    {
+      "tool": "auditor",
+      "file": "auditor.json",
+      "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+      "rules": {
+        "kind": "auditor",
+        "stop_after": null,
+        "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+      },
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nim",
+      "stop_after": null,
+      "funnel": "auditor-funnel.json",
+      "decisions": "auditor-decisions.json",
+      "stages": {
+        "triage": {
+          "model": "openai/gpt-oss-20b",
+          "calls": 7,
+          "format_errors": 0,
+          "input_tokens": 3925,
+          "output_tokens": 3355,
+          "cost_usd": 0.0,
+          "opus_equivalent_usd": 0.1035
+        },
+        "analysis": {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b",
+          "calls": 6,
+          "format_errors": 0,
+          "input_tokens": 5001,
+          "output_tokens": 5567,
+          "cost_usd": 0.0,
+          "opus_equivalent_usd": 0.1642
+        },
+        "skeptic": {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b",
+          "calls": 8,
+          "format_errors": 0,
+          "input_tokens": 5362,
+          "output_tokens": 6572,
+          "cost_usd": 0.0,
+          "opus_equivalent_usd": 0.1911
+        }
+      },
+      "usage": {
+        "calls": 21,
+        "format_errors": 0,
+        "input_tokens": 14288,
+        "output_tokens": 15494,
+        "cost_usd": 0.0,
+        "opus_equivalent_usd": 0.4588
+      },
+      "summary": {
+        "solved": 2,
+        "pairs": 4,
+        "recall": 1.0,
+        "fpr": 0.5
+      }
+    }
+  ]
+}

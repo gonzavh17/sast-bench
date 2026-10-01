@@ -1,0 +1,306 @@
+[
+  {
+    "case_id": "ng-authz-001",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 4,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The authorization guard relies solely on client-side localStorage for role verification (line 4-5 in admin.guard.ts). This is a broken authorization vulnerability because localStorage can be arbitrarily modified by the user via browser dev tools or XSS, allowing any user to bypass the admin check by setting localStorage.setItem('role', 'admin'). No server-side validation or secure token verification exists in the shown code.",
+    "control": "const role = localStorage.getItem('role');\n  return role === 'admin';",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 740,
+    "output_tokens": 552,
+    "decided_at": "2026-10-01T02:56:47+00:00"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "refund.service.ts",
+      "line": 9,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The service reads the user's role from localStorage (line 9), which is fully user-controllable, and sends it to the backend when requesting a refund (line 10). If the backend trusts this client-supplied role for authorization decisions, a user can escalate privileges by modifying localStorage. No validation, server-side derivation, or authentication-token-based control exists in this code to prevent exploitation.",
+    "control": "",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 508,
+    "output_tokens": 693,
+    "decided_at": "2026-10-01T02:58:27+00:00"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "invoices.component.ts",
+      "line": 20,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The component directly uses a userId from the route parameter to fetch invoices without any authorization check. An attacker can manipulate the userId in the URL to access other users' invoices (IDOR/Broken Access Control). No validation or permission check exists in this code.",
+    "control": "No authorization control present; userId used directly in API call without verification against authenticated user identity or permissions.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 656,
+    "output_tokens": 393,
+    "decided_at": "2026-10-01T02:58:39+00:00"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "dashboard.component.ts",
+      "line": 25,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The adminMode flag is set solely based on a client-controlled query parameter ('admin=1') with no server-side authorization validation. This allows any user to gain admin privileges by manipulating the URL, leading to unauthorized access to user listing and ban functionality.",
+    "control": "No control present; adminMode derived from user-supplied query parameter without authentication/authorization checks.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 774,
+    "output_tokens": 596,
+    "decided_at": "2026-10-01T02:59:06+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "role.guard.ts",
+      "line": 7,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The route guard (roleGuard) performs authorization solely based on a role stored in localStorage, which is fully controllable by the client. An attacker can modify localStorage to elevate privileges and bypass the guard, accessing the /reports route and triggering the sensitive API call. No server-side authorization check is shown in the provided code.",
+    "control": "role.service.ts:7 - return of(localStorage.getItem('role') ?? 'guest');",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 923,
+    "output_tokens": 943,
+    "decided_at": "2026-10-01T02:59:40+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "safe",
+    "finding": {
+      "path": "role.guard.ts",
+      "line": 7,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The role guard correctly implements authorization by fetching the current user's role from the backend and comparing it to the required role defined in the route data. If the HTTP request fails (e.g., due to missing authentication), the observable errors and Angular cancels navigation, denying access by default. The guard is a proper client-side authorization check; real authorization is enforced server-side.",
+    "control": "    .pipe(map((role) => role === route.data['role']));",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 1035,
+    "output_tokens": 1773,
+    "decided_at": "2026-10-01T03:03:10+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "auth.service.ts",
+      "line": 12,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The isAdmin() method trusts JWT claims without verifying the token's signature. The readClaims() function only base64-decodes the payload and parses JSON, performing no cryptographic validation. An attacker who can inject a token into TokenStore (e.g., via XSS, token leakage, or compromised client storage) can forge a token with \"role\": \"admin\" and bypass authorization. No signature verification, expiration check, or issuer validation exists in the provided code.",
+    "control": "No JWT signature verification control present in readClaims() or isAdmin()",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 873,
+    "output_tokens": 1028,
+    "decided_at": "2026-10-01T03:03:58+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "jwt.ts",
+      "line": 9,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The readClaims function decodes and parses the JWT payload without verifying the signature, expiration, or any other claim. The isAdmin() guard trusts these unverified claims directly, allowing anyone who can supply a token (e.g., via XSS, localStorage manipulation, or a forged token) to escalate to admin by setting role: 'admin' in the payload. No cryptographic verification or expiration check exists anywhere in the provided code.",
+    "control": "None - no signature verification, expiration check, or claim validation is performed before trusting the token's role claim.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 873,
+    "output_tokens": 704,
+    "decided_at": "2026-10-01T03:05:19+00:00"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "identity.interceptor.ts",
+      "line": 8,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The interceptor reads user_id from localStorage (client-controlled storage) and sends it as the 'X-User-Id' header on all requests. A malicious user can modify localStorage to set any user_id value, allowing horizontal privilege escalation (e.g., accessing other users' orders via the /api/orders endpoint). The server must derive user identity from a trusted authentication token (JWT, session cookie) rather than a client-supplied header. No client-side control in the provided code prevents this tampering.",
+    "control": "No client-side control exists in the provided code to prevent user_id tampering; server-side authorization validation is not visible.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 681,
+    "output_tokens": 773,
+    "decided_at": "2026-10-01T03:05:49+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 9,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The admin guard makes authorization decisions based on a client-controlled localStorage value ('me_role'). An attacker can modify localStorage to set 'me_role' to 'admin' and bypass the guard entirely. The guard only validates with the server (/api/me) when no cached value exists; once cached, it never re-validates. This is a classic client-side authorization bypass.",
+    "control": "No effective control present: the guard trusts mutable client-side storage without server re-validation on subsequent navigations.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 635,
+    "output_tokens": 754,
+    "decided_at": "2026-10-01T03:06:56+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 11,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The guard trusts client-controlled localStorage ('me_role') for authorization decisions. An attacker can bypass admin checks by setting localStorage.setItem('me_role', 'admin') without any server-side revalidation when the cache exists.",
+    "control": "No sufficient control exists. The code only validates against the server when cache is missing (lines 13-18), but once cached, line 11 returns the cached value without any server-side verification.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 636,
+    "output_tokens": 579,
+    "decided_at": "2026-10-01T03:07:18+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "safe",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 8,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The `cachedRole` variable at line 8 is declared at module scope, making it a global singleton shared across all users and sessions in the Angular application. When the first user (e.g., an admin) hits the guard, their role is cached globally. Subsequent users (including non-admins) will then bypass the authorization check because the guard returns the cached admin role without re-fetching per-user identity. There is no per-request or per-user isolation; the HTTP call uses the current user's credentials but the result is stored in a global variable.",
+    "control": "No per-user isolation; cachedRole is module-level global shared across all users",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 640,
+    "output_tokens": 640,
+    "decided_at": "2026-10-01T03:07:44+00:00"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "invoice-detail.component.ts",
+      "line": 33,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The code implements a proper ownership-based authorization check at line 33. The component fetches both the current user identity (/api/me) and the requested invoice (/api/invoices/${id}) in parallel, then verifies that invoice.ownerId matches me.id before assigning the invoice to the view. If the check fails, the user is redirected to /forbidden. This constitutes a valid object-level authorization control.",
+    "control": "if (invoice.ownerId !== me.id) {",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 858,
+    "output_tokens": 1246,
+    "decided_at": "2026-10-01T03:08:26+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 12,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The admin guard makes authorization decisions based on JWT claims without verifying the token's signature. The readClaims function only base64-decodes the payload and parses JSON, accepting any crafted token. An attacker can forge a token with role: 'admin' and bypass authorization.",
+    "control": "No JWT signature verification in readClaims function (jwt.ts lines 7-9)",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 821,
+    "output_tokens": 957,
+    "decided_at": "2026-10-01T03:09:07+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "jwt.ts",
+      "line": 7,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The readClaims function decodes the JWT payload without verifying the signature. The adminGuard trusts the decoded claims (role and exp) directly, allowing anyone who can set a token in TokenStore (e.g., via XSS, localStorage manipulation, or a compromised login flow) to forge a token with role='admin' and a future expiration. No cryptographic verification of the token's authenticity exists anywhere in the provided code.",
+    "control": "",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 818,
+    "output_tokens": 617,
+    "decided_at": "2026-10-01T03:09:30+00:00"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "settings.component.ts",
+      "line": 15,
+      "rule_id": "broken-authorization",
+      "severity": "HIGH"
+    },
+    "verdict": "confirmed",
+    "reason": "The component uses a user-supplied query parameter 'user' to determine which account to delete, without verifying that the authenticated user is authorized to delete that account. The authGuard only ensures authentication, not authorization.",
+    "control": "No authorization control present.",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "stop_reason": "stop",
+    "input_tokens": 929,
+    "output_tokens": 572,
+    "decided_at": "2026-10-01T03:09:48+00:00"
+  }
+]

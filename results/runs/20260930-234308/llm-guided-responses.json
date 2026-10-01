@@ -1,0 +1,434 @@
+[
+  {
+    "case_id": "ng-xss-001",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 19,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-supplied 'bio' query parameter is directly passed to bypassSecurityTrustHtml and rendered via innerHTML, allowing arbitrary HTML/JS execution."
+      }
+    ],
+    "input_tokens": 767,
+    "output_tokens": 550,
+    "reviewed_at": "2026-10-01T02:43:15+00:00"
+  },
+  {
+    "case_id": "ng-xss-001",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 687,
+    "output_tokens": 300,
+    "reviewed_at": "2026-10-01T02:43:25+00:00"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "note.component.ts",
+        "line": 15,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-controlled query parameter 'note' is directly assigned to innerHTML via ElementRef, bypassing Angular's sanitization and enabling XSS."
+      }
+    ],
+    "input_tokens": 732,
+    "output_tokens": 497,
+    "reviewed_at": "2026-10-01T02:43:41+00:00"
+  },
+  {
+    "case_id": "ng-xss-002",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 732,
+    "output_tokens": 555,
+    "reviewed_at": "2026-10-01T02:44:05+00:00"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "banner.component.ts",
+        "line": 18,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-controlled query parameter 'message' is directly assigned to innerHTML via Renderer2.setProperty, bypassing Angular's built-in DomSanitizer. An attacker can inject arbitrary HTML/JavaScript via the URL (e.g., ?message=<img src=x onerror=alert(1)>), leading to reflected XSS."
+      }
+    ],
+    "input_tokens": 751,
+    "output_tokens": 431,
+    "reviewed_at": "2026-10-01T02:44:18+00:00"
+  },
+  {
+    "case_id": "ng-xss-003",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 751,
+    "output_tokens": 235,
+    "reviewed_at": "2026-10-01T02:44:32+00:00"
+  },
+  {
+    "case_id": "ng-xss-004",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 19,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-supplied query parameter 'bio' is directly passed to bypassSecurityTrustHtml, marking it as trusted HTML and rendering via innerHTML, leading to XSS."
+      }
+    ],
+    "input_tokens": 883,
+    "output_tokens": 568,
+    "reviewed_at": "2026-10-01T02:45:33+00:00"
+  },
+  {
+    "case_id": "ng-xss-004",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 814,
+    "output_tokens": 409,
+    "reviewed_at": "2026-10-01T02:45:48+00:00"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 5,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-controlled input from the 'body' query parameter is directly passed to DomSanitizer.bypassSecurityTrustHtml, marking it as trusted HTML. This value is then rendered via [innerHTML] binding, bypassing Angular's built-in sanitization and allowing arbitrary HTML/JavaScript execution (XSS)."
+      }
+    ],
+    "input_tokens": 870,
+    "output_tokens": 649,
+    "reviewed_at": "2026-10-01T02:46:01+00:00"
+  },
+  {
+    "case_id": "ng-xss-005",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 887,
+    "output_tokens": 1301,
+    "reviewed_at": "2026-10-01T02:46:37+00:00"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "safe-html.pipe.ts",
+        "line": 9,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The safeHtml pipe calls DomSanitizer.bypassSecurityTrustHtml on raw user input, disabling Angular's built-in XSS protection. The input originates from a URL query parameter (comment.component.ts:14) and is rendered via innerHTML (comment.component.html:2), allowing reflected XSS attacks."
+      }
+    ],
+    "input_tokens": 818,
+    "output_tokens": 616,
+    "reviewed_at": "2026-10-01T02:47:14+00:00"
+  },
+  {
+    "case_id": "ng-xss-006",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 824,
+    "output_tokens": 796,
+    "reviewed_at": "2026-10-01T02:47:48+00:00"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "snippet.component.ts",
+        "line": 16,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-controlled input from the 'snippet' query parameter is passed directly to DomSanitizer.bypassSecurityTrustHtml, marking it as trusted HTML without any sanitization. This bypasses Angular's built-in XSS protection and allows arbitrary HTML/JavaScript execution when rendered via innerHTML."
+      }
+    ],
+    "input_tokens": 906,
+    "output_tokens": 432,
+    "reviewed_at": "2026-10-01T02:47:59+00:00"
+  },
+  {
+    "case_id": "ng-xss-007",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 791,
+    "output_tokens": 1660,
+    "reviewed_at": "2026-10-01T02:49:29+00:00"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "changelog.component.ts",
+        "line": 15,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "User-supplied query parameter 'entry' is directly inserted into the DOM via insertAdjacentHTML without sanitization, allowing arbitrary HTML/JavaScript execution (XSS)."
+      }
+    ],
+    "input_tokens": 745,
+    "output_tokens": 539,
+    "reviewed_at": "2026-10-01T02:49:43+00:00"
+  },
+  {
+    "case_id": "ng-xss-008",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 745,
+    "output_tokens": 369,
+    "reviewed_at": "2026-10-01T02:49:54+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "preview.component.ts",
+        "line": 24,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The code uses `bypassSecurityTrustResourceUrl` after only a prefix check on the `src` query parameter. An attacker can bypass the origin validation by providing a URL like `https://cdn.example.com.attacker.com/malicious` which passes the `startsWith` check but points to an untrusted domain, allowing arbitrary content to be loaded in the iframe."
+      }
+    ],
+    "input_tokens": 814,
+    "output_tokens": 1040,
+    "reviewed_at": "2026-10-01T02:50:18+00:00"
+  },
+  {
+    "case_id": "ng-xss-009",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 884,
+    "output_tokens": 2318,
+    "reviewed_at": "2026-10-01T02:51:37+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 6,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The function toSafeHtml uses DomSanitizer.bypassSecurityTrustHtml on raw user input from a query parameter, then sanitizes the already-trusted value (which returns the original unsanitized HTML), and finally marks it trusted again. This effectively bypasses Angular's built-in HTML sanitization, allowing arbitrary HTML/JavaScript execution via the 'notes' query parameter."
+      }
+    ],
+    "input_tokens": 935,
+    "output_tokens": 1159,
+    "reviewed_at": "2026-10-01T02:52:24+00:00"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 7,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "The code manually sanitizes user-supplied HTML from a query parameter and then marks it as trusted via bypassSecurityTrustHtml. While Angular's built-in sanitizer is used, this pattern bypasses Angular's automatic sanitization for innerHTML bindings and could introduce XSS if the sanitization is insufficient or if the trusted value is later combined with unsanitized data."
+      }
+    ],
+    "input_tokens": 918,
+    "output_tokens": 1183,
+    "reviewed_at": "2026-10-01T02:52:58+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 8,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The regex only removes <script> tags, leaving many XSS vectors (event handlers, javascript: URLs, iframe, etc.). Calling bypassSecurityTrustHtml after such weak sanitization marks unsafe HTML as trusted, allowing arbitrary script execution via the user-controlled 'digest' query parameter."
+      }
+    ],
+    "input_tokens": 914,
+    "output_tokens": 666,
+    "reviewed_at": "2026-10-01T02:53:28+00:00"
+  },
+  {
+    "case_id": "ng-xss-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "trusted-html.ts",
+        "line": 7,
+        "family": "xss-sanitizer-bypass",
+        "severity": "medium",
+        "rationale": "The function sanitizes user-supplied HTML from a query parameter and then explicitly marks it as trusted via bypassSecurityTrustHtml. If the sanitizer is bypassed or insufficient, this could lead to XSS when the content is rendered via [innerHTML]."
+      }
+    ],
+    "input_tokens": 906,
+    "output_tokens": 1153,
+    "reviewed_at": "2026-10-01T02:54:37+00:00"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "summary.component.ts",
+        "line": 23,
+        "family": "xss-sanitizer-bypass",
+        "severity": "critical",
+        "rationale": "The code sanitizes the query parameter 'summary' but then ignores the sanitized result and marks the raw unsanitized input as trusted HTML via bypassSecurityTrustHtml, completely defeating Angular's XSS protection and allowing arbitrary script execution via the URL."
+      }
+    ],
+    "input_tokens": 805,
+    "output_tokens": 472,
+    "reviewed_at": "2026-10-01T02:54:50+00:00"
+  },
+  {
+    "case_id": "ng-xss-012",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "summary.component.ts",
+        "line": 23,
+        "family": "xss-sanitizer-bypass",
+        "severity": "high",
+        "rationale": "The component reads a user-controlled query parameter, sanitizes it, then explicitly marks the result as trusted HTML via bypassSecurityTrustHtml. This opts out of Angular's built-in innerHTML sanitization and relies solely on the manual sanitization step, which may have bypasses or be insufficient. An attacker can craft a malicious summary parameter that survives sanitization and executes script when rendered."
+      }
+    ],
+    "input_tokens": 806,
+    "output_tokens": 849,
+    "reviewed_at": "2026-10-01T02:55:16+00:00"
+  }
+]

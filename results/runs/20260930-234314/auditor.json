@@ -1,0 +1,88 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T02:47:04+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 19,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-001",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/001-bypass-security-trust-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "note.component.ts",
+          "line": 15,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-002",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/002-native-element-inner-html",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "banner.component.ts",
+          "line": 18,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-003",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/003-renderer2-set-property",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-008",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/008-insert-adjacent-html",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "changelog.component.ts",
+          "line": 15,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-008",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/008-insert-adjacent-html",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

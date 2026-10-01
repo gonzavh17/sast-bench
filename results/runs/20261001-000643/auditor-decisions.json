@@ -1,0 +1,137 @@
+[
+  {
+    "case_id": "ng-authz-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "role.guard.ts",
+      "line": 10,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The role guard makes an authorization decision based solely on the value of 'role' stored in localStorage, which is fully controlled by the client. An attacker can modify localStorage to set the role to 'finance' and bypass the guard, accessing the reports route without proper server-side authorization. The guard is only a client-side navigation guard and does not enforce real authorization.",
+    "control": "No server-side authorization control present; guard relies on client-controlled localStorage (role.service.ts line 7).",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "role.service.ts",
+      "line": 7,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The roleGuard authorization check relies on RoleService.currentRole() which reads the user's role from localStorage. Since localStorage is fully controlled by the client, an attacker can modify the 'role' value to 'finance' and bypass the guard, gaining unauthorized access to the reports route. No server-side validation or integrity check is present in the provided code.",
+    "control": "return of(localStorage.getItem('role') ?? 'guest');",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "admin.guard.ts",
+      "line": 6,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The admin guard relies on a JWT claim without verifying the token's signature, allowing token tampering to escalate privileges.",
+    "control": "none",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "auth.service.ts",
+      "line": 12,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The isAdmin() function trusts the role claim from a JWT token without verifying its signature. The token is stored client-side in TokenStore and can be arbitrarily modified by the user. The readClaims() function only base64-decodes the payload, providing no integrity or authenticity guarantees. An attacker can forge a token with role 'admin' and bypass the authorization check.",
+    "control": "No signature verification or server-side validation present; token claims are trusted without validation.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "jwt.ts",
+      "line": 8,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The readClaims function decodes a JWT payload without verifying its signature. The adminGuard relies on this unverified claim to authorize admin access. An attacker can forge a token with role: 'admin' and bypass authorization. No signature verification exists in the provided code.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "safe",
+    "finding": {
+      "path": "jwt.ts",
+      "line": 8,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The readClaims function parses JWT payloads without signature verification, but it is only used in displayName() for UI display (extracting 'sub' claim). All authorization decisions (isAdmin, adminGuard) are enforced server-side via HTTP call to /api/me, not by trusting client-side token claims.",
+    "control": "return this.http.get<Me>('/api/me').pipe(map((me) => me.role === 'admin'));",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "identity.interceptor.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The localStorage key being accessed is explicitly named 'user_id', which by convention and context is a user identifier, not a secret, credential, or token. The code uses this identifier as a request header for backend correlation, which is a standard practice and does not expose sensitive authentication material.",
+    "control": "const userId = localStorage.getItem('user_id');",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "identity.interceptor.ts",
+      "line": 12,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The interceptor reads user_id from localStorage (client-controlled storage) and sends it as X-User-Id header on all requests. A malicious user can modify localStorage to impersonate any user ID. If the server trusts this header for authorization decisions, it constitutes broken authorization. No server-side validation or cryptographic verification exists in this code to prevent header forgery.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-authz-008",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "account.resolver.ts",
+      "line": 7,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The resolver extracts an accountId from the URL (user-controlled input) and passes it directly to AccountService.load(), which makes an HTTP request to /api/accounts/{accountId}. There is no client-side authorization check (e.g., verifying the current user owns the requested account) before the request is sent. Authorization must be enforced by the backend, but no such control is visible in the provided frontend code.",
+    "control": "No authorization control present in provided code.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

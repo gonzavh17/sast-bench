@@ -1,0 +1,439 @@
+[
+  {
+    "case_id": "ng-authz-001",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 4,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Authorization guard relies on localStorage 'role' which can be modified by the user, allowing privilege escalation."
+      }
+    ],
+    "input_tokens": 840,
+    "output_tokens": 463,
+    "reviewed_at": "2026-10-01T02:43:33+00:00"
+  },
+  {
+    "case_id": "ng-authz-001",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 944,
+    "output_tokens": 828,
+    "reviewed_at": "2026-10-01T02:43:58+00:00"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "refund.service.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The user's role is read from localStorage (client-controllable storage) and included in the request payload for server-side authorization decisions, enabling privilege escalation by modifying the stored role."
+      }
+    ],
+    "input_tokens": 613,
+    "output_tokens": 471,
+    "reviewed_at": "2026-10-01T02:45:15+00:00"
+  },
+  {
+    "case_id": "ng-authz-002",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 598,
+    "output_tokens": 289,
+    "reviewed_at": "2026-10-01T02:46:19+00:00"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "invoices.component.ts",
+        "line": 20,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The component uses a userId taken directly from the route parameter to fetch invoices without verifying that the current user is authorized to access that user's data. This allows a malicious user to modify the URL and potentially view other users' invoices if the server does not properly enforce authorization."
+      }
+    ],
+    "input_tokens": 746,
+    "output_tokens": 740,
+    "reviewed_at": "2026-10-01T02:46:38+00:00"
+  },
+  {
+    "case_id": "ng-authz-003",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 700,
+    "output_tokens": 266,
+    "reviewed_at": "2026-10-01T02:46:43+00:00"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "dashboard.component.ts",
+        "line": 25,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The adminMode flag is set based on a query parameter ('admin=1') that the user can freely modify. This allows any user to elevate privileges to admin in the UI and trigger sensitive admin API calls (/api/admin/users, /api/admin/users/:id/ban) without server-side enforcement of the admin role."
+      }
+    ],
+    "input_tokens": 856,
+    "output_tokens": 521,
+    "reviewed_at": "2026-10-01T02:47:04+00:00"
+  },
+  {
+    "case_id": "ng-authz-004",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 907,
+    "output_tokens": 1065,
+    "reviewed_at": "2026-10-01T02:47:41+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "role.guard.ts",
+        "line": 7,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The route guard decides access based on a role stored in localStorage, which the user can freely modify. This allows any user to bypass the 'finance' role requirement by setting localStorage.role = 'finance'."
+      }
+    ],
+    "input_tokens": 1016,
+    "output_tokens": 1191,
+    "reviewed_at": "2026-10-01T02:48:24+00:00"
+  },
+  {
+    "case_id": "ng-authz-005",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "role.guard.ts",
+        "line": 7,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The route guard performs client-side authorization by comparing a role fetched from an API response (/api/me) with a static route data value. Since the API response can be tampered with in the browser (e.g., via dev tools), a user can bypass the guard and access the reports route. Authorization must be enforced server-side on the actual data endpoints."
+      }
+    ],
+    "input_tokens": 1122,
+    "output_tokens": 1460,
+    "reviewed_at": "2026-10-01T02:49:12+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "auth.service.ts",
+        "line": 12,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The isAdmin() method checks the role claim from a JWT without verifying the token's signature. Since the token is stored in memory and can be manipulated by the user (e.g., via dev tools), an attacker can elevate privileges by forging a token with role 'admin'."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The readClaims function decodes the JWT payload without verifying the signature, enabling the use of untrusted claims for authorization decisions."
+      }
+    ],
+    "input_tokens": 968,
+    "output_tokens": 1437,
+    "reviewed_at": "2026-10-01T02:49:35+00:00"
+  },
+  {
+    "case_id": "ng-authz-006",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 1130,
+    "output_tokens": 751,
+    "reviewed_at": "2026-10-01T02:49:57+00:00"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "identity.interceptor.ts",
+        "line": 8,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The interceptor reads a user_id from localStorage (which the user can modify) and sends it as an X-User-Id header. The server trusts this client-controlled header for authorization, enabling impersonation of other users."
+      }
+    ],
+    "input_tokens": 781,
+    "output_tokens": 568,
+    "reviewed_at": "2026-10-01T02:50:14+00:00"
+  },
+  {
+    "case_id": "ng-authz-007",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 727,
+    "output_tokens": 263,
+    "reviewed_at": "2026-10-01T02:50:32+00:00"
+  },
+  {
+    "case_id": "ng-authz-008",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 1001,
+    "output_tokens": 614,
+    "reviewed_at": "2026-10-01T02:50:47+00:00"
+  },
+  {
+    "case_id": "ng-authz-008",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 973,
+    "output_tokens": 328,
+    "reviewed_at": "2026-10-01T02:50:57+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 9,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Authorization decision is based on a role stored in localStorage, which is fully controllable by the user. An attacker can modify localStorage to set 'me_role' to 'admin' and bypass the guard without server-side verification."
+      },
+      {
+        "file": "admin.guard.ts",
+        "line": 11,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The guard returns true/false based solely on the client-side cached role value. Even though the role is initially fetched from the server, subsequent navigations trust the cached value without re-validation, allowing persistent privilege escalation if the cache is tampered with."
+      }
+    ],
+    "input_tokens": 732,
+    "output_tokens": 544,
+    "reviewed_at": "2026-10-01T02:51:06+00:00"
+  },
+  {
+    "case_id": "ng-authz-009",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 8,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "The guard caches the user's role in a module-level variable (`cachedRole`) that persists across route activations and user sessions. If a user logs out and another user logs in without a full page reload (common in SPAs), the stale cached role may incorrectly grant or deny admin access, leading to client-side authorization bypass."
+      }
+    ],
+    "input_tokens": 734,
+    "output_tokens": 1310,
+    "reviewed_at": "2026-10-01T02:51:56+00:00"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "invoice-detail.component.ts",
+        "line": 33,
+        "family": "broken-authorization",
+        "severity": "medium",
+        "rationale": "Authorization is performed client-side by comparing invoice.ownerId with the current user's id from /api/me. A malicious user can bypass this check by modifying the client-side code or intercepting and altering the HTTP responses, since the decision is made in the browser based on data the user can influence."
+      }
+    ],
+    "input_tokens": 931,
+    "output_tokens": 913,
+    "reviewed_at": "2026-10-01T02:52:27+00:00"
+  },
+  {
+    "case_id": "ng-authz-010",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 854,
+    "output_tokens": 726,
+    "reviewed_at": "2026-10-01T02:53:32+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "admin.guard.ts",
+        "line": 12,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "Authorization decision based on unverified JWT claims; the token's signature is not validated, allowing a user who can modify the in-memory token (e.g., via XSS or dev tools) to forge an admin role."
+      },
+      {
+        "file": "jwt.ts",
+        "line": 7,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "readClaims decodes the JWT payload without verifying its signature, enabling client-side token forgery."
+      }
+    ],
+    "input_tokens": 914,
+    "output_tokens": 1314,
+    "reviewed_at": "2026-10-01T02:54:48+00:00"
+  },
+  {
+    "case_id": "ng-authz-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 1051,
+    "output_tokens": 1658,
+    "reviewed_at": "2026-10-01T02:55:28+00:00"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "settings.component.ts",
+        "line": 15,
+        "family": "broken-authorization",
+        "severity": "high",
+        "rationale": "The component reads a user identifier from the query parameter and uses it to delete an account without verifying that the authenticated user is authorized to delete that account. This allows a user to potentially delete other users' accounts by modifying the URL."
+      }
+    ],
+    "input_tokens": 1018,
+    "output_tokens": 823,
+    "reviewed_at": "2026-10-01T02:55:55+00:00"
+  },
+  {
+    "case_id": "ng-authz-012",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 1022,
+    "output_tokens": 465,
+    "reviewed_at": "2026-10-01T02:56:17+00:00"
+  }
+]

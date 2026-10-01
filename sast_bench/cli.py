@@ -423,7 +423,8 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
     engines = list(ENGINES) if args.engine == "all" else [args.engine]
     codeql_tool = "codeql+ext" if args.codeql_ext else "codeql"
     suite = EXT_SUITE if args.codeql_ext else fetch_codeql.SUITE
-    runs = list_runs()
+    # A debug run (NIM) may build on other debug runs; a Claude run never does.
+    runs = list_runs(include_debug=is_debug(args, engines))
 
     if args.dry_run:
         return dry_run(console, args, engines, cases, codeql_tool, suite, runs)

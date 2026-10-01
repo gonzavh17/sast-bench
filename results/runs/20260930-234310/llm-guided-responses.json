@@ -1,0 +1,447 @@
+[
+  {
+    "case_id": "ng-sec-001",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 5,
+        "family": "client-side-secrets",
+        "severity": "critical",
+        "rationale": "Stripe secret key (sk_live_...) is embedded in the client-side environment configuration, which is bundled and delivered to the browser. This exposes the secret to anyone who can view the source, allowing unauthorized API calls to Stripe."
+      }
+    ],
+    "input_tokens": 734,
+    "output_tokens": 415,
+    "reviewed_at": "2026-10-01T02:43:43+00:00"
+  },
+  {
+    "case_id": "ng-sec-001",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 699,
+    "output_tokens": 291,
+    "reviewed_at": "2026-10-01T02:43:53+00:00"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "auth.service.ts",
+        "line": 12,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "Access token stored in localStorage is accessible to any JavaScript on the page, making it vulnerable to theft via XSS attacks."
+      }
+    ],
+    "input_tokens": 657,
+    "output_tokens": 564,
+    "reviewed_at": "2026-10-01T02:44:27+00:00"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 674,
+    "output_tokens": 520,
+    "reviewed_at": "2026-10-01T02:44:40+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "profile.component.ts",
+        "line": 17,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "Logging the full UserProfile object to console exposes sensitive fields (password, nationalId) in browser developer tools."
+      },
+      {
+        "file": "profile.component.ts",
+        "line": 16,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The component stores the entire UserProfile (including password and nationalId) in a component property, keeping sensitive data in client-side memory longer than necessary."
+      },
+      {
+        "file": "profile.service.ts",
+        "line": 9,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The UserProfile interface includes a password field, indicating the backend returns credentials to the client; the client should never receive or store passwords."
+      }
+    ],
+    "input_tokens": 861,
+    "output_tokens": 1201,
+    "reviewed_at": "2026-10-01T02:45:05+00:00"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "profile.service.ts",
+        "line": 17,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The UserProfile interface includes a password field, and the service returns the full profile including password from the API, exposing sensitive credentials to the client."
+      }
+    ],
+    "input_tokens": 862,
+    "output_tokens": 951,
+    "reviewed_at": "2026-10-01T02:46:48+00:00"
+  },
+  {
+    "case_id": "ng-sec-004",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 772,
+    "output_tokens": 807,
+    "reviewed_at": "2026-10-01T02:47:12+00:00"
+  },
+  {
+    "case_id": "ng-sec-004",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 836,
+    "output_tokens": 866,
+    "reviewed_at": "2026-10-01T02:47:58+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "session.service.ts",
+        "line": 13,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The access token returned from login is stored in localStorage via StorageService. Storing authentication tokens in localStorage exposes them to theft via cross-site scripting (XSS) attacks, as any injected script can read localStorage."
+      },
+      {
+        "file": "storage.service.ts",
+        "line": 7,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The StorageService directly writes values to localStorage without any encryption or protection. When used for sensitive data like access tokens, this creates a client-side secret that can be extracted by malicious scripts."
+      }
+    ],
+    "input_tokens": 812,
+    "output_tokens": 826,
+    "reviewed_at": "2026-10-01T02:48:30+00:00"
+  },
+  {
+    "case_id": "ng-sec-005",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 870,
+    "output_tokens": 1025,
+    "reviewed_at": "2026-10-01T02:49:11+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "error.interceptor.ts",
+        "line": 11,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The interceptor logs the request body which may contain sensitive credentials (e.g., password) to the browser console, exposing them to anyone with access to developer tools."
+      }
+    ],
+    "input_tokens": 863,
+    "output_tokens": 725,
+    "reviewed_at": "2026-10-01T02:49:40+00:00"
+  },
+  {
+    "case_id": "ng-sec-006",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "error.interceptor.ts",
+        "line": 11,
+        "family": "client-side-secrets",
+        "severity": "low",
+        "rationale": "The interceptor logs the full request URL to the console, which may contain sensitive query parameters (e.g., authentication tokens) and thus leak secrets in client-side logs."
+      }
+    ],
+    "input_tokens": 860,
+    "output_tokens": 823,
+    "reviewed_at": "2026-10-01T02:49:57+00:00"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 4,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "Live API key (reportsApiKey) is included in the client-side environment configuration, exposing it to anyone who can view the bundled JavaScript. Secrets should never be shipped to the browser."
+      }
+    ],
+    "input_tokens": 821,
+    "output_tokens": 674,
+    "reviewed_at": "2026-10-01T02:51:23+00:00"
+  },
+  {
+    "case_id": "ng-sec-007",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 775,
+    "output_tokens": 792,
+    "reviewed_at": "2026-10-01T02:51:56+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "checkout.service.ts",
+        "line": 14,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The checkout confirmation logs the full customer object including creditCardNumber to the client-side console, exposing sensitive payment data in logs."
+      }
+    ],
+    "input_tokens": 688,
+    "output_tokens": 618,
+    "reviewed_at": "2026-10-01T02:52:29+00:00"
+  },
+  {
+    "case_id": "ng-sec-008",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "checkout.service.ts",
+        "line": 8,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "The Customer interface includes a creditCardNumber field, indicating that raw credit card data is handled on the client side. Storing or processing sensitive payment data in the browser exposes it to theft via XSS, malicious extensions, or memory inspection."
+      }
+    ],
+    "input_tokens": 692,
+    "output_tokens": 1280,
+    "reviewed_at": "2026-10-01T02:53:10+00:00"
+  },
+  {
+    "case_id": "ng-sec-009",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "environment.ts",
+        "line": 5,
+        "family": "client-side-secrets",
+        "severity": "high",
+        "rationale": "A Stripe secret key (sk_live_) is included in the client-side environment configuration, exposing it to anyone who loads the application. Secret keys must never be shipped to the browser; only publishable keys (pk_live_) are safe for client-side use."
+      }
+    ],
+    "input_tokens": 706,
+    "output_tokens": 566,
+    "reviewed_at": "2026-10-01T02:53:20+00:00"
+  },
+  {
+    "case_id": "ng-sec-009",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 713,
+    "output_tokens": 378,
+    "reviewed_at": "2026-10-01T02:53:44+00:00"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "session-debug.service.ts",
+        "line": 13,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "The service logs the full session object, including the accessToken, to console.debug. This exposes sensitive authentication credentials in the browser console, accessible to any user with developer tools."
+      }
+    ],
+    "input_tokens": 614,
+    "output_tokens": 335,
+    "reviewed_at": "2026-10-01T02:54:01+00:00"
+  },
+  {
+    "case_id": "ng-sec-010",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 625,
+    "output_tokens": 867,
+    "reviewed_at": "2026-10-01T02:54:17+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 7,
+        "family": "client-side-secrets",
+        "severity": "medium",
+        "rationale": "Session token stored in sessionStorage, which is accessible to any script on the same origin; an XSS vulnerability could lead to token theft."
+      }
+    ],
+    "input_tokens": 612,
+    "output_tokens": 875,
+    "reviewed_at": "2026-10-01T02:55:35+00:00"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [
+      {
+        "file": "session-store.service.ts",
+        "line": 8,
+        "family": "client-side-secrets",
+        "severity": "low",
+        "rationale": "A fragment of the session token (first 8 characters) is stored in sessionStorage. Although truncated, this value acts as a session reference that could be leveraged by an attacker with access to the storage (e.g., via XSS) to resume or hijack the session."
+      }
+    ],
+    "input_tokens": 634,
+    "output_tokens": 1002,
+    "reviewed_at": "2026-10-01T02:57:08+00:00"
+  },
+  {
+    "case_id": "ng-sec-012",
+    "variant": "vulnerable",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 820,
+    "output_tokens": 671,
+    "reviewed_at": "2026-10-01T02:57:35+00:00"
+  },
+  {
+    "case_id": "ng-sec-012",
+    "variant": "safe",
+    "arm": "guided",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "provider": "nim",
+    "effort": null,
+    "stop_reason": "stop",
+    "findings": [],
+    "input_tokens": 833,
+    "output_tokens": 1590,
+    "reviewed_at": "2026-10-01T02:59:12+00:00"
+  }
+]

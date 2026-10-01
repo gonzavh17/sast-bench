@@ -1,0 +1,106 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T02:57:35+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-sec-001",
+      "case_dir": "corpus/angular/client-side-secrets/001-environment-secret-key",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 5,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "payment.service.ts",
+          "line": 14,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-001",
+      "case_dir": "corpus/angular/client-side-secrets/001-environment-secret-key",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-002",
+      "case_dir": "corpus/angular/client-side-secrets/002-token-in-localstorage",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-002",
+      "case_dir": "corpus/angular/client-side-secrets/002-token-in-localstorage",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-003",
+      "case_dir": "corpus/angular/client-side-secrets/003-console-log-pii",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 17,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "profile.service.ts",
+          "line": 8,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "profile.service.ts",
+          "line": 9,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-003",
+      "case_dir": "corpus/angular/client-side-secrets/003-console-log-pii",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "profile.service.ts",
+          "line": 17,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-004",
+      "case_dir": "corpus/angular/client-side-secrets/004-http-cache-sensitive",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-004",
+      "case_dir": "corpus/angular/client-side-secrets/004-http-cache-sensitive",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

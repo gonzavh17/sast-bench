@@ -1,0 +1,122 @@
+[
+  {
+    "case_id": "ng-sec-001",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "environment.ts",
+      "line": 5,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The Stripe secret key is hardcoded in the client-side environment configuration (environment.ts line 5) and used directly in an HTTP Authorization header from the browser (payment.service.ts line 12). This exposes the secret to anyone who can view the compiled JavaScript or intercept network requests, allowing unauthorized use of the Stripe account.",
+    "control": "Authorization: `Bearer ${environment.stripeSecretKey}`,",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-001",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "payment.service.ts",
+      "line": 14,
+      "rule_id": "broken-authorization",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The frontend code exposes a Stripe live secret key (sk_live_...) in environment.ts and transmits it via Authorization header to the application's own backend API. Secret keys must never be present in frontend code or sent over the network from the client; they should only be used server-side. This allows anyone with access to the frontend bundle to extract the secret key and make arbitrary Stripe API calls.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-002",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "auth.service.ts",
+      "line": 12,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The access token is stored in localStorage, which is accessible to any JavaScript running on the page. This makes it vulnerable to theft via XSS attacks. No mitigating control (such as httpOnly cookies, token encryption, or short-lived tokens with refresh rotation) is present in the code shown.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.component.ts",
+      "line": 17,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The console.log at line 17 logs the entire UserProfile object, which includes sensitive fields (password, nationalId). This exposes secrets in the browser console.",
+    "control": "No control present; sensitive data logged directly to console.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.service.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The UserProfile interface includes sensitive fields (nationalId and password) that are fetched from the backend via /api/me and stored in the component. Even though only fullName is displayed in the template, the full object containing secrets is received client-side, logged to console, and accessible in browser memory/dev tools. No sanitization or field filtering occurs in the service or component.",
+    "control": "",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "profile.service.ts",
+      "line": 9,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The UserProfile interface includes a password field that is received from the backend via the /api/me endpoint. The password (or password hash) is stored in the component's profile property and logged to the console, exposing sensitive authentication material to the client-side. This is a clear client-side secrets exposure vulnerability.",
+    "control": "No control exists in the provided frontend code to prevent password exposure. The backend should not include password in the /api/me response, and the frontend interface should not define a password field for user profile data.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-003",
+    "variant": "safe",
+    "finding": {
+      "path": "profile.service.ts",
+      "line": 17,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The UserProfile interface includes a password field, and the ProfileService returns the full UserProfile object from the '/api/me' endpoint, exposing sensitive credentials to the client. No client-side control removes or masks the password before it reaches the component.",
+    "control": "No mitigating control found in client code; password field present in UserProfile and returned by API.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-004",
+    "variant": "safe",
+    "finding": {
+      "path": "cache.interceptor.ts",
+      "line": 10,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The interceptor only caches responses from an explicit allowlist of public reference-data endpoints (countries, currencies, plans) and only for GET requests. No authentication tokens, secrets, or sensitive user data are stored. The cache is an in-memory Map that disappears on page reload.",
+    "control": "const CACHEABLE = ['/api/countries', '/api/currencies', '/api/plans']; ... if (req.method !== 'GET' || !CACHEABLE.includes(path))",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

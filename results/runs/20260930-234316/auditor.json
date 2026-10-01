@@ -1,0 +1,114 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T02:59:35+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 19,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-004",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/004-service-route-component-bypass",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "trusted-html.ts",
+          "line": 5,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-005",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/005-trusted-html-helper",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "comment.component.html",
+          "line": 2,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "safe-html.pipe.ts",
+          "line": 9,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-006",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/006-safe-html-pipe",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "comment.component.html",
+          "line": 2,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "feed.component.ts",
+          "line": 14,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "snippet.component.ts",
+          "line": 16,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-007",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/007-input-child-bypass",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "feed.component.ts",
+          "line": 14,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}
