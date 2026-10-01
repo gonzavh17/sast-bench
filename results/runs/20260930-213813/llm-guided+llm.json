@@ -1,0 +1,328 @@
+{
+  "tool": "llm-guided+llm",
+  "rule_map": "llm-guided",
+  "tool_version": "llm-guided claude-opus-5 + nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T00:50:48+00:00",
+  "rules": {
+    "kind": "prompt",
+    "arm": "guided",
+    "model": "claude-opus-5",
+    "effort": null
+  },
+  "base_results": "results/merged/all-llm-guided.json",
+  "variants": [
+    {
+      "case_id": "ng-sec-001",
+      "case_dir": "corpus/angular/client-side-secrets/001-environment-secret-key",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-001",
+      "case_dir": "corpus/angular/client-side-secrets/001-environment-secret-key",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 5,
+          "rule_id": "client-side-secrets",
+          "severity": "CRITICAL"
+        },
+        {
+          "path": "payment.service.ts",
+          "line": 12,
+          "rule_id": "client-side-secrets",
+          "severity": "CRITICAL"
+        },
+        {
+          "path": "payment.service.ts",
+          "line": 14,
+          "rule_id": "broken-authorization",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-002",
+      "case_dir": "corpus/angular/client-side-secrets/002-token-in-localstorage",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-002",
+      "case_dir": "corpus/angular/client-side-secrets/002-token-in-localstorage",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "auth.service.ts",
+          "line": 12,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-003",
+      "case_dir": "corpus/angular/client-side-secrets/003-console-log-pii",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 16,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "profile.service.ts",
+          "line": 9,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-003",
+      "case_dir": "corpus/angular/client-side-secrets/003-console-log-pii",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "profile.component.ts",
+          "line": 17,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        },
+        {
+          "path": "profile.service.ts",
+          "line": 9,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-004",
+      "case_dir": "corpus/angular/client-side-secrets/004-http-cache-sensitive",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-004",
+      "case_dir": "corpus/angular/client-side-secrets/004-http-cache-sensitive",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "cache.interceptor.ts",
+          "line": 14,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "cache.interceptor.ts",
+          "line": 21,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-005",
+      "case_dir": "corpus/angular/client-side-secrets/005-storage-service-token",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-005",
+      "case_dir": "corpus/angular/client-side-secrets/005-storage-service-token",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session.service.ts",
+          "line": 13,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "storage.service.ts",
+          "line": 7,
+          "rule_id": "client-side-secrets",
+          "severity": "LOW"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-006",
+      "case_dir": "corpus/angular/client-side-secrets/006-error-interceptor-logs-body",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-006",
+      "case_dir": "corpus/angular/client-side-secrets/006-error-interceptor-logs-body",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "error.interceptor.ts",
+          "line": 11,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-007",
+      "case_dir": "corpus/angular/client-side-secrets/007-api-key-in-get-query",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-007",
+      "case_dir": "corpus/angular/client-side-secrets/007-api-key-in-get-query",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "environment.ts",
+          "line": 4,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        },
+        {
+          "path": "reports.service.ts",
+          "line": 15,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        },
+        {
+          "path": "url-builder.ts",
+          "line": 3,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "url-builder.ts",
+          "line": 3,
+          "rule_id": "other",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-008",
+      "case_dir": "corpus/angular/client-side-secrets/008-logger-helper-pii",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-008",
+      "case_dir": "corpus/angular/client-side-secrets/008-logger-helper-pii",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "checkout.service.ts",
+          "line": 14,
+          "rule_id": "client-side-secrets",
+          "severity": "HIGH"
+        },
+        {
+          "path": "logger.ts",
+          "line": 3,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-009",
+      "case_dir": "corpus/angular/client-side-secrets/009-publishable-vs-secret-key",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-009",
+      "case_dir": "corpus/angular/client-side-secrets/009-publishable-vs-secret-key",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "checkout.component.ts",
+          "line": 13,
+          "rule_id": "client-side-secrets",
+          "severity": "CRITICAL"
+        },
+        {
+          "path": "environment.ts",
+          "line": 5,
+          "rule_id": "client-side-secrets",
+          "severity": "CRITICAL"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-010",
+      "case_dir": "corpus/angular/client-side-secrets/010-debug-log-guard",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-010",
+      "case_dir": "corpus/angular/client-side-secrets/010-debug-log-guard",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session-debug.service.ts",
+          "line": 13,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 8,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "vulnerable",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-012",
+      "case_dir": "corpus/angular/client-side-secrets/012-cache-allowlist-broken",
+      "variant": "safe",
+      "findings": []
+    },
+    {
+      "case_id": "ng-sec-012",
+      "case_dir": "corpus/angular/client-side-secrets/012-cache-allowlist-broken",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "public-cache.interceptor.ts",
+          "line": 8,
+          "rule_id": "other",
+          "severity": "LOW"
+        },
+        {
+          "path": "public-cache.interceptor.ts",
+          "line": 18,
+          "rule_id": "broken-authorization",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "public-cache.interceptor.ts",
+          "line": 25,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}
