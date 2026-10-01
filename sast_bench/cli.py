@@ -243,6 +243,30 @@ def hybrid_base(
     return found
 
 
+def standalone_base(
+    args: argparse.Namespace, codeql_tool: str, case_ids: set[str], runs: list[Run]
+) -> tuple[str, dict[str, Any], str]:
+    """What the hybrid reviews when the base engine is not part of the same run.
+
+    Either a results file (`--base-results`, e.g. one of results/merged/) or an
+    engine of a previous run (`--from-run`, `--base-engine`; CodeQL by default).
+    Returns (where it came from, results, repo-relative path).
+    """
+    if args.base_results:
+        path = Path(args.base_results)
+        if not path.is_file():
+            raise CliError(f"no results file at {path}")
+        import json
+
+        results = json.loads(path.read_text(encoding="utf-8"))
+        missing = case_ids - {e["case_id"] for e in results["variants"]}
+        if missing:
+            raise CliError(f"{path} does not cover {len(missing)} of the requested cases: {sorted(missing)[:3]}")
+        return str(path), results, str(path)
+    run, engine = hybrid_base(args, args.base_engine or codeql_tool, case_ids, runs)
+    return run.run_id, engine.results, str(engine.path.relative_to(REPO_ROOT))
+
+
 def only_cases(results: dict[str, Any], case_ids: set[str]) -> dict[str, Any]:
     """The same results, trimmed to the requested cases."""
     return {**results, "variants": [v for v in results["variants"] if v["case_id"] in case_ids]}
@@ -315,23 +339,25 @@ def print_hybrid_estimate(
     case_ids: set[str],
     runs: list[Run],
 ) -> None:
-    label = engine_tag(f"{codeql_tool}+llm")
+    base_tool = codeql_tool if "codeql" in engines else (args.base_engine or codeql_tool)
+    label = engine_tag(f"{base_tool}+llm")
     if "codeql" in engines:
         # CodeQL has not run yet: the latest run is used as a reference.
         found = latest_results_for(codeql_tool, case_ids, runs)
-        basis = f"findings from {found[0].run_id}; the real run may differ" if found else None
+        if found is None:
+            console.print(f"{label} unknown number of calls: no previous {codeql_tool} run over these cases", highlight=False)
+            return
+        basis, base_results = f"findings from {found[0].run_id}; the real run may differ", found[1].results
     else:
         try:
-            found = hybrid_base(args, codeql_tool, case_ids, runs)
-            basis = f"reviews the findings from {found[0].run_id}"
+            origin, base_results, _ = standalone_base(args, codeql_tool, case_ids, runs)
         except (CliError, LookupError) as error:
             console.print(f"{label} [red]{error}[/red]", highlight=False)
             return
-    if found is None:
-        console.print(f"{label} unknown number of calls: no previous {codeql_tool} run over these cases", highlight=False)
-        return
+        label = engine_tag(f"{base_results['tool']}+llm")
+        basis = f"reviews the findings from {origin}"
 
-    calls = count_findings(found[1].results, case_ids)
+    calls = count_findings(base_results, case_ids)
     guess = estimate(calls, args.model, decision_records())
     cost = cost_text(guess, args.provider)
     console.print(
@@ -403,8 +429,8 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
     case_ids = {c.meta.id for c in cases}
     base: tuple[dict[str, Any], str] | None = None
     if "hybrid" in engines and "codeql" not in engines:
-        base_run, base_engine = hybrid_base(args, codeql_tool, case_ids, runs)
-        base = (only_cases(base_engine.results, case_ids), str(base_engine.path.relative_to(REPO_ROOT)))
+        _, base_results, base_path = standalone_base(args, codeql_tool, case_ids, runs)
+        base = (only_cases(base_results, case_ids), base_path)
 
     now = dt.datetime.now(dt.UTC)
     run_id = new_run_id(now.astimezone())
@@ -902,6 +928,8 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"model for hybrid and llm (default {DEFAULT_MODEL} with anthropic, or SAST_BENCH_MODEL; required with nim)",
     )
     run.add_argument("--from-run", metavar="RUN", help="hybrid without codeql: the run to take the base from")
+    run.add_argument("--base-engine", metavar="TOOL", help="hybrid with --from-run: which engine to review (default codeql)")
+    run.add_argument("--base-results", metavar="FILE", type=Path, help="hybrid: review this results file instead of a run")
     run.add_argument("--arm", choices=[*LLM_ARMS, "both"], default="both", help="llm engine: which arm (default both)")
     run.add_argument("--effort", choices=EFFORTS, help="llm engine: output_config.effort (default: the model's)")
     run.add_argument("--no-cache", action="store_true", help="rebuild the CodeQL databases")
@@ -952,7 +980,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if getattr(args, "provider", None) and not args.model:
         args.model = PROVIDER_DEFAULTS.get(args.provider)
-    for name in ("corpus", "out_dir"):
+    for name in ("corpus", "out_dir", "base_results"):
         if isinstance(getattr(args, name, None), Path):
             setattr(args, name, repo_relative(getattr(args, name)))
 
