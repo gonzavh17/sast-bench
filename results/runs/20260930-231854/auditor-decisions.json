@@ -1,0 +1,122 @@
+[
+  {
+    "case_id": "ng-sec-011",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "session-store.service.ts",
+      "line": 7,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "Storing a session token in sessionStorage exposes it to theft via cross-site scripting (XSS) attacks. Any malicious JavaScript executing on the same origin can read sessionStorage and hijack the user's session. Session tokens are sensitive credentials and should be stored in HttpOnly cookies or handled server-side, not in client-accessible storage.",
+    "control": "No sufficient control present in the code. The service directly writes the raw token to sessionStorage without encryption, integrity protection, or any mitigation against XSS extraction.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "finding": {
+      "path": "session-store.service.ts",
+      "line": 8,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The code stores only the first 8 characters of the session token (a truncated reference), not the full secret. The comment indicates this is a reference for the backend to resume the session, and the slice operation ensures the actual secret is never persisted client-side.",
+    "control": "sessionStorage.setItem('session_token', sessionToken.slice(0, 8));",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-sec-011",
+    "variant": "safe",
+    "finding": {
+      "path": "session-store.service.ts",
+      "line": 12,
+      "rule_id": "client-side-secrets",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The service stores a session token fragment (first 8 characters) in sessionStorage, which acts as a session reference. This constitutes a client-side secret because an attacker with XSS could retrieve this reference and potentially resume the user's session. No sufficient control (e.g., httpOnly cookie, encryption, or server-side storage) mitigates this exposure.",
+    "control": "No control mitigates client-side storage of session reference.",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "release-notes.component.html",
+      "line": 2,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The toSafeHtml function first marks the raw HTML as trusted via bypassSecurityTrustHtml, then calls sanitize on that trusted value. Angular's sanitize method returns trusted values unchanged, so the sanitization step is a no-op. The raw query parameter 'notes' is thus rendered unsanitized via innerHTML, leading to XSS.",
+    "control": "const cleaned = sanitizer.sanitize(SecurityContext.HTML, trusted) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "release-notes.component.ts",
+      "line": 20,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The toSafeHtml function first marks the raw input as trusted via bypassSecurityTrustHtml, then calls sanitize on that trusted value. Since sanitize returns the original trusted HTML without sanitization when given a SafeValue, the cleaning step is ineffective. The raw query parameter is directly rendered as trusted HTML, leading to XSS.",
+    "control": "const cleaned = sanitizer.sanitize(SecurityContext.HTML, trusted) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 6,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The sanitize call on a SafeHtml value returns the original unsanitized HTML, so the sanitization is bypassed. The pattern first bypasses security trust, then sanitizes the trusted value, which does not sanitize.",
+    "control": "const cleaned = sanitizer.sanitize(SecurityContext.HTML, trusted) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "vulnerable",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 8,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "confirmed",
+    "reason": "The function first marks raw user input as trusted via `bypassSecurityTrustHtml` (line 6). When this trusted value is passed to `sanitize(SecurityContext.HTML, ...)` (line 7), Angular's sanitizer detects it is already trusted for the HTML context and returns the raw string without sanitization. The final `bypassSecurityTrustHtml(cleaned)` (line 8) then marks this unsanitized HTML as safe, allowing XSS via the `notes` query parameter rendered through `[innerHTML]`.",
+    "control": "const cleaned = sanitizer.sanitize(SecurityContext.HTML, trusted) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  },
+  {
+    "case_id": "ng-xss-010",
+    "variant": "safe",
+    "finding": {
+      "path": "trusted-html.ts",
+      "line": 7,
+      "rule_id": "xss-sanitizer-bypass",
+      "severity": "MEDIUM"
+    },
+    "verdict": "dismissed",
+    "reason": "The user-supplied HTML is sanitized by Angular's DomSanitizer (SecurityContext.HTML) before being passed to bypassSecurityTrustHtml, which neutralizes any XSS payloads. The sanitization step ensures only safe HTML reaches the sink.",
+    "control": "const cleaned = sanitizer.sanitize(SecurityContext.HTML, html) ?? '';",
+    "control_rejected": false,
+    "stop_reason": "stop"
+  }
+]

@@ -1,0 +1,75 @@
+{
+  "tool": "auditor",
+  "tool_version": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b",
+  "run_at": "2026-10-01T02:26:47+00:00",
+  "rules": {
+    "kind": "auditor",
+    "stop_after": null,
+    "providers": "triage nim:openai/gpt-oss-20b · analysis nim:nvidia/nemotron-3-ultra-550b-a55b · skeptic nim:nvidia/nemotron-3-ultra-550b-a55b"
+  },
+  "variants": [
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 7,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-sec-011",
+      "case_dir": "corpus/angular/client-side-secrets/011-opaque-id-vs-jwt",
+      "variant": "safe",
+      "findings": [
+        {
+          "path": "session-store.service.ts",
+          "line": 12,
+          "rule_id": "client-side-secrets",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "vulnerable",
+      "findings": [
+        {
+          "path": "release-notes.component.html",
+          "line": 2,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "release-notes.component.ts",
+          "line": 20,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "trusted-html.ts",
+          "line": 6,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        },
+        {
+          "path": "trusted-html.ts",
+          "line": 8,
+          "rule_id": "xss-sanitizer-bypass",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "case_id": "ng-xss-010",
+      "case_dir": "corpus/angular/xss-sanitizer-bypass/010-sanitize-after-bypass",
+      "variant": "safe",
+      "findings": []
+    }
+  ]
+}

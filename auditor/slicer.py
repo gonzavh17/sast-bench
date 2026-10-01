@@ -49,8 +49,16 @@ class Slice:
             return True
         return any(u.file == file and u.start <= line <= u.end for u in self.units)
 
-    def render(self, project: Project) -> str:
-        """The slice as text, file by file, with the project's line numbers."""
+    def render(self, project: Project, mark: tuple[str, int] | None = None) -> str:
+        """The slice as text, file by file, with the project's line numbers.
+
+        With `mark`, that file:line is prefixed with `>>>` (for the skeptic).
+        """
+
+        def numbered(file: str, n: int, text: str) -> str:
+            prefix = ">>>" if mark == (file, n) else "   "
+            return f"{prefix} {n:4} | {text}" if mark else f"{n:4} | {text}"
+
         blocks = []
         by_file: dict[str, list[Unit]] = {}
         for unit in self.units:
@@ -59,11 +67,11 @@ class Slice:
             lines = project.files[file].lines
             parts = []
             for unit in sorted(by_file[file], key=lambda u: u.start):
-                parts.append("\n".join(f"{n:4} | {lines[n - 1]}" for n in range(unit.start, unit.end + 1)))
+                parts.append("\n".join(numbered(file, n, lines[n - 1]) for n in range(unit.start, unit.end + 1)))
             blocks.append(f"--- {file} ---\n" + "\n   ...\n".join(parts))
         for template in self.templates:
             lines = project.templates[template]
-            blocks.append(f"--- {template} ---\n" + "\n".join(f"{n:4} | {t}" for n, t in enumerate(lines, 1)))
+            blocks.append(f"--- {template} ---\n" + "\n".join(numbered(template, n, t) for n, t in enumerate(lines, 1)))
         return "\n\n".join(blocks)
 
     def tokens(self, project: Project) -> int:

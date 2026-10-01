@@ -153,6 +153,8 @@ def rules_line(results: dict[str, Any]) -> str:
         case "prompt":
             effort = f" effort={rules['effort']}" if rules.get("effort") else ""
             return f"{rules['arm']} prompt{effort}"
+        case "auditor":
+            return f"funnel up to {rules['stop_after'] or 'skeptic'}"
     return "?"
 
 
@@ -186,7 +188,7 @@ def preflight(engines: list[str], args: argparse.Namespace) -> list[str]:
         problems.append("the CodeQL bundle is missing: uv run python -m scripts.fetch_codeql")
     if args.codeql_ext and not Path(EXT_SUITE).is_file():
         problems.append(f"the extension suite is missing: {EXT_SUITE}")
-    if uses_model(engines):
+    if uses_model(engines, args):
         if not args.model:
             problems.append(f"--model is required with --provider {args.provider} (or SAST_BENCH_MODEL)")
         if not args.dry_run:
@@ -203,13 +205,15 @@ def preflight(engines: list[str], args: argparse.Namespace) -> list[str]:
     return problems
 
 
-def uses_model(engines: list[str]) -> bool:
-    return "hybrid" in engines or "llm" in engines
+def uses_model(engines: list[str], args: argparse.Namespace | None = None) -> bool:
+    if "hybrid" in engines or "llm" in engines:
+        return True
+    return "auditor" in engines and (args is None or getattr(args, "stop_after", None) != "slice")
 
 
 def is_debug(args: argparse.Namespace, engines: list[str]) -> bool:
     """A run that calls a debug provider is a debug run, whatever else it runs."""
-    return uses_model(engines) and args.provider != "anthropic"
+    return uses_model(engines, args) and args.provider != "anthropic"
 
 
 def cost_text(guess: Estimate, provider: str) -> str:
@@ -310,6 +314,8 @@ def dry_run(
             print_hybrid_estimate(console, args, engines, codeql_tool, case_ids, runs)
         elif engine == "llm":
             print_llm_estimate(console, args, variants)
+        elif engine == "auditor":
+            print_auditor_estimate(console, args, cases)
 
     problems = preflight(engines, args)
     for problem in problems:
@@ -444,7 +450,7 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
         "filters": run_filters(args),
         "cases": sorted(case_ids),
         "repo": repo_state(),
-        "provider": args.provider if uses_model(engines) else None,
+        "provider": args.provider if uses_model(engines, args) else None,
         "debug": is_debug(args, engines),
         "engines": [],
     }
@@ -490,6 +496,8 @@ def cmd_run(args: argparse.Namespace, console: Console) -> int:
                 run_hybrid(console, args, cases, base, directory, record)
             elif engine == "llm":
                 run_llm(console, args, cases, directory, record)
+            elif engine == "auditor":
+                run_auditor(console, args, cases, directory, record)
         manifest["status"] = "ok"
     except BaseException as error:
         manifest["status"] = "failed"
@@ -553,6 +561,133 @@ def usage_block(args: argparse.Namespace, records: list[Any]) -> dict[str, Any]:
         "output_tokens": tokens_out,
         **usage_costs(args.provider, args.model, tokens_in, tokens_out),
     }
+
+
+def print_auditor_estimate(console: Console, args: argparse.Namespace, cases: list[Case]) -> None:
+    from auditor.funnel import measure
+
+    rows = measure(cases)
+    slices = sum(r.slices for r in rows)
+    tokens = sum(r.slice_tokens for r in rows)
+    console.print(
+        f"{engine_tag('auditor')} {slices} slices ({tokens:,} tokens) · triage {slices} calls · "
+        f"analysis up to {slices} · skeptic one per finding",
+        highlight=False,
+    )
+    if args.stop_after != "slice":
+        console.print(f"{INDENT}models: {model_label(args)} (triage {args.triage_model or args.model}, skeptic {args.skeptic_model or args.model})", highlight=False)
+
+
+def run_auditor(
+    console: Console,
+    args: argparse.Namespace,
+    cases: list[Case],
+    directory: Path,
+    record: Any,
+) -> None:
+    from auditor.funnel import survival
+    from auditor.pipeline import STAGES, Providers, StageUsage, audit
+
+    providers = None
+    if args.stop_after != "slice":
+        providers = Providers(
+            triage=make_provider(args.provider, args.triage_model or args.model),
+            analysis=make_provider(args.provider, args.model),
+            skeptic=make_provider(args.provider, args.skeptic_model or args.model),
+        )
+    label = providers.label() if providers else "no model"
+    variants: list[dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
+    decisions: list[dict[str, Any]] = []
+    totals = {stage: StageUsage() for stage in STAGES}
+
+    for case in cases:
+        for variant in ("vulnerable", "safe"):
+            result = audit(case.variant_dir(variant), providers, stop_after=args.stop_after)
+            variants.append(
+                {
+                    "case_id": case.meta.id,
+                    "case_dir": str(case.directory),
+                    "variant": variant,
+                    "findings": [f.model_dump() for f in result.findings],
+                }
+            )
+            row = survival(case, variant, result)
+            rows.append(row)
+            decisions += [{"case_id": case.meta.id, "variant": variant, **d} for d in result.decisions]
+            for stage in STAGES:
+                for name in ("calls", "input_tokens", "output_tokens", "format_errors"):
+                    setattr(totals[stage], name, getattr(totals[stage], name) + getattr(result.usage[stage], name))
+            log_event(console, "auditor", f"{case.meta.id} {variant:10} {survival_text(row)}")
+            write_json(directory / "auditor-funnel.json", rows)
+            write_json(directory / "auditor-decisions.json", decisions)
+
+    report = {
+        "tool": "auditor",
+        "tool_version": label,
+        "run_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+        "rules": {"kind": "auditor", "stop_after": args.stop_after, "providers": label},
+        "variants": variants,
+    }
+    stages = {}
+    for stage, usage in totals.items():
+        model = {"triage": args.triage_model, "skeptic": args.skeptic_model}.get(stage) or args.model
+        stages[stage] = {
+            "model": model,
+            "calls": usage.calls,
+            "format_errors": usage.format_errors,
+            "input_tokens": usage.input_tokens,
+            "output_tokens": usage.output_tokens,
+            **(usage_costs(args.provider, model, usage.input_tokens, usage.output_tokens) if model else {}),
+        }
+    total_cost = [v.get("cost_usd") for v in stages.values()]
+    total_opus = [v.get("opus_equivalent_usd") for v in stages.values()]
+    record(
+        report,
+        model=args.model,
+        provider=args.provider if providers else None,
+        stop_after=args.stop_after,
+        funnel="auditor-funnel.json",
+        decisions="auditor-decisions.json",
+        stages=stages,
+        usage={
+            "calls": sum(u.calls for u in totals.values()),
+            "format_errors": sum(u.format_errors for u in totals.values()),
+            "input_tokens": sum(u.input_tokens for u in totals.values()),
+            "output_tokens": sum(u.output_tokens for u in totals.values()),
+            "cost_usd": None if None in total_cost else round(sum(total_cost), 4),
+            "opus_equivalent_usd": None if None in total_opus else round(sum(total_opus), 4),
+        },
+    )
+    print_survival(console, rows, label)
+
+
+def survival_text(row: dict[str, Any]) -> str:
+    if row["variant"] == "vulnerable":
+        stages = [s for s in ("rules", "slice", "triage", "analysis", "skeptic") if s in row]
+        lost = next((s for s in stages[1:] if not row[s]), None)
+        return f"{row['slices']} slices · " + ("[green]survives[/green]" if lost is None else f"[red]lost at {lost}[/red]")
+    flagged = row.get("flagged_after_skeptic")
+    return f"{row['slices']} slices · " + ("[yellow]flagged[/yellow]" if flagged else "clean")
+
+
+def print_survival(console: Console, rows: list[dict[str, Any]], label: str) -> None:
+    """How many real vulnerabilities survive each stage, and how many safe twins stay flagged."""
+    vulnerable = [r for r in rows if r["variant"] == "vulnerable"]
+    safe = [r for r in rows if r["variant"] == "safe"]
+    n = len(vulnerable)
+    parts = []
+    for stage in ("rules", "slice", "triage", "analysis", "skeptic"):
+        if vulnerable and stage in vulnerable[0]:
+            parts.append(f"{stage} {sum(bool(r[stage]) for r in vulnerable)}/{n}")
+    console.print("vulnerable lines surviving each stage: " + " → ".join(parts), highlight=False)
+    if safe and "flagged_after_analysis" in safe[0]:
+        console.print(
+            f"safe twins flagged: after analysis {sum(r['flagged_after_analysis'] for r in safe)}/{len(safe)}"
+            f" → after skeptic {sum(r['flagged_after_skeptic'] for r in safe)}/{len(safe)}",
+            highlight=False,
+        )
+    console.print(f"[dim]{label}[/dim]", highlight=False)
 
 
 def run_llm(
@@ -988,7 +1123,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--engine",
         required=True,
-        choices=[*ENGINES, "llm", "all"],
+        choices=[*ENGINES, "llm", "auditor", "all"],
         help="all = semgrep, codeql and hybrid; llm (the model alone) only runs when asked for",
     )
     run.add_argument("--family", type=family_arg, help="family id or alias: xss, secrets, authz")
@@ -1010,6 +1145,13 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--base-engine", metavar="TOOL", help="hybrid with --from-run: which engine to review (default codeql)")
     run.add_argument("--base-results", metavar="FILE", type=Path, help="hybrid: review this results file instead of a run")
     run.add_argument("--arm", choices=[*LLM_ARMS, "both"], default="both", help="llm engine: which arm (default both)")
+    run.add_argument(
+        "--stop-after",
+        choices=("slice", "triage", "analysis"),
+        help="auditor engine: stop after this stage (slice runs no model)",
+    )
+    run.add_argument("--triage-model", help="auditor engine: model for the triage stage (default: --model)")
+    run.add_argument("--skeptic-model", help="auditor engine: model for the skeptic stage (default: --model)")
     run.add_argument("--effort", choices=EFFORTS, help="llm engine: output_config.effort (default: the model's)")
     run.add_argument("--no-cache", action="store_true", help="rebuild the CodeQL databases")
     run.add_argument("--dry-run", action="store_true", help="show the plan and the estimated cost, without running")

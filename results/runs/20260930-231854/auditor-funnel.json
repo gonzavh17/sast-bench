@@ -1,0 +1,56 @@
+[
+  {
+    "case_id": "ng-sec-011",
+    "family": "client-side-secrets",
+    "difficulty": "decoy",
+    "variant": "vulnerable",
+    "candidates": 2,
+    "slices": 1,
+    "kept_slices": 1,
+    "slice_tokens": 122,
+    "rules": true,
+    "slice": true,
+    "triage": true,
+    "analysis": true,
+    "skeptic": true
+  },
+  {
+    "case_id": "ng-sec-011",
+    "family": "client-side-secrets",
+    "difficulty": "decoy",
+    "variant": "safe",
+    "candidates": 2,
+    "slices": 1,
+    "kept_slices": 1,
+    "slice_tokens": 142,
+    "flagged_after_analysis": true,
+    "flagged_after_skeptic": true
+  },
+  {
+    "case_id": "ng-xss-010",
+    "family": "xss-sanitizer-bypass",
+    "difficulty": "decoy",
+    "variant": "vulnerable",
+    "candidates": 4,
+    "slices": 1,
+    "kept_slices": 1,
+    "slice_tokens": 307,
+    "rules": true,
+    "slice": true,
+    "triage": true,
+    "analysis": true,
+    "skeptic": true
+  },
+  {
+    "case_id": "ng-xss-010",
+    "family": "xss-sanitizer-bypass",
+    "difficulty": "decoy",
+    "variant": "safe",
+    "candidates": 3,
+    "slices": 1,
+    "kept_slices": 1,
+    "slice_tokens": 287,
+    "flagged_after_analysis": true,
+    "flagged_after_skeptic": false
+  }
+]

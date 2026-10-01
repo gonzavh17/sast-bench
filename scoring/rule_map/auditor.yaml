@@ -1,0 +1,15 @@
+# family -> family, for the auditor (auditor/pipeline.py).
+#
+# The analysis stage tags each finding with a family id or `other`, like the
+# guided LLM arm. `other` stays unmapped: noise, not a hit or a false alarm.
+meta:
+  tool: auditor
+  rules_source: "family ids from the auditor's analysis prompt"
+  mapped_at: "2026-09-30"
+
+rules:
+  xss-sanitizer-bypass: xss-sanitizer-bypass
+  client-side-secrets: client-side-secrets
+  broken-authorization: broken-authorization
+
+ignore: []

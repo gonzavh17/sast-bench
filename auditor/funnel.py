@@ -79,3 +79,42 @@ def measure(cases: list[Case]) -> list[VariantFunnel]:
 
 def to_json(rows: list[VariantFunnel]) -> list[dict]:
     return [asdict(r) for r in rows]
+
+
+# ---------------------------------------------------------------- with the LLM stages
+
+
+def survival(case: Case, label: str, result) -> dict:
+    """Where a variant ends up after each stage of a full audit.
+
+    Vulnerable: does the expected family survive rules, slice, triage, analysis
+    and skeptic? Safe: is any family still flagged after analysis and after the
+    skeptic (a false alarm)?
+    """
+    families = {"xss-sanitizer-bypass", "client-side-secrets", "broken-authorization"}
+    expected = case.meta.family.value
+    row = {
+        "case_id": case.meta.id,
+        "family": expected,
+        "difficulty": case.meta.difficulty.value,
+        "variant": label,
+        "candidates": len(result.candidates),
+        "slices": len(result.slices),
+        "kept_slices": len(result.kept_slices()),
+        "slice_tokens": sum(r.tokens for r in result.records),
+    }
+    if label == "vulnerable":
+        file, line = _sink(case)
+        row.update(
+            rules=any(c.file == file and abs(c.line - line) <= LOCALIZATION_TOLERANCE for c in result.candidates),
+            slice=any(s.covers(file, line) for s in result.slices),
+            triage=any(s.covers(file, line) for s in result.kept_slices()),
+            analysis=any(f.rule_id == expected for f in result.before_skeptic),
+            skeptic=any(f.rule_id == expected for f in result.findings),
+        )
+    else:
+        row.update(
+            flagged_after_analysis=any(f.rule_id in families for f in result.before_skeptic),
+            flagged_after_skeptic=any(f.rule_id in families for f in result.findings),
+        )
+    return row
