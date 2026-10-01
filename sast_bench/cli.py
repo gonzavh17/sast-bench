@@ -526,7 +526,9 @@ def run_hybrid(
         f"{calls} findings from {base_path} to review with {model_label(args)} · {cost_text(guess, args.provider)}",
     )
 
-    filtered, records = hybrid.filter_results(results, base_path, {c.meta.id: c for c in cases}, provider, console)
+    filtered, records = hybrid.filter_results(
+        results, base_path, {c.meta.id: c for c in cases}, provider, console, trail=directory / DECISIONS
+    )
     (directory / DECISIONS).write_text(hybrid.dump_decisions(records), encoding="utf-8")
     record(
         filtered,
@@ -564,8 +566,8 @@ def run_llm(
 
     provider = make_provider(args.provider, args.model)
     for arm in llm_arms(args):
-        results, records = llm.scan(cases, arm, provider, args.effort, console)
         responses = f"llm-{arm}-responses.json"
+        results, records = llm.scan(cases, arm, provider, args.effort, console, trail=directory / responses)
         write_json(directory / responses, [r.model_dump() for r in records])
         record(
             results,

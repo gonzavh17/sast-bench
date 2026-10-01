@@ -151,8 +151,13 @@ def review(
     cases: dict[str, Case],
     provider: Any,
     console: Console,
+    trail: Path | None = None,
 ) -> list[DecisionRecord]:
-    """One request per finding, in order, never batched."""
+    """One request per finding, in order, never batched.
+
+    With `trail`, the decisions so far are rewritten after every finding, so a
+    run that gets cut keeps everything it already paid for.
+    """
     pending = [
         (entry, Finding.model_validate(raw))
         for entry in results["variants"]
@@ -190,6 +195,8 @@ def review(
                 f"{entry['case_id']} {entry['variant']:10} {_one_line(decision)}"
                 f" [dim]({finding.rule_id}:{finding.line})[/dim]",
             )
+            if trail is not None:
+                trail.write_text(dump_decisions(records), encoding="utf-8")
             bar.advance(task)
     return records
 
@@ -227,9 +234,10 @@ def filter_results(
     cases: dict[str, Case],
     provider: Any,
     console: Console,
+    trail: Path | None = None,
 ) -> tuple[dict[str, Any], list[DecisionRecord]]:
     """Review each finding and build the filtered results, in the usual format."""
-    records = review(results, cases, provider, console)
+    records = review(results, cases, provider, console, trail)
 
     confirmed = sum(r.verdict == "confirmed" for r in records)
     log_event(

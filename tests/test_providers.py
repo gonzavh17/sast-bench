@@ -228,3 +228,14 @@ def test_debug_runs_cost_zero_but_report_the_opus_equivalent():
     costs = usage_costs("nim", "test/model", 1_000_000, 100_000)
     assert costs == {"cost_usd": 0.0, "opus_equivalent_usd": 7.5}
     assert usage_costs("anthropic", "claude-opus-5", 1_000_000, 100_000)["cost_usd"] == 7.5
+
+
+def test_the_llm_trail_is_written_as_it_goes(tmp_path):
+    case = next(c for c in discover_cases(REPO / "corpus") if c.meta.id == "ng-sec-011")
+    nim, _ = provider([completion(EMPTY), FakeGatewayTimeout()], Clock())
+    nim.max_retries = 0
+    trail = tmp_path / "trail.json"
+    with pytest.raises(ProviderError):
+        llm.scan([case], "blind", nim, None, make_console(width=120), trail=trail)
+    saved = json.loads(trail.read_text())
+    assert [r["variant"] for r in saved] == ["vulnerable"]  # the first answer survived the crash

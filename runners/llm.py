@@ -27,6 +27,7 @@ rationales and token usage go to a separate responses trail.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import re
 from pathlib import Path
 from typing import Any, Literal
@@ -178,8 +179,13 @@ def scan(
     provider: Any,
     effort: str | None,
     console: Console,
+    trail: Path | None = None,
 ) -> tuple[dict[str, Any], list[ResponseRecord]]:
-    """Review every variant with one arm. Returns the results and the responses trail."""
+    """Review every variant with one arm. Returns the results and the responses trail.
+
+    With `trail`, the responses so far are rewritten after every variant, so a
+    run that gets cut keeps everything it already paid for.
+    """
     variants: list[dict[str, Any]] = []
     records: list[ResponseRecord] = []
     todo = [(case, label) for case in cases for label in VARIANT_LABELS]
@@ -221,6 +227,11 @@ def scan(
                     reviewed_at=dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
                 )
             )
+            if trail is not None:
+                trail.write_text(
+                    json.dumps([r.model_dump() for r in records], indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8",
+                )
             bar.advance(task)
 
     results = {
